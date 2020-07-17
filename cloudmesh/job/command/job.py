@@ -92,6 +92,15 @@ class JobCommand(PluginCommand):
                executable: the executable
                shell: bash # executes the job in the provided shell
                       $(SHELL) will use the default user shell
+
+          The current jobset filename is stored in the cloudmesh variables under
+          the variable "jobset". It can queries with cms set jobset. It can be set witk
+          cms set jobset=VALUE
+          We may not even do cms job set VALUE due to this simpler existing way of interfaceing
+          we can query the variables with
+          variables = Variables() and also set them that way
+          variables["jobset"] = VALUE
+
         """
 
         if arguments.set:
@@ -133,5 +142,5 @@ class JobCommand(PluginCommand):
             #job delete --name=NAME
             name = arguments["--name"]
             Console.error("Not yet implemented")
-            
+
         return ""
