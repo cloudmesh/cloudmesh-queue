@@ -5,6 +5,7 @@ from cloudmesh.common.console import Console
 from cloudmesh.common.util import path_expand
 from pprint import pprint
 from cloudmesh.common.debug import VERBOSE
+import os
 
 class JobCommand(PluginCommand):
 
@@ -24,6 +25,7 @@ class JobCommand(PluginCommand):
             job kill --name=NAME
             job reset --name=NAME
             job delete --name=NAME
+            job help
 
           This command does some useful things.
 
@@ -68,6 +70,9 @@ class JobCommand(PluginCommand):
               job delete --name=NAME
                 deletes the given jobs base on a name pattern such as
                 name[01-04] which would kill all jobs with the given names
+
+              job help
+                prints the manual page
 
           Job States:
 
@@ -142,5 +147,9 @@ class JobCommand(PluginCommand):
             #job delete --name=NAME
             name = arguments["--name"]
             Console.error("Not yet implemented")
+
+        elif arguments.help:
+            #job help
+            os.system("cms help job")
 
         return ""
