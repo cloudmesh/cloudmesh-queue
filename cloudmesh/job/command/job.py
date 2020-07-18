@@ -1,4 +1,3 @@
-from __future__ import print_function
 from cloudmesh.shell.command import command
 from cloudmesh.shell.command import PluginCommand
 from cloudmesh.common.console import Console
@@ -6,6 +5,8 @@ from cloudmesh.common.util import path_expand
 from pprint import pprint
 from cloudmesh.common.debug import VERBOSE
 import os
+from cloudmesh.common.variables import Variables
+from cloudmesh.common.parameter import Parameter
 
 class JobCommand(PluginCommand):
 
@@ -18,14 +19,27 @@ class JobCommand(PluginCommand):
           Usage:
             job set FILE
             job add FILE
+            job add --name=NAME
+                    [--diretcory=NAME]
+                    --ip=IP
+                    [--input=INPUT]
+                    [--output=OUTPUT]
+                    [--status=STATUS]
+                    [--gpu=GPU]
+                    [--user=USER]
+                    [--directory=DIRECTORY]
+                    [--arguments=ARGUMENTS]
+                    --executable=EXECUTABLE
+                    [--shell=SHELL]
             job status
             job list --status=STATUS
             job list --name=NAME
             job list
-            job kill --name=NAME
-            job reset --name=NAME
-            job delete --name=NAME
+            job kill [--name=NAME]
+            job reset [--name=NAME]
+            job delete [--name=NAME]
             job help
+            job run
 
           This command does some useful things.
 
@@ -61,10 +75,10 @@ class JobCommand(PluginCommand):
                 kills the given jobs base on a name pattern such as
                 name[01-04] which would kill all jobs with the given names
 
-              job status --name=NAME --status=STATUS
+              job status [--name=NAME] [--status=STATUS]
                 sets the status of all jobs to the status
 
-              job reset --name=NAME
+              job reset [--name=NAME]
                 resets the job to be rerun
 
               job delete --name=NAME
@@ -79,6 +93,7 @@ class JobCommand(PluginCommand):
              done   - job completed
              ready  - ready for scheduling
              failed - job failed
+             timeout - timeout
 
           Job specification:
 
@@ -97,6 +112,8 @@ class JobCommand(PluginCommand):
                executable: the executable
                shell: bash # executes the job in the provided shell
                       $(SHELL) will use the default user shell
+               timeout: time to live after which the command is
+                        interrupted
 
           The current jobset filename is stored in the cloudmesh variables under
           the variable "jobset". It can queries with cms set jobset. It can be set witk
@@ -108,10 +125,18 @@ class JobCommand(PluginCommand):
 
         """
 
+        variables = Variables()
+        pprint(variables.__dict__)
+        print(variables["gregor"])
+
+        if arguments["--name"] is not None:
+            names = Parameter.expand(arguments["--name"])
+
         if arguments.set:
             # job set FILE
             file = arguments["FILE"]
-            Console.error("Not yet implemented")
+            variables["jobset"] = file
+
 
         elif arguments.add:
             # job add FILE
@@ -127,6 +152,7 @@ class JobCommand(PluginCommand):
 
         elif arguments.list and arguments["--name"]:
             ##job list --name=NAME
+            print (names)
             Console.error("Not yet implemented")
 
         elif arguments.list:
@@ -135,7 +161,9 @@ class JobCommand(PluginCommand):
 
         elif arguments.kill:
             #job kill --name=NAME
-            name = arguments["--name"]
+
+            print (names)
+
             Console.error("Not yet implemented")
 
         elif arguments.reset:
