@@ -5,103 +5,111 @@ from cloudmesh.common.Shell import Shell
 from cloudmesh.configuration.Config import Config
 from cloudmesh.common.console import Console
 import subprocess
-
+from cloudmesh.common.util import path_expand
+from cloudmesh.common.variables import Variables
+from cloudmesh.common.Shell import Shell
+from textwrap import dedent
 class JobQueue:
     """
     To create, manage and monitor job execution queue
     """
 
+    def __init__(self, filename=None):
+        variables = Variables()
+        self.filename = filename or \
+                        variables["jobset"] or \
+                        path_expand("~/.cloudmesh/job/spec.yaml")
+        self.name, \
+        self.directory, \
+        self.basename = \
+            JobQueue._location(filename)
+        if self.directory != "":
+            Shell.mkdir(self.directory)
+
     @staticmethod
-    def location(filename):
+    def _location(filename):
         _directory = os.path.dirname(filename)
         _basename = os.path.basename(filename)
         _name = _basename.split(".")[0]
         return _name, _directory, _basename
 
-    def __init__(self):
-        Console.info("JobQueue instantiated")
-
     @staticmethod
-    def define(arguments):
-
+    def _user():
+        user = None
         if sys.platform == 'win32':
             user = os.environ.get('USERNAME')
         else:
             user = os.environ.get('USER')
+        return user
 
+    def template(self, name=None):
+        user = JobQueue._user()
+        name = name or "job"
+        specification = dedent(
+            f"""
+            {name}:
+              name: {name}
+              directory: .
+              ip: 127.0.0.1
+              input': .
+              output': .
+              status': ready
+              gpu: "" 
+              user:  {user}
+              arguments:  -lisa
+              executable': ls
+              shell': bash
+            """).strip()
+
+        specification = yaml.safe_load(specification)
+        return specification
+
+    def add(self, specification):
+        if type(specification) != str:
+            Console.error("only specify a yaml string")
+
+        with open(self.filename, "a") as file:
+            fruits_list = yaml.dump(specification, file)
+
+
+    @staticmethod
+    def define(arguments):
+        if sys.platform == 'win32':
+            user = os.environ.get('USERNAME')
+        else:
+            user = os.environ.get('USER')
         _spec = {
-            'name': arguments.get('--name')
+            'name': arguments.get('--name'),
             'remotedir':  arguments.get('--remotedir') or '.',
             'ip':  arguments.get('--ip') or 'r-003',
             'input':  arguments.get('--input') or './data',
             'output':  arguments.get('--output') or './data',
             'status':  arguments.get('--status') or 'ready',
-            'gpu':  arguments.get('--gpu') or None,
+            'gpu':  arguments.get('--gpu') or "",
             'user':  arguments.get('--user') or user,
-            'arguments':  arguments.get('--arguments') or '-lrta',
-            'executable':  arguments.get('--executable') or 'ls',
+            'arguments':  arguments.get('--arguments') or "",
+            'executable':  arguments.get('--executable'),
             'shell':  arguments.get('--shell') or 'bash'
         }
         return _spec
 
     @staticmethod
-    def update_spec(jobset_location='~/.cloudmesh',
-                    jobset_name='spec.yaml',
-                    newjob_dict=None,
-                    newjobset_location='~/.cloudmesh',
-                    newjobset_name=None,
-                    verbose=False):
+    def update_spec(
+        specification,
+        jobset=None):
         """
-        Adds new jobs to the jobset. New job list taken from input file or
+        Adds new jobs to the jobset.
+        New job list taken from input file or
         dictionary.
 
-        :param jobset_location:
-        :param jobset_name:
-        :param newjob_dict:
-        :param newjobset_location:
-        :param newjobset_name:
-        :param verbose:
+        :param jobset:
         :return:
         """
-        if verbose:
-            Console.info("Called update_spec")
-            print("\tjobset_location:\t", jobset_location)
-            print("\tjobset_name:\t", jobset_name)
-            print("\tnewjobset_location:\t", newjobset_location)
-            print("\tnewjobset_name:\t", newjobset_name)
-            print("\tnewjob_dict:\t", newjob_dict)
 
-        jobset = Path.expanduser(Path(jobset_location, jobset_name))
+        jobset = jobset or "~/.cloudmesh/job/jobe.yaml"
+        jobset = path_expand(jobset)
 
-        if newjobset_name:
-            new_jobset = Path.expanduser(
-                                Path(newjobset_location, newjobset_name))
-
-            with open(new_jobset, 'r') as fi:
-                new_spec = yaml.load(fi, Loader=yaml.FullLoader)
-
-            with open(jobset, 'a+') as fo:
-                yaml.dump(new_spec, fo, default_flow_style=False)
-
-        elif newjob_dict:
-            dict_out = dict()
-
-            if sys.platform == 'win32':
-                user = os.environ.get('USERNAME')
-            else:
-                user = os.environ.get('USER')
-
-            dict_out = JobQueue.define(newjob_dict)
-
-            dict_out1 = {
-                newjob_dict.get('--name'): dict_out
-            }
-
-            if verbose:
-                print(dict_out1)
-
-            with open(jobset, 'a+') as fo:
-                yaml.dump(dict_out1, fo, default_flow_style=False)
+        dict_out = JobQueue.define(newjob_dict)
 
 # class SubmitQueue:
 #     """

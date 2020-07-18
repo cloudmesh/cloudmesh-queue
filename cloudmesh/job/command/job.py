@@ -20,6 +20,7 @@ class JobCommand(PluginCommand):
 
           Usage:
             job set FILE
+            job template FILE [--name=NAME]
             job add FILE
             job add --name=NAME
                     [--remotedir=DIRECTORY]
@@ -41,6 +42,7 @@ class JobCommand(PluginCommand):
             job delete [--name=NAME]
             job help
             job run
+            job info
 
           This command does some useful things.
 
@@ -53,12 +55,18 @@ class JobCommand(PluginCommand):
 
           Description:
 
+              job info
+                prints the informations for the queued jobs
+
               job set FILE
                 sets the jobset to the file name. All other commands will be
                 applied to a jobset
 
               job add FILE
                 adds the jobs in the file to the jobset
+
+              job template FILE
+                creates a job template  in the file
 
               job list
                 lists all jobs
@@ -144,18 +152,39 @@ class JobCommand(PluginCommand):
 
         variables = Variables()
 
-        VERBOSE(arguments)
+        #VERBOSE(arguments)
 
-        if arguments["--name"] is not None:
-            names = Parameter.expand(arguments["--name"])
+        names = Parameter.expand(arguments["--name"])
 
-        file = arguments["FILE"] or file
+
+        file = arguments["FILE"]
 
         # do the import here to avoid long loading times for other commands
 
         from cloudmesh.job.jobqueue import JobQueue
 
-        if arguments.set:
+        default_location = "~/.cloudmesh/job/spec.yaml"
+
+        if arguments.info:
+
+            jobset = variables["jobset"] or default_location
+            Console.msg(f"Jobs are defined in: {jobset}")
+            return ""
+
+        elif arguments.template:
+
+            names = names or ["job"]
+            jobset = variables["jobset"] or default_location
+            variables["jobset"] = jobset
+
+            jobs = JobQueue(jobset)
+            for name in names:
+                template = jobs.template(name=name)
+                jobs.add(template)
+
+            Console.msg(f"Jobs are defined in: {jobset}")
+
+        elif arguments.set:
 
             # job set FILE
             if not file.endswith(".yaml"):
