@@ -132,6 +132,12 @@ class JobCommand(PluginCommand):
           variables = Variables() and also set them that way
           variables["jobset"] = VALUE
 
+          Usage example:
+
+            cms job template a.yaml --name="b[0-1]"; less a.yaml
+
+                creates the jobs b0 and b1 as templates in the jobset a.yaml
+
         """
 
         map_parameters(arguments,
