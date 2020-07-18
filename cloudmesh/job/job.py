@@ -1,6 +1,5 @@
 from pathlib import Path
-import os, time, getpass
-# use ordered yaml
+import os, time, sys
 import oyaml as yaml
 from cloudmesh.common.Shell import Shell
 from cloudmesh.configuration.Config import Config
@@ -13,7 +12,74 @@ class JobQueue:
     """
 
     def __init__(self):
-        print("JobQueue instantiated")
+        Console.info("JobQueue instantiated")
+
+    @staticmethod
+    def update_spec(jobset_location='~/.cloudmesh',
+                    jobset_name='spec.yaml',
+                    newjob_dict=None,
+                    newjobset_location='~/.cloudmesh',
+                    newjobset_name=None,
+                    verbose=False):
+        """
+        Adds new jobs to the jobset. New job list taken from input file or
+        dictionary.
+
+        :param jobset_location:
+        :param jobset_name:
+        :param newjob_dict:
+        :param newjobset_location:
+        :param newjobset_name:
+        :param verbose:
+        :return:
+        """
+        if verbose:
+            Console.info("Called update_spec")
+            print("\tjobset_location:\t", jobset_location)
+            print("\tjobset_name:\t", jobset_name)
+            print("\tnewjobset_location:\t", newjobset_location)
+            print("\tnewjobset_name:\t", newjobset_name)
+            print("\tnewjob_dict:\t", newjob_dict)
+
+        jobset = Path.expanduser(Path(jobset_location, jobset_name))
+
+        if newjobset_name:
+            new_jobset = Path.expanduser(
+                                Path(newjobset_location, newjobset_name))
+
+            with open(new_jobset, 'r') as fi:
+                new_spec = yaml.load(fi, Loader=yaml.FullLoader)
+
+            with open(jobset, 'a+') as fo:
+                yaml.dump(new_spec, fo, default_flow_style=False)
+
+        elif newjob_dict:
+            dict_out = dict()
+
+            if sys.platform == 'win32':
+                user = os.environ.get('USERNAME')
+            else:
+                user = os.environ.get('USER')
+
+            dict_out['name'] = newjob_dict.get('--name')
+            dict_out['remotedir'] = newjob_dict.get('--remotedir') or '.'
+            dict_out['ip'] = newjob_dict.get('--ip') or 'r-003'
+            dict_out['input'] = newjob_dict.get('--input') or './data'
+            dict_out['output'] = newjob_dict.get('--output') or './data'
+            dict_out['status'] = newjob_dict.get('--status') or 'ready'
+            dict_out['gpu'] = newjob_dict.get('--gpu') or None
+            dict_out['user'] = newjob_dict.get('--user') or  user
+            dict_out['arguments'] = newjob_dict.get('--arguments') or '-lrta'
+            dict_out['executable'] = newjob_dict.get('--executable') or 'ls'
+            dict_out['shell'] = newjob_dict.get('--shell') or 'bash'
+
+            dict_out1 = {newjob_dict.get('--name'): dict_out}
+
+            if verbose:
+                print(dict_out1)
+
+            with open(jobset, 'a+') as fo:
+                yaml.dump(dict_out1, fo, default_flow_style=False)
 
 # class SubmitQueue:
 #     """

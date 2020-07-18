@@ -23,14 +23,13 @@ class JobCommand(PluginCommand):
             job set FILE [--verbose]
             job add FILE [--verbose]
             job add --name=NAME
-                    [--directory=NAME]
+                    [--remotedir=DIRECTORY]
                     --ip=IP
                     [--input=INPUT]
                     [--output=OUTPUT]
                     [--status=STATUS]
                     [--gpu=GPU]
                     [--user=USER]
-                    [--directory=DIRECTORY]
                     [--arguments=ARGUMENTS]
                     --executable=EXECUTABLE
                     [--shell=SHELL]
@@ -144,32 +143,48 @@ class JobCommand(PluginCommand):
         if arguments["--name"] is not None:
             names = Parameter.expand(arguments["--name"])
 
+        if arguments["FILE"] is not None:
+            file = Path(arguments["FILE"])
+        else:
+            file = None
+
         if arguments.set:
             # job set FILE
-            file = arguments["FILE"]
-            p = Path(file)
-            variables["jobset"] = p.parts[-1]
-            location = p.parent
+            variables["jobset"] = file.parts[-1]
+            variables["jobset_location"] = file.parent
 
             if verbose:
-                print("file= ", file)
-                print("location= ", location)
+                print("file= ", variables["jobset"])
+                print("location= ", variables["jobset_location"])
                 pprint(variables.dict())
                 print("=" * 60)
 
-            print(f"Jobset defined as {variables['jobset']}")
+            Console.ok(f"Jobset defined as {variables['jobset']} located at"
+                       f"{variables['jobset_location']}")
 
         elif arguments.add:
             # job add FILE
             if variables["jobset"] is None:
                 Console.error("Jobset not defined. Please use `cms job set " 
                               "FILE` to define the jobset.")
-                exit
+                exit()
 
-            if variables['FILE']:
-                print("File to be appended in jobset")
+            if file:
+                print(f"{file} to be appended in jobset")
+                jobqueue.update_spec(
+                                  jobset_location=variables['jobset_location'],
+                                  jobset_name=variables['jobset'],
+                                  newjobset_location=file.parent,
+                                  newjobset_name=file.parts[-1],
+                                  verbose=verbose)
             else:
                 print("Creation of individual entry")
+
+                jobqueue.update_spec(
+                                  jobset_location=variables['jobset_location'],
+                                  jobset_name=variables['jobset'],
+                                  newjob_dict=arguments,
+                                  verbose=verbose)
 
             # Console.error("Not yet implemented")
 
