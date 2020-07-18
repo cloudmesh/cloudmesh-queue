@@ -5,7 +5,6 @@ from cloudmesh.common.console import Console
 from cloudmesh.common.debug import VERBOSE
 from cloudmesh.common.parameter import Parameter
 from cloudmesh.common.variables import Variables
-from cloudmesh.job.job import JobQueue
 from cloudmesh.shell.command import PluginCommand
 from cloudmesh.shell.command import command
 from cloudmesh.shell.command import map_parameters
@@ -144,27 +143,31 @@ class JobCommand(PluginCommand):
         arguments["state"] = arguments["--status"]
 
         variables = Variables()
-        jobqueue = JobQueue()
 
         VERBOSE(arguments)
 
         if arguments["--name"] is not None:
             names = Parameter.expand(arguments["--name"])
 
-        if arguments["FILE"] is not None:
-            file = Path(arguments["FILE"])
-        else:
-            file = None
+        file = arguments["FILE"] or file
+
+        # do the import here to avoid long loading times for other commands
+
+        from cloudmesh.job.jobqueue import JobQueue
 
         if arguments.set:
+
             # job set FILE
-            variables["jobset"] = file.parts[-1]
-            variables["jobset_location"] = file.parent
+            if not file.endswith(".yaml"):
+                Console.error("the specification file must be a yaml file "
+                              "and end with .yaml")
+                return ""
 
-            VERBOSE(variables.dict())
+            variables["jobset"] = file
 
-            Console.ok(f"Jobset defined as {variables['jobset']} located at"
-                       f"{variables['jobset_location']}")
+            name, directory, basename = JobQueue.location(file)
+            Console.ok(f"Jobset defined as {name} located at"
+                       f"{file}")
 
         elif arguments.add:
             # job add FILE
@@ -173,22 +176,28 @@ class JobCommand(PluginCommand):
                               "FILE` to define the jobset.")
                 return ""
 
+            _name, _directory, _basename = JobQueue.location(
+                variables["jobset"])
+
+            jobqueue = JobQueue()
+
             if file:
                 print(f"{file} to be appended in jobset")
+
                 jobqueue.update_spec(
-                    jobset_location=variables['jobset_location'],
-                    jobset_name=variables['jobset'],
-                    newjobset_location=file.parent,
-                    newjobset_name=file.parts[-1],
-                    verbose=verbose)
+                    jobset_location=_directory,
+                    jobset_name=_name,
+                    newjobset_location=_directory,
+                    newjobset_name=_name,
+                    verbose=variables["verbose"])
             else:
                 print("Creation of individual entry")
 
                 jobqueue.update_spec(
-                    jobset_location=variables['jobset_location'],
-                    jobset_name=variables['jobset'],
+                    jobset_location=_directory,
+                    jobset_name=_name,
                     newjob_dict=arguments,
-                    verbose=verbose)
+                    verbose=variables["verbose"])
 
             # Console.error("Not yet implemented")
 

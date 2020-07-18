@@ -11,8 +11,38 @@ class JobQueue:
     To create, manage and monitor job execution queue
     """
 
+    @staticmethod
+    def location(filename):
+        _directory = os.path.dirname(filename)
+        _basename = os.path.basename(filename)
+        _name = _basename.split(".")[0]
+        return _name, _directory, _basename
+
     def __init__(self):
         Console.info("JobQueue instantiated")
+
+    @staticmethod
+    def define(arguments):
+
+        if sys.platform == 'win32':
+            user = os.environ.get('USERNAME')
+        else:
+            user = os.environ.get('USER')
+
+        _spec = {
+            'name': arguments.get('--name')
+            'remotedir':  arguments.get('--remotedir') or '.',
+            'ip':  arguments.get('--ip') or 'r-003',
+            'input':  arguments.get('--input') or './data',
+            'output':  arguments.get('--output') or './data',
+            'status':  arguments.get('--status') or 'ready',
+            'gpu':  arguments.get('--gpu') or None,
+            'user':  arguments.get('--user') or user,
+            'arguments':  arguments.get('--arguments') or '-lrta',
+            'executable':  arguments.get('--executable') or 'ls',
+            'shell':  arguments.get('--shell') or 'bash'
+        }
+        return _spec
 
     @staticmethod
     def update_spec(jobset_location='~/.cloudmesh',
@@ -61,19 +91,11 @@ class JobQueue:
             else:
                 user = os.environ.get('USER')
 
-            dict_out['name'] = newjob_dict.get('--name')
-            dict_out['remotedir'] = newjob_dict.get('--remotedir') or '.'
-            dict_out['ip'] = newjob_dict.get('--ip') or 'r-003'
-            dict_out['input'] = newjob_dict.get('--input') or './data'
-            dict_out['output'] = newjob_dict.get('--output') or './data'
-            dict_out['status'] = newjob_dict.get('--status') or 'ready'
-            dict_out['gpu'] = newjob_dict.get('--gpu') or None
-            dict_out['user'] = newjob_dict.get('--user') or  user
-            dict_out['arguments'] = newjob_dict.get('--arguments') or '-lrta'
-            dict_out['executable'] = newjob_dict.get('--executable') or 'ls'
-            dict_out['shell'] = newjob_dict.get('--shell') or 'bash'
+            dict_out = JobQueue.define(newjob_dict)
 
-            dict_out1 = {newjob_dict.get('--name'): dict_out}
+            dict_out1 = {
+                newjob_dict.get('--name'): dict_out
+            }
 
             if verbose:
                 print(dict_out1)
