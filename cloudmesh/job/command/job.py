@@ -1,15 +1,15 @@
-from cloudmesh.shell.command import command
-from cloudmesh.shell.command import PluginCommand
-from cloudmesh.common.console import Console
-from cloudmesh.common.util import path_expand
-from pprint import pprint
-from cloudmesh.common.debug import VERBOSE
 import os
-from cloudmesh.common.variables import Variables
-from cloudmesh.common.parameter import Parameter
-
-from cloudmesh.job.job import JobQueue
 from pathlib import Path
+
+from cloudmesh.common.console import Console
+from cloudmesh.common.debug import VERBOSE
+from cloudmesh.common.parameter import Parameter
+from cloudmesh.common.variables import Variables
+from cloudmesh.job.job import JobQueue
+from cloudmesh.shell.command import PluginCommand
+from cloudmesh.shell.command import command
+from cloudmesh.shell.command import map_parameters
+
 
 class JobCommand(PluginCommand):
 
@@ -20,8 +20,8 @@ class JobCommand(PluginCommand):
         ::
 
           Usage:
-            job set FILE [--verbose]
-            job add FILE [--verbose]
+            job set FILE
+            job add FILE
             job add --name=NAME
                     [--remotedir=DIRECTORY]
                     --ip=IP
@@ -33,7 +33,6 @@ class JobCommand(PluginCommand):
                     [--arguments=ARGUMENTS]
                     --executable=EXECUTABLE
                     [--shell=SHELL]
-                    [--verbose]
             job status
             job list --status=STATUS
             job list --name=NAME
@@ -41,7 +40,7 @@ class JobCommand(PluginCommand):
             job kill [--name=NAME]
             job reset [--name=NAME]
             job delete [--name=NAME]
-            job help [--verbose]
+            job help
             job run
 
           This command does some useful things.
@@ -128,17 +127,26 @@ class JobCommand(PluginCommand):
 
         """
 
+        map_parameters(arguments,
+                       "name",
+                       "arguments",
+                       "gpu",
+                       "executable",
+                       "input",
+                       "ip",
+                       "output",
+                       "shell",
+                       "remotedir",
+                       "user"
+                       )
+        # status has to be obtained with arguments["--status"]
+        # we simply set it to state so its still easy to read
+        arguments["state"] = arguments["--status"]
+
         variables = Variables()
         jobqueue = JobQueue()
 
-        verbose = arguments["--verbose"]
-
-        if verbose:
-            print("=" * 25, "variables", "=" * 25)
-            pprint(variables.__dict__)
-            print("="*25, "arguments", "="*25)
-            pprint(arguments)
-            print("=" * 60)
+        VERBOSE(arguments)
 
         if arguments["--name"] is not None:
             names = Parameter.expand(arguments["--name"])
@@ -153,11 +161,7 @@ class JobCommand(PluginCommand):
             variables["jobset"] = file.parts[-1]
             variables["jobset_location"] = file.parent
 
-            if verbose:
-                print("file= ", variables["jobset"])
-                print("location= ", variables["jobset_location"])
-                pprint(variables.dict())
-                print("=" * 60)
+            VERBOSE(variables.dict())
 
             Console.ok(f"Jobset defined as {variables['jobset']} located at"
                        f"{variables['jobset_location']}")
@@ -165,65 +169,65 @@ class JobCommand(PluginCommand):
         elif arguments.add:
             # job add FILE
             if variables["jobset"] is None:
-                Console.error("Jobset not defined. Please use `cms job set " 
+                Console.error("Jobset not defined. Please use `cms job set "
                               "FILE` to define the jobset.")
-                exit()
+                return ""
 
             if file:
                 print(f"{file} to be appended in jobset")
                 jobqueue.update_spec(
-                                  jobset_location=variables['jobset_location'],
-                                  jobset_name=variables['jobset'],
-                                  newjobset_location=file.parent,
-                                  newjobset_name=file.parts[-1],
-                                  verbose=verbose)
+                    jobset_location=variables['jobset_location'],
+                    jobset_name=variables['jobset'],
+                    newjobset_location=file.parent,
+                    newjobset_name=file.parts[-1],
+                    verbose=verbose)
             else:
                 print("Creation of individual entry")
 
                 jobqueue.update_spec(
-                                  jobset_location=variables['jobset_location'],
-                                  jobset_name=variables['jobset'],
-                                  newjob_dict=arguments,
-                                  verbose=verbose)
+                    jobset_location=variables['jobset_location'],
+                    jobset_name=variables['jobset'],
+                    newjob_dict=arguments,
+                    verbose=verbose)
 
             # Console.error("Not yet implemented")
 
         elif arguments.status:
-            #job status
+            # job status
             Console.error("Not yet implemented")
 
         elif arguments.list and arguments["--status"]:
-            #job list --status=STATUS
+            # job list --status=STATUS
             Console.error("Not yet implemented")
 
         elif arguments.list and arguments["--name"]:
-            ##job list --name=NAME
-            print (names)
+            # job list --name=NAME
+            VERBOSE(names)
             Console.error("Not yet implemented")
 
         elif arguments.list:
-            #job list
+            # job list
             Console.error("Not yet implemented")
 
         elif arguments.kill:
-            #job kill --name=NAME
+            # job kill --name=NAME
 
-            print (names)
+            VERBOSE(names)
 
             Console.error("Not yet implemented")
 
         elif arguments.reset:
-            #job reset --name=NAME
+            # job reset --name=NAME
             name = arguments["--name"]
             Console.error("Not yet implemented")
 
         elif arguments.delete:
-            #job delete --name=NAME
+            # job delete --name=NAME
             name = arguments["--name"]
             Console.error("Not yet implemented")
 
         elif arguments.help:
-            #job help
+            # job help
             os.system("cms help job")
 
         return ""
