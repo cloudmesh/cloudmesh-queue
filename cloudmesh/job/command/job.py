@@ -8,6 +8,9 @@ import os
 from cloudmesh.common.variables import Variables
 from cloudmesh.common.parameter import Parameter
 
+from cloudmesh.job.job import JobQueue
+from pathlib import Path
+
 class JobCommand(PluginCommand):
 
     # noinspection PyUnusedLocal
@@ -17,10 +20,10 @@ class JobCommand(PluginCommand):
         ::
 
           Usage:
-            job set FILE
-            job add FILE
+            job set FILE [--verbose]
+            job add FILE [--verbose]
             job add --name=NAME
-                    [--diretcory=NAME]
+                    [--directory=NAME]
                     --ip=IP
                     [--input=INPUT]
                     [--output=OUTPUT]
@@ -31,6 +34,7 @@ class JobCommand(PluginCommand):
                     [--arguments=ARGUMENTS]
                     --executable=EXECUTABLE
                     [--shell=SHELL]
+                    [--verbose]
             job status
             job list --status=STATUS
             job list --name=NAME
@@ -38,7 +42,7 @@ class JobCommand(PluginCommand):
             job kill [--name=NAME]
             job reset [--name=NAME]
             job delete [--name=NAME]
-            job help
+            job help [--verbose]
             job run
 
           This command does some useful things.
@@ -126,8 +130,16 @@ class JobCommand(PluginCommand):
         """
 
         variables = Variables()
-        pprint(variables.__dict__)
-        print(variables["gregor"])
+        jobqueue = JobQueue()
+
+        verbose = arguments["--verbose"]
+
+        if verbose:
+            print("=" * 25, "variables", "=" * 25)
+            pprint(variables.__dict__)
+            print("="*25, "arguments", "="*25)
+            pprint(arguments)
+            print("=" * 60)
 
         if arguments["--name"] is not None:
             names = Parameter.expand(arguments["--name"])
@@ -135,12 +147,31 @@ class JobCommand(PluginCommand):
         if arguments.set:
             # job set FILE
             file = arguments["FILE"]
-            variables["jobset"] = file
+            p = Path(file)
+            variables["jobset"] = p.parts[-1]
+            location = p.parent
 
+            if verbose:
+                print("file= ", file)
+                print("location= ", location)
+                pprint(variables.dict())
+                print("=" * 60)
+
+            print(f"Jobset defined as {variables['jobset']}")
 
         elif arguments.add:
             # job add FILE
-            Console.error("Not yet implemented")
+            if variables["jobset"] is None:
+                Console.error("Jobset not defined. Please use `cms job set " 
+                              "FILE` to define the jobset.")
+                exit
+
+            if variables['FILE']:
+                print("File to be appended in jobset")
+            else:
+                print("Creation of individual entry")
+
+            # Console.error("Not yet implemented")
 
         elif arguments.status:
             #job status
