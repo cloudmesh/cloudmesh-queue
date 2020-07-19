@@ -160,7 +160,7 @@ class JobCommand(PluginCommand):
 
         variables = Variables()
 
-        #VERBOSE(arguments)
+        VERBOSE(arguments)
 
         names = Parameter.expand(arguments["--name"])
 
@@ -207,7 +207,7 @@ class JobCommand(PluginCommand):
             Console.ok(f"Jobset defined as {name} located at"
                        f"{file}")
 
-        elif arguments.add and arguments.FILE is not None:
+        elif arguments.add and arguments.FILE is None:
 
             """
             job add --name=NAME
@@ -267,6 +267,9 @@ class JobCommand(PluginCommand):
 
             VERBOSE(arguments)
 
+            #
+            # now we need to call the jobset and add the right things ...
+            #
 
         elif arguments.add:
             # job add FILE
