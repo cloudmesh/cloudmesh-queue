@@ -23,15 +23,15 @@ class JobCommand(PluginCommand):
             job template FILE [--name=NAME]
             job add FILE
             job add --name=NAME
-                    [--remotedir=DIRECTORY]
                     --ip=IP
+                    --executable=EXECUTABLE
+                    [--directory=DIRECTORY]
                     [--input=INPUT]
                     [--output=OUTPUT]
                     [--status=STATUS]
                     [--gpu=GPU]
                     [--user=USER]
                     [--arguments=ARGUMENTS]
-                    --executable=EXECUTABLE
                     [--shell=SHELL]
             job status
             job list --status=STATUS
@@ -216,6 +216,10 @@ class JobCommand(PluginCommand):
 
             jobqueue = JobQueue()
 
+
+
+
+            """
             if file:
                 print(f"{file} to be appended in jobset")
 
@@ -234,7 +238,65 @@ class JobCommand(PluginCommand):
                     newjob_dict=arguments,
                     verbose=variables["verbose"])
 
+            """
             # Console.error("Not yet implemented")
+
+        elif arguments.add and arguments.FILE is not None:
+
+            """
+            job add --name=NAME
+                    --ip=IP
+                    --executable=EXECUTABLE
+                    [--directory=DIRECTORY]
+                    [--input=INPUT]
+                    [--output=OUTPUT]
+                    [--status=STATUS]
+                    [--gpu=GPU]
+                    [--user=USER]
+                    [--arguments=ARGUMENTS]
+                    [--shell=SHELL]
+            """
+
+            arguments.names = names
+            arguments.ip = arguments.ip or "localhost"
+
+            arguments.ips = ips = Parameter.expand(arguments.ip)
+
+            if len(names) == 1 and len(ips) ==1:
+
+                pass
+                # we have one ip and one name
+
+            elif len(names) > 1 and len (ips) == 1:
+
+                # we have multiple names that are all mapped to one ip
+
+                arguments.ips = [arguments.ip] * len(names)
+
+            elif len(names) != len(ips):
+
+                Console.error("number of ips must match number of names")
+                return ""
+
+
+            # executable is always just one arument
+            executable = arguments.executable
+
+            # input is just like ip
+            # output is just like ip
+
+            status = arguments.status
+
+            # gpu is like ip
+
+            # arguments is like ip
+
+            shell = arguments.shell
+
+            # for debugging
+
+            VERBOSE(arguments)
+
 
         elif arguments.status:
             # job status
