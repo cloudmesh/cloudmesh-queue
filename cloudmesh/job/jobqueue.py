@@ -24,13 +24,16 @@ class JobQueue:
         self.name, \
         self.directory, \
         self.basename = \
-            JobQueue._location(filename)
+            JobQueue._location(self.filename)
         if self.directory != "":
             Shell.mkdir(self.directory)
 
     @staticmethod
     def _location(filename):
-        _directory = os.path.dirname(filename)
+        try:
+            _directory = os.path.dirname(filename)
+        except:
+            _directory = ""
         _basename = os.path.basename(filename)
         _name = _basename.split(".")[0]
         return _name, _directory, _basename

@@ -140,6 +140,8 @@ class JobCommand(PluginCommand):
 
         """
 
+        from cloudmesh.job.jobqueue import JobQueue
+
         map_parameters(arguments,
                        "name",
                        "arguments",
@@ -167,9 +169,9 @@ class JobCommand(PluginCommand):
 
         # do the import here to avoid long loading times for other commands
 
-        from cloudmesh.job.jobqueue import JobQueue
 
         default_location = "~/.cloudmesh/job/spec.yaml"
+
 
         if arguments.info:
 
@@ -204,43 +206,6 @@ class JobCommand(PluginCommand):
             
             Console.ok(f"Jobset defined as {name} located at"
                        f"{file}")
-
-        elif arguments.add:
-            # job add FILE
-            if variables["jobset"] is None:
-                Console.error("Jobset not defined. Please use `cms job set "
-                              "FILE` to define the jobset.")
-                return ""
-
-            _name, _directory, _basename = JobQueue._location(
-                variables["jobset"])
-
-            jobqueue = JobQueue()
-
-
-
-
-            """
-            if file:
-                print(f"{file} to be appended in jobset")
-
-                jobqueue.update_spec(
-                    jobset_location=_directory,
-                    jobset_name=_name,
-                    newjobset_location=_directory,
-                    newjobset_name=_name,
-                    verbose=variables["verbose"])
-            else:
-                print("Creation of individual entry")
-
-                jobqueue.update_spec(
-                    jobset_location=_directory,
-                    jobset_name=_name,
-                    newjob_dict=arguments,
-                    verbose=variables["verbose"])
-
-            """
-            # Console.error("Not yet implemented")
 
         elif arguments.add and arguments.FILE is not None:
 
@@ -301,6 +266,42 @@ class JobCommand(PluginCommand):
             # for debugging
 
             VERBOSE(arguments)
+
+
+        elif arguments.add:
+            # job add FILE
+
+
+            if variables["jobset"] is None:
+                Console.error("Jobset not defined. Please use `cms job set "
+                              "FILE` to define the jobset.")
+                return ""
+
+
+            jobqueue = JobQueue()
+
+
+            """
+            if file:
+                print(f"{file} to be appended in jobset")
+
+                jobqueue.update_spec(
+                    jobset_location=_directory,
+                    jobset_name=_name,
+                    newjobset_location=_directory,
+                    newjobset_name=_name,
+                    verbose=variables["verbose"])
+            else:
+                print("Creation of individual entry")
+
+                jobqueue.update_spec(
+                    jobset_location=_directory,
+                    jobset_name=_name,
+                    newjob_dict=arguments,
+                    verbose=variables["verbose"])
+
+            """
+            # Console.error("Not yet implemented")
 
 
         elif arguments.status:
