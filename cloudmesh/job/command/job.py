@@ -200,7 +200,8 @@ class JobCommand(PluginCommand):
 
             variables["jobset"] = file
 
-            name, directory, basename = JobQueue.location(file)
+            name, directory, basename = JobQueue._location(file)
+            
             Console.ok(f"Jobset defined as {name} located at"
                        f"{file}")
 
@@ -211,7 +212,7 @@ class JobCommand(PluginCommand):
                               "FILE` to define the jobset.")
                 return ""
 
-            _name, _directory, _basename = JobQueue.location(
+            _name, _directory, _basename = JobQueue._location(
                 variables["jobset"])
 
             jobqueue = JobQueue()
