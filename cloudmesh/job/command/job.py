@@ -56,7 +56,7 @@ class JobCommand(PluginCommand):
           Description:
 
               job info
-                prints the informations for the queued jobs
+                prints the information for the queued jobs
 
               job set FILE
                 sets the jobset to the file name. All other commands will be
@@ -132,11 +132,15 @@ class JobCommand(PluginCommand):
           variables = Variables() and also set them that way
           variables["jobset"] = VALUE
 
-          Usage example:
+          Usage examples:
+            cms job info
+                Prints location of job queue file.
+
+            cms job set '~/.cloudmesh/job/spec.yaml'
+                Sets jobset as the FILE provided. Further process refers jobset.
 
             cms job template a.yaml --name="b[0-1]"; less a.yaml
-
-                creates the jobs b0 and b1 as templates in the jobset a.yaml
+                Creates the jobs b0 and b1 as templates in the jobset.
 
         """
 
@@ -181,6 +185,7 @@ class JobCommand(PluginCommand):
 
         elif arguments.template:
 
+            # TODO: do we need FILE in this call?
             names = names or ["job"]
             jobset = variables["jobset"] or default_location
             variables["jobset"] = jobset

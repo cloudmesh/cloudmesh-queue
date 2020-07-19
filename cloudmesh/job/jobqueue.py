@@ -67,7 +67,7 @@ class JobQueue:
             """).strip()
 
         specification = yaml.safe_load(specification)
-        
+
         return specification
 
     def add(self, specification):
