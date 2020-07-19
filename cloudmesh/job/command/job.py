@@ -149,7 +149,7 @@ class JobCommand(PluginCommand):
                        "ip",
                        "output",
                        "shell",
-                       "remotedir",
+                       "directory",
                        "user"
                        )
         # status has to be obtained with arguments["--status"]
@@ -258,6 +258,11 @@ class JobCommand(PluginCommand):
                     [--shell=SHELL]
             """
 
+            jobset = variables["jobset"] or default_location
+            _name, _directory, _basename = JobQueue._location(
+                variables["jobset"])
+
+            jobqueue = JobQueue()
             arguments.names = names
             arguments.ip = arguments.ip or "localhost"
 
@@ -278,7 +283,6 @@ class JobCommand(PluginCommand):
 
                 Console.error("number of ips must match number of names")
                 return ""
-
 
             # executable is always just one arument
             executable = arguments.executable
