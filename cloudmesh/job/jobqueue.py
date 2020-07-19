@@ -67,13 +67,21 @@ class JobQueue:
             """).strip()
 
         specification = yaml.safe_load(specification)
+        
         return specification
 
     def add(self, specification):
-        if type(specification) != str:
-            Console.error("only specify a yaml string")
+        # if type(specification) != str:
+        #     Console.error("only specify a yaml string")
 
-        with open(self.filename, "a") as file:
+        # TODO: template method returns a dict object. Hence checking for dict.
+        if type(specification) != dict:
+            Console.error("only specify a yaml dict")
+
+        jobset = Path.expanduser(Path(self.filename))
+        Path.mkdir(jobset.parent, exist_ok=True)
+
+        with open(jobset, "a+") as file:
             fruits_list = yaml.dump(specification, file)
 
 
