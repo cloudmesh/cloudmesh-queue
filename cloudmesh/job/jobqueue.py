@@ -122,7 +122,7 @@ class JobQueue:
         jobset = jobset or "~/.cloudmesh/job/jobe.yaml"
         jobset = path_expand(jobset)
 
-        dict_out = JobQueue.define(newjob_dict)
+        dict_out = JobQueue.define(specification)
 
 # class SubmitQueue:
 #     """

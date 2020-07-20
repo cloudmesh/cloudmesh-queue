@@ -238,7 +238,7 @@ class JobCommand(PluginCommand):
 
             arguments.ips = ips = Parameter.expand(arguments.ip)
 
-            if len(names) == 1 and len(ips) ==1:
+            if len(names) == 1 and len(ips) == 1:
 
                 pass
                 # we have one ip and one name
@@ -257,14 +257,59 @@ class JobCommand(PluginCommand):
             # executable is always just one arument
             executable = arguments.executable
 
-            # input is just like ip
-            # output is just like ip
+            # input - remote directory having input datasets
+            arguments.input = arguments.input or "./data"
+            arguments.inputs = inputs = Parameter.expand(arguments.input)
+
+            if len(names) == 1 and len(inputs) == 1:
+                pass
+            elif len(names) > 1 and len (inputs) == 1:
+                arguments.inputs = [arguments.input] * len(names)
+            elif len(names) != len(inputs):
+                Console.error("number of inputs must match number of names")
+                return ""
+
+            # output - remote directory to save output of the run
+            arguments.output = arguments.output or \
+                               "./output/"+arguments['--name']
+
+            arguments.outputs = outputs = Parameter.expand(arguments.output)
+
+            if len(names) == 1 and len(outputs) == 1:
+                pass
+            elif len(names) > 1 and len (outputs) == 1:
+                arguments.outputs = [arguments.output] * len(names)
+            elif len(names) != len(outputs):
+                Console.error("number of outputs must match number of names")
+                return ""
+            print("====> ", arguments.outputs)
 
             status = arguments.status
 
             # gpu is like ip
+            arguments.gpu = arguments.gpu or " "
+            arguments.gpus = gpus = Parameter.expand(arguments.gpu)
+            print("====> ", gpus)
+            if len(names) == 1 and len(gpus) == 1:
+                pass
+            elif len(names) > 1 and len(gpus) == 1:
+                arguments.gpus = [arguments.gpu] * len(names)
+            elif len(names) != len(gpus):
+                Console.error("number of gpus must match number of names")
+                return ""
 
             # arguments is like ip
+            arguments.arguments = arguments.arguments or " "
+            arguments.argument_list = argument_list = Parameter.expand(
+                arguments.arguments)
+
+            if len(names) == 1 and len(argument_list) == 1:
+                pass
+            elif len(names) > 1 and len(argument_list) == 1:
+                arguments.argument_list = [arguments.arguments] * len(names)
+            elif len(names) != len(argument_list):
+                Console.error("number of arguments must match number of names")
+                return ""
 
             shell = arguments.shell
 
@@ -275,7 +320,14 @@ class JobCommand(PluginCommand):
             #
             # now we need to call the jobset and add the right things ...
             #
-
+            
+            # Calling update_spc for each job
+            # specification = dict()
+            # for idx in len(names):
+            #     specification['name'] = arguments.names[idx]
+            #     specification['remotedir'] = arguments.directory
+            #     specification['ip'] = arguments.ips[idx]
+            #
         elif arguments.add:
             # job add FILE
 
