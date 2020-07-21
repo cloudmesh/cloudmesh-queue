@@ -31,6 +31,11 @@ class JobQueue:
 
     @staticmethod
     def _location(filename):
+        """
+        Returns name, directory and extension of a file
+        :param filename: File name
+        :return: file name, extension and file location
+        """
         try:
             _directory = os.path.dirname(filename)
         except:
@@ -41,6 +46,10 @@ class JobQueue:
 
     @staticmethod
     def _user():
+        """
+        Returns value of system user from environment variables
+        :return: User name
+        """
         user = None
         if sys.platform == 'win32':
             user = os.environ.get('USERNAME')
@@ -49,6 +58,11 @@ class JobQueue:
         return user
 
     def template(self, name=None):
+        """
+        Creates a standard template of a job to be added in jobset
+        :param name: Name of the job
+        :return: Dictionary object of the job to be added in the jobset
+        """
         user = JobQueue._user()
         name = name or "job"
         specification = dedent(
@@ -72,6 +86,11 @@ class JobQueue:
         return specification
 
     def add(self, specification):
+        """
+        Adds jobs in the jobset
+        :param specification: dictionary containing details of the jobs
+        :return: None, appends the job in jobset
+        """
         # if type(specification) != str:
         #     Console.error("only specify a yaml string")
 
@@ -88,6 +107,12 @@ class JobQueue:
 
     @staticmethod
     def define(arguments, idx):
+        """
+        Creates a dictionary object for individual jobs
+        :param arguments: dictionary with job arguments
+        :param idx: index of the job to be processed
+        :return: dictionary for individual jobs
+        """
         user = JobQueue._user()
         _spec = {
             'name': arguments.get('names')[idx],
