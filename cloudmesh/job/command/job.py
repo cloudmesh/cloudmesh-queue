@@ -233,85 +233,28 @@ class JobCommand(PluginCommand):
                 variables["jobset"])
 
             jobqueue = JobQueue()
+
+            # fixed arguments for all jobs
+            executable = arguments.executable
+            status = arguments.status or 'ready'
+            shell = arguments.shell
+
+            # Variable arguments
             arguments.names = names
             arguments.ip = arguments.ip or "localhost"
-
-            arguments.ips = ips = Parameter.expand(arguments.ip)
-
-            if len(names) == 1 and len(ips) == 1:
-
-                pass
-                # we have one ip and one name
-
-            elif len(names) > 1 and len (ips) == 1:
-
-                # we have multiple names that are all mapped to one ip
-
-                arguments.ips = [arguments.ip] * len(names)
-
-            elif len(names) != len(ips):
-
-                Console.error("number of ips must match number of names")
-                return ""
-
-            # executable is always just one arument
-            executable = arguments.executable
-
-            # input - remote directory having input datasets
-            arguments.input = arguments.input or "./data"
-            arguments.inputs = inputs = Parameter.expand(arguments.input)
-
-            if len(names) == 1 and len(inputs) == 1:
-                pass
-            elif len(names) > 1 and len (inputs) == 1:
-                arguments.inputs = [arguments.input] * len(names)
-            elif len(names) != len(inputs):
-                Console.error("number of inputs must match number of names")
-                return ""
-
-            # output - remote directory to save output of the run
+            arguments.input = arguments.input or "../data"
             arguments.output = arguments.output or \
-                               "./output/"+arguments['--name']
-
-            arguments.outputs = outputs = Parameter.expand(arguments.output)
-
-            if len(names) == 1 and len(outputs) == 1:
-                pass
-            elif len(names) > 1 and len (outputs) == 1:
-                arguments.outputs = [arguments.output] * len(names)
-            elif len(names) != len(outputs):
-                Console.error("number of outputs must match number of names")
-                return ""
-            print("====> ", arguments.outputs)
-
-            status = arguments.status
-
-            # gpu is like ip
+                               "./output/" + arguments['--name']
             arguments.gpu = arguments.gpu or " "
-            arguments.gpus = gpus = Parameter.expand(arguments.gpu)
-            print("====> ", gpus)
-            if len(names) == 1 and len(gpus) == 1:
-                pass
-            elif len(names) > 1 and len(gpus) == 1:
-                arguments.gpus = [arguments.gpu] * len(names)
-            elif len(names) != len(gpus):
-                Console.error("number of gpus must match number of names")
-                return ""
-
-            # arguments is like ip
             arguments.arguments = arguments.arguments or " "
-            arguments.argument_list = argument_list = Parameter.expand(
-                arguments.arguments)
 
-            if len(names) == 1 and len(argument_list) == 1:
-                pass
-            elif len(names) > 1 and len(argument_list) == 1:
-                arguments.argument_list = [arguments.arguments] * len(names)
-            elif len(names) != len(argument_list):
-                Console.error("number of arguments must match number of names")
-                return ""
+            var_args = ['ip', 'input', 'output', 'gpu', 'arguments']
 
-            shell = arguments.shell
+            for arg in var_args:
+                arguments[f'{arg}_list'] = jobqueue.expand_args('names', arg,
+                                                                arguments)
+                if arguments[f'{arg}_list'] is None:
+                    break
 
             # for debugging
 

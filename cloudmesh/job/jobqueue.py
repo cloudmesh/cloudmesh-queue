@@ -9,7 +9,7 @@ from cloudmesh.common.util import path_expand
 from cloudmesh.common.variables import Variables
 from cloudmesh.common.Shell import Shell
 from textwrap import dedent
-
+from cloudmesh.common.parameter import Parameter
 
 class JobQueue:
     """
@@ -123,6 +123,30 @@ class JobQueue:
         jobset = path_expand(jobset)
 
         dict_out = JobQueue.define(specification)
+
+    @staticmethod
+    def expand_args(arg1, arg2, arguments):
+        """
+        Method expands arg2 and compares its length with len(arg1)
+        :param arg1: Argument indicating number of jobs involved, eg. 'names'
+        :param arg2: Argument to be expanded, eg 'ip'
+        # :param arg2_expanded: Name of expanded arg2, for intermediate logic
+        :param arguments: dictionary containing arg1 and arg2
+        :return: array of expanded arg2
+        """
+
+        arguments['arg2_expanded'] = Parameter.expand(arguments[arg2])
+
+        if len(arguments[arg1]) == 1 and len(arguments['arg2_expanded']) == 1:
+            pass
+        elif len(arguments[arg1]) > 1 and len(arguments['arg2_expanded']) == 1:
+            arguments['arg2_expanded'] = [arguments[arg2]] * len(arguments[
+                                                                     arg1])
+        elif len(arguments[arg1]) != len(arguments['arg2_expanded']):
+            Console.error(f"Number of {arg2} must match number of {arg1}")
+            return ""
+        print(f"====> {arg2} ", arguments['arg2_expanded'])
+        return arguments['arg2_expanded']
 
 # class SubmitQueue:
 #     """
