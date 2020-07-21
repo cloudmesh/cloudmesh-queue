@@ -142,6 +142,10 @@ class JobCommand(PluginCommand):
             cms job template a.yaml --name="b[0-1]"; less a.yaml
                 Creates the jobs b0 and b1 as templates in the jobset.
 
+            cms job add --name=z[0-1] --ip=123,345 --executable='ls'
+            --input='..\data' --output='a,b'
+                Creates entries in jobset for jobs z0 and z1 with provided
+                arguments.
         """
 
         from cloudmesh.job.jobqueue import JobQueue
@@ -235,9 +239,10 @@ class JobCommand(PluginCommand):
             jobqueue = JobQueue()
 
             # fixed arguments for all jobs
-            executable = arguments.executable
-            status = arguments.status or 'ready'
-            shell = arguments.shell
+            arguments.executable = arguments.executable or 'ls'
+            arguments.status = arguments.status or 'ready'
+            arguments.shell = arguments.shell or 'bash'
+            arguments.directory = arguments.directory or '.'
 
             # Variable arguments
             arguments.names = names
@@ -253,24 +258,15 @@ class JobCommand(PluginCommand):
             for arg in var_args:
                 arguments[f'{arg}_list'] = jobqueue.expand_args('names', arg,
                                                                 arguments)
-                if arguments[f'{arg}_list'] is None:
-                    break
+                if arguments[f'{arg}_list'] == "":
+                    return ""
 
             # for debugging
-
             VERBOSE(arguments)
 
-            #
             # now we need to call the jobset and add the right things ...
-            #
-            
-            # Calling update_spc for each job
-            # specification = dict()
-            # for idx in len(names):
-            #     specification['name'] = arguments.names[idx]
-            #     specification['remotedir'] = arguments.directory
-            #     specification['ip'] = arguments.ips[idx]
-            #
+            jobqueue.update_spec(arguments, jobset)
+
         elif arguments.add:
             # job add FILE
 

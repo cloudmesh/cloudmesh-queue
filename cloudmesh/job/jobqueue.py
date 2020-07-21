@@ -10,6 +10,7 @@ from cloudmesh.common.variables import Variables
 from cloudmesh.common.Shell import Shell
 from textwrap import dedent
 from cloudmesh.common.parameter import Parameter
+from cloudmesh.common.debug import VERBOSE
 
 class JobQueue:
     """
@@ -86,43 +87,42 @@ class JobQueue:
 
 
     @staticmethod
-    def define(arguments):
-        if sys.platform == 'win32':
-            user = os.environ.get('USERNAME')
-        else:
-            user = os.environ.get('USER')
+    def define(arguments, idx):
+        user = JobQueue._user()
         _spec = {
-            'name': arguments.get('--name'),
-            'remotedir':  arguments.get('--remotedir') or '.',
-            'ip':  arguments.get('--ip') or 'r-003',
-            'input':  arguments.get('--input') or './data',
-            'output':  arguments.get('--output') or './data',
-            'status':  arguments.get('--status') or 'ready',
-            'gpu':  arguments.get('--gpu') or "",
-            'user':  arguments.get('--user') or user,
-            'arguments':  arguments.get('--arguments') or "",
-            'executable':  arguments.get('--executable'),
-            'shell':  arguments.get('--shell') or 'bash'
+            'name': arguments.get('names')[idx],
+            'directory':  arguments.get('directory') or '.',
+            'ip':  arguments.get('ip_list')[idx] or 'r-003',
+            'input':  arguments.get('input_list')[idx] or './data',
+            'output':  arguments.get('output_list')[idx] or './data',
+            'status':  arguments.get('status') or 'ready',
+            'gpu':  arguments.get('gpu_list')[idx] or "",
+            'user':  arguments.get('user') or user,
+            'arguments':  arguments.get('arguments_list')[idx] or "",
+            'executable':  arguments.get('executable'),
+            'shell':  arguments.get('shell') or 'bash'
         }
         return _spec
 
-    @staticmethod
-    def update_spec(
-        specification,
-        jobset=None):
+    def update_spec(self, specification, jobset=None):
         """
-        Adds new jobs to the jobset.
-        New job list taken from input file or
+        Adds new jobs to the jobset. New job list taken from input file or a
         dictionary.
-
-        :param jobset:
-        :return:
+        :param specification: dictionary with all arguments
+        :param jobset: jobset file name
+        :return: None, adds jobs from specifications into the jobset
         """
 
-        jobset = jobset or "~/.cloudmesh/job/jobe.yaml"
+        jobset = jobset or "~/.cloudmesh/job/spec.yaml"
         jobset = path_expand(jobset)
 
-        dict_out = JobQueue.define(specification)
+        dict_out = dict()
+        for idx in range(len(specification['names'])):
+            dict_out[specification['names'][idx]] = JobQueue.define(
+                                                            specification, idx)
+        VERBOSE(dict_out)
+
+        self.add(dict_out)
 
     @staticmethod
     def expand_args(arg1, arg2, arguments):
@@ -145,7 +145,7 @@ class JobQueue:
         elif len(arguments[arg1]) != len(arguments['arg2_expanded']):
             Console.error(f"Number of {arg2} must match number of {arg1}")
             return ""
-        print(f"====> {arg2} ", arguments['arg2_expanded'])
+
         return arguments['arg2_expanded']
 
 # class SubmitQueue:
