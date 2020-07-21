@@ -295,29 +295,6 @@ class JobCommand(PluginCommand):
 
             jobqueue.add(spec)
 
-            """
-            if file:
-                print(f"{file} to be appended in jobset")
-
-                jobqueue.update_spec(
-                    jobset_location=_directory,
-                    jobset_name=_name,
-                    newjobset_location=_directory,
-                    newjobset_name=_name,
-                    verbose=variables["verbose"])
-            else:
-                print("Creation of individual entry")
-
-                jobqueue.update_spec(
-                    jobset_location=_directory,
-                    jobset_name=_name,
-                    newjob_dict=arguments,
-                    verbose=variables["verbose"])
-
-            """
-            # Console.error("Not yet implemented")
-
-
         elif arguments.status:
             # job status
             Console.error("Not yet implemented")
