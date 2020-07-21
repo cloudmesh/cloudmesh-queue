@@ -8,6 +8,7 @@ from cloudmesh.common.variables import Variables
 from cloudmesh.shell.command import PluginCommand
 from cloudmesh.shell.command import command
 from cloudmesh.shell.command import map_parameters
+import oyaml as yaml
 
 
 class JobCommand(PluginCommand):
@@ -146,6 +147,9 @@ class JobCommand(PluginCommand):
             --input='..\data' --output='a,b'
                 Creates entries in jobset for jobs z0 and z1 with provided
                 arguments.
+
+            cms job add '~\.cloudmesh\another.yaml'
+                Adds jobs from FILE to jobset
         """
 
         from cloudmesh.job.jobqueue import JobQueue
@@ -172,14 +176,11 @@ class JobCommand(PluginCommand):
 
         names = Parameter.expand(arguments["--name"])
 
-
         file = arguments["FILE"]
 
         # do the import here to avoid long loading times for other commands
 
-
         default_location = "~/.cloudmesh/job/spec.yaml"
-
 
         if arguments.info:
 
@@ -264,21 +265,35 @@ class JobCommand(PluginCommand):
             # for debugging
             VERBOSE(arguments)
 
-            # now we need to call the jobset and add the right things ...
+            # now we need to call the jobset and add the right things
             jobqueue.update_spec(arguments, jobset)
 
-        elif arguments.add:
+        elif arguments.add and arguments.FILE:
             # job add FILE
-
+            # Path.expanduser needed as windows can't interpret "~"
+            file = Path.expanduser(Path(arguments.FILE))
+            _name, _directory, _basename = JobQueue._location(file)
 
             if variables["jobset"] is None:
                 Console.error("Jobset not defined. Please use `cms job set "
                               "FILE` to define the jobset.")
                 return ""
 
+            if not file.is_file():
+                Console.error(f"File {arguments.FILE} not found.")
+                return ""
+
+            if not _basename.endswith(".yaml"):
+                Console.error("the specification file must be a yaml file "
+                              "and end with .yaml")
+                return ""
 
             jobqueue = JobQueue()
 
+            with open(file, 'r') as fi:
+                spec = yaml.load(fi, Loader=yaml.FullLoader)
+
+            jobqueue.add(spec)
 
             """
             if file:
