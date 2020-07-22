@@ -71,14 +71,14 @@ class JobQueue:
               name: {name}
               directory: .
               ip: 127.0.0.1
-              input': .
-              output': .
-              status': ready
+              input: .
+              output: .
+              status: ready
               gpu: "" 
               user:  {user}
               arguments:  -lisa
-              executable': ls
-              shell': bash
+              executable: ls
+              shell: bash
             """).strip()
 
         specification = yaml.safe_load(specification)

@@ -51,8 +51,8 @@ class JobCommand(PluginCommand):
               FILE   a file name
 
           Options:
-              -f      specify the file
-              --status=STATUS  the status [default: None]
+              -f       specify the file
+              --status the status [default: None]
 
           Description:
 
@@ -126,7 +126,7 @@ class JobCommand(PluginCommand):
                         interrupted
 
           The current jobset filename is stored in the cloudmesh variables under
-          the variable "jobset". It can queries with cms set jobset. It can be set witk
+          the variable "jobset". It can queries with cms set jobset. It can be set with
           cms set jobset=VALUE
           We may not even do cms job set VALUE due to this simpler existing way of interfaceing
           we can query the variables with
@@ -297,37 +297,48 @@ class JobCommand(PluginCommand):
 
         elif arguments.status:
             # job status
-            Console.error("Not yet implemented")
+            Console.error("status - Not yet implemented")
 
         elif arguments.list and arguments["--status"]:
             # job list --status=STATUS
-            Console.error("Not yet implemented")
+            Console.error("list status - Not yet implemented")
 
         elif arguments.list and arguments["--name"]:
             # job list --name=NAME
             VERBOSE(names)
-            Console.error("Not yet implemented")
+            Console.error("list name - Not yet implemented")
 
         elif arguments.list:
             # job list
-            Console.error("Not yet implemented")
+            jobset = variables["jobset"] or default_location
+            jobset = Path.expanduser(Path(jobset))
+            # op_dict = dict()
+
+            with open(jobset, 'r') as fi:
+                spec = yaml.load(fi, Loader=yaml.FullLoader)
+
+            # TODO: use Printer
+            for k, v in spec.items():
+                print(k, v.get("status"))
+
+            # print(op_dict)
 
         elif arguments.kill:
             # job kill --name=NAME
 
             VERBOSE(names)
 
-            Console.error("Not yet implemented")
+            Console.error("kill - Not yet implemented")
 
         elif arguments.reset:
             # job reset --name=NAME
             name = arguments["--name"]
-            Console.error("Not yet implemented")
+            Console.error("reset - Not yet implemented")
 
         elif arguments.delete:
             # job delete --name=NAME
             name = arguments["--name"]
-            Console.error("Not yet implemented")
+            Console.error("delete - Not yet implemented")
 
         elif arguments.help:
             # job help
