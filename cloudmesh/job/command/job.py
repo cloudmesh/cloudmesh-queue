@@ -160,6 +160,9 @@ class JobCommand(PluginCommand):
 
             cms job list --status='ready'
                 Enlist all jobs in status 'ready'
+
+            cms job status
+                Enlists all jobs ordered by their status
         """
 
         from cloudmesh.job.jobqueue import JobQueue
@@ -307,7 +310,29 @@ class JobCommand(PluginCommand):
 
         elif arguments.status:
             # job status
-            Console.error("status - Not yet implemented")
+            jobset = variables["jobset"] or default_location
+            jobset = Path.expanduser(Path(jobset))
+            op_dict = dict()
+
+            with open(jobset, 'r') as fi:
+                spec = yaml.load(fi, Loader=yaml.FullLoader)
+
+            i = 0
+            for k, v in spec.items():
+                if v.get("status") is None:
+                    v["status"] = 'Unavailable'
+                op_dict[k] = {
+                    'JobName': v.get("name"),
+                    'JobStatus': v.get("status"),
+                    'RemoteIp': v.get("ip"),
+                    'Command': v.get("executable"),
+                    'Arguments': v.get("arguments"),
+                    'User': v.get('user')
+                }
+
+            order = ['JobName', 'JobStatus', 'RemoteIp', 'Command',
+                     'Arguments', 'User']
+            print(Printer.write(op_dict, order=order, sort_keys='JobStatus'))
 
         elif arguments.list and arguments["--status"]:
             # job list --status=STATUS
