@@ -105,6 +105,7 @@ class JobCommand(PluginCommand):
              ready  - ready for scheduling
              failed - job failed
              timeout - timeout
+             submitted - job submitted to remote machine for execution
 
           Job specification:
 
@@ -163,6 +164,9 @@ class JobCommand(PluginCommand):
 
             cms job status
                 Enlists all jobs ordered by their status
+
+            cms job reset --name=NAME
+                Resets the status of the job to 'ready'.
         """
 
         from cloudmesh.job.jobqueue import JobQueue
@@ -420,8 +424,25 @@ class JobCommand(PluginCommand):
 
         elif arguments.reset:
             # job reset --name=NAME
-            name = arguments["--name"]
-            Console.error("reset - Not yet implemented")
+            jobset = variables["jobset"] or default_location
+            jobset = Path.expanduser(Path(jobset))
+
+            with open(jobset, 'r') as fi:
+                spec = yaml.load(fi, Loader=yaml.FullLoader)
+
+            for name in names:
+                if not spec.get(name):
+                    Console.error(f"Job {name} not found in jobset {jobset}.")
+                    continue
+                if spec[name]['status'] == 'submitted':
+                    Console.error(f"Job {name} is already submitted for "
+                                "execution. Please kill the job before reset.")
+                else:
+                    spec[name]['status'] = 'ready'
+                    Console.ok(f"Status reset for job {name}.")
+
+            with open(jobset, 'w') as fo:
+                yaml.dump(spec, fo)
 
         elif arguments.delete:
             # job delete --name=NAME
