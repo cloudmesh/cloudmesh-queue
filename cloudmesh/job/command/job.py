@@ -8,6 +8,7 @@ from cloudmesh.common.variables import Variables
 from cloudmesh.shell.command import PluginCommand
 from cloudmesh.shell.command import command
 from cloudmesh.shell.command import map_parameters
+from cloudmesh.common.Printer import Printer
 import oyaml as yaml
 
 
@@ -150,6 +151,15 @@ class JobCommand(PluginCommand):
 
             cms job add '~\.cloudmesh\another.yaml'
                 Adds jobs from FILE to jobset
+
+            cms job list
+                Enlist all jobs
+
+            cms job list --name='perform'
+                Enlist all jobs with the phrase 'perform' in job name
+
+            cms job list --status='ready'
+                Enlist all jobs in status 'ready'
         """
 
         from cloudmesh.job.jobqueue import JobQueue
@@ -301,27 +311,80 @@ class JobCommand(PluginCommand):
 
         elif arguments.list and arguments["--status"]:
             # job list --status=STATUS
-            Console.error("list status - Not yet implemented")
+            jobset = variables["jobset"] or default_location
+            jobset = Path.expanduser(Path(jobset))
+            op_dict = dict()
+
+            with open(jobset, 'r') as fi:
+                spec = yaml.load(fi, Loader=yaml.FullLoader)
+
+            i = 0
+            for k, v in spec.items():
+                if v.get('status') == arguments["--status"]:
+                    i += 1
+                    op_dict[k] = {
+                        'S.No.': i,
+                        'JobName': v.get("name"),
+                        'JobStatus': v.get("status"),
+                        'RemoteIp': v.get("ip"),
+                        'Command': v.get("executable"),
+                        'Arguments': v.get("arguments"),
+                        'User': v.get('user')
+                    }
+            order = ['S.No.', 'JobName', 'JobStatus', 'RemoteIp', 'Command',
+                     'Arguments', 'User']
+            print(Printer.write(op_dict, order=order))
 
         elif arguments.list and arguments["--name"]:
             # job list --name=NAME
-            VERBOSE(names)
-            Console.error("list name - Not yet implemented")
+            jobset = variables["jobset"] or default_location
+            jobset = Path.expanduser(Path(jobset))
+            op_dict = dict()
+
+            with open(jobset, 'r') as fi:
+                spec = yaml.load(fi, Loader=yaml.FullLoader)
+
+            i = 0
+            for k, v in spec.items():
+                if arguments["--name"] in v.get('name'):
+                    i += 1
+                    op_dict[k] = {
+                        'S.No.': i,
+                        'JobName': v.get("name"),
+                        'JobStatus': v.get("status"),
+                        'RemoteIp': v.get("ip"),
+                        'Command': v.get("executable"),
+                        'Arguments': v.get("arguments"),
+                        'User': v.get('user')
+                    }
+            order = ['S.No.', 'JobName', 'JobStatus', 'RemoteIp', 'Command',
+                     'Arguments', 'User']
+            print(Printer.write(op_dict, order=order))
 
         elif arguments.list:
             # job list
             jobset = variables["jobset"] or default_location
             jobset = Path.expanduser(Path(jobset))
-            # op_dict = dict()
+            op_dict = dict()
 
             with open(jobset, 'r') as fi:
                 spec = yaml.load(fi, Loader=yaml.FullLoader)
 
-            # TODO: use Printer
+            i = 0
             for k, v in spec.items():
-                print(k, v.get("status"))
-
-            # print(op_dict)
+                i += 1
+                op_dict[k] = {
+                    'S.No.': i,
+                    'JobName': v.get("name"),
+                    'JobStatus': v.get("status"),
+                    'RemoteIp': v.get("ip"),
+                    'Command': v.get("executable"),
+                    'Arguments': v.get("arguments"),
+                    'User': v.get('user')
+                }
+            order = ['S.No.', 'JobName', 'JobStatus', 'RemoteIp', 'Command',
+                     'Arguments', 'User']
+            print(Printer.write(op_dict,order=order))
 
         elif arguments.kill:
             # job kill --name=NAME
