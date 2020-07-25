@@ -12,6 +12,7 @@ from textwrap import dedent
 from cloudmesh.common.parameter import Parameter
 from cloudmesh.common.debug import VERBOSE
 
+
 class JobQueue:
     """
     To create, manage and monitor job execution queue
@@ -104,7 +105,6 @@ class JobQueue:
         with open(jobset, "a+") as file:
             fruits_list = yaml.dump(specification, file)
 
-
     @staticmethod
     def define(arguments, idx):
         """
@@ -116,16 +116,16 @@ class JobQueue:
         user = JobQueue._user()
         _spec = {
             'name': arguments.get('names')[idx],
-            'directory':  arguments.get('directory') or '.',
-            'ip':  arguments.get('ip_list')[idx] or 'r-003',
-            'input':  arguments.get('input_list')[idx] or './data',
-            'output':  arguments.get('output_list')[idx] or './data',
-            'status':  arguments.get('status') or 'ready',
-            'gpu':  arguments.get('gpu_list')[idx] or "",
-            'user':  arguments.get('user') or user,
-            'arguments':  arguments.get('arguments_list')[idx] or "",
-            'executable':  arguments.get('executable'),
-            'shell':  arguments.get('shell') or 'bash'
+            'directory': arguments.get('directory') or '.',
+            'ip': arguments.get('ip_list')[idx] or 'r-003',
+            'input': arguments.get('input_list')[idx] or './data',
+            'output': arguments.get('output_list')[idx] or './data',
+            'status': arguments.get('status') or 'ready',
+            'gpu': arguments.get('gpu_list')[idx] or "",
+            'user': arguments.get('user') or user,
+            'arguments': arguments.get('arguments_list')[idx] or "",
+            'executable': arguments.get('executable'),
+            'shell': arguments.get('shell') or 'bash'
         }
         return _spec
 
@@ -144,7 +144,7 @@ class JobQueue:
         dict_out = dict()
         for idx in range(len(specification['names'])):
             dict_out[specification['names'][idx]] = JobQueue.define(
-                                                            specification, idx)
+                specification, idx)
         VERBOSE(dict_out)
 
         self.add(dict_out)
@@ -172,6 +172,37 @@ class JobQueue:
             return ""
 
         return arguments['arg2_expanded']
+
+    def run_job(self, names=None):
+        """
+        To run the job on remote machine
+        :param names:
+        :return:
+        """
+        jobset = Path.expanduser(Path(self.filename))
+        with open(jobset, 'r') as fi:
+            spec = yaml.load(fi, Loader=yaml.FullLoader)
+
+        if names is None:
+            names = spec.keys()
+
+        for k, v in spec.items():
+            if k in names:
+                # command = f"{spec[job]['install']} \"{spec[job]['run']} " \
+                # f"{args} --output={spec[job]['remote_output']}\""
+                # print(command)
+                command = f"ssh {v['user']}@{v['ip']} \"cd {v['directory']}; " \
+                          f"{v['executable']} {v['arguments']}\""
+
+                print(k)
+                print(command)
+
+                Shell.terminal(command, title=f"Running {k}")
+
+#                 spec[job]['status'] = 'Submitted'
+#
+#         with open(self.yaml_out, 'w') as fo:
+#             yaml.dump(spec, fo, default_flow_style=False)
 
 # class SubmitQueue:
 #     """

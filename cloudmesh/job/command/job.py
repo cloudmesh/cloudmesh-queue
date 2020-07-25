@@ -43,7 +43,7 @@ class JobCommand(PluginCommand):
             job reset [--name=NAME]
             job delete [--name=NAME]
             job help
-            job run
+            job run [--name=NAME]
             job info
             job hosts add --name=IP --n=N
 
@@ -100,6 +100,10 @@ class JobCommand(PluginCommand):
               job delete --name=NAME
                 deletes the given jobs base on a name pattern such as
                 name[01-04] which would kill all jobs with the given names
+
+              job run [--name=NAME]
+                Run all jobs from jobset. If --name argument is provided then
+                run a specific job
 
               job help
                 prints the manual page
@@ -267,23 +271,12 @@ class JobCommand(PluginCommand):
             arguments.shell = arguments.shell or 'bash'
             arguments.directory = arguments.directory or '.'
 
-            # input - remote directory having input datasets
-            # arguments.input = arguments.input or "./data"
-            arguments.inputs = inputs = Parameter.expand(arguments.input)
-
-            # output - remote directory to save output of the run
-            arguments.output = arguments.output or \
-                               "./output/" + arguments['--name']
-
-            status = arguments.status
-
             # Variable arguments
             arguments.names = names
             arguments.ip = arguments.ip or "localhost"
             arguments.input = arguments.input or "../data"
             arguments.output = arguments.output or \
                                "./output/" + arguments['--name']
-
             arguments.gpu = arguments.gpu or " "
             arguments.arguments = arguments.arguments or " "
 
@@ -419,7 +412,7 @@ class JobCommand(PluginCommand):
             for k, v in spec.items():
                 i += 1
                 op_dict[k] = {
-                    'S.No.': i,
+                    'Number': i,
                     'JobName': v.get("name"),
                     'JobStatus': v.get("status"),
                     'RemoteIp': v.get("ip"),
@@ -427,7 +420,7 @@ class JobCommand(PluginCommand):
                     'Arguments': v.get("arguments"),
                     'User': v.get('user')
                 }
-            order = ['S.No.', 'JobName', 'JobStatus', 'RemoteIp', 'Command',
+            order = ['Number', 'JobName', 'JobStatus', 'RemoteIp', 'Command',
                      'Arguments', 'User']
             print(Printer.write(op_dict,order=order))
 
@@ -459,6 +452,13 @@ class JobCommand(PluginCommand):
 
             with open(jobset, 'w') as fo:
                 yaml.dump(spec, fo)
+
+        elif arguments.run:
+            # job run --name=NAME
+
+            jobqueue = JobQueue()
+
+            jobqueue.run_job()
 
         elif arguments.delete:
             # job delete --name=NAME
