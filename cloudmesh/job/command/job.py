@@ -53,8 +53,8 @@ class JobCommand(PluginCommand):
               FILE   a file name
 
           Options:
-              -f      specify the file
-              --status=STATUS  the status [default: None]
+              -f       specify the file
+              --status the status [default: None]
               --input=INPUT    input dir location [default: ./data]
               # --output=OUTPUT  output dir location
               --directory=DIRECTORY  execution location [default: .]
@@ -297,6 +297,21 @@ class JobCommand(PluginCommand):
         elif arguments.add and arguments.FILE:
             # job add FILE
             # Path.expanduser needed as windows can't interpret "~"
+
+            # FILE is supposed to contain job list only in following format
+            #   abcd:
+            #     name: abcd
+            #     directory: .
+            #     ip: local
+            #     input: ./data
+            #     output: ./output/abcd
+            #     status: ready
+            #     gpu: ' '
+            #     user: user
+            #     arguments: -lisa
+            #     executable: ls
+            #     shell: bash
+
             file = Path.expanduser(Path(arguments.FILE))
             _name, _directory, _basename = JobQueue._location(file)
 
@@ -331,7 +346,7 @@ class JobCommand(PluginCommand):
                 spec = yaml.load(fi, Loader=yaml.FullLoader)
 
             i = 0
-            for k, v in spec.items():
+            for k, v in spec['jobs'].items():
                 if v.get("status") is None:
                     v["status"] = 'Unavailable'
                 op_dict[k] = {
@@ -357,7 +372,7 @@ class JobCommand(PluginCommand):
                 spec = yaml.load(fi, Loader=yaml.FullLoader)
 
             i = 0
-            for k, v in spec.items():
+            for k, v in spec['jobs'].items():
                 if v.get('status') == arguments["--status"]:
                     i += 1
                     op_dict[k] = {
@@ -383,7 +398,7 @@ class JobCommand(PluginCommand):
                 spec = yaml.load(fi, Loader=yaml.FullLoader)
 
             i = 0
-            for k, v in spec.items():
+            for k, v in spec['jobs'].items():
                 if arguments["--name"] in v.get('name'):
                     i += 1
                     op_dict[k] = {
@@ -409,7 +424,7 @@ class JobCommand(PluginCommand):
                 spec = yaml.load(fi, Loader=yaml.FullLoader)
 
             i = 0
-            for k, v in spec.items():
+            for k, v in spec['jobs'].items():
                 i += 1
                 op_dict[k] = {
                     'Number': i,
@@ -422,7 +437,7 @@ class JobCommand(PluginCommand):
                 }
             order = ['Number', 'JobName', 'JobStatus', 'RemoteIp', 'Command',
                      'Arguments', 'User']
-            print(Printer.write(op_dict,order=order))
+            print(Printer.write(op_dict, order=order))
 
         elif arguments.kill:
             # job kill --name=NAME
