@@ -22,7 +22,7 @@ class JobCommand(PluginCommand):
 
           Usage:
             job set FILE
-            job template FILE [--name=NAME]
+            job template [--name=NAME]
             job add FILE
             job add --name=NAME
                     --ip=IP
@@ -56,7 +56,7 @@ class JobCommand(PluginCommand):
               -f      specify the file
               --status=STATUS  the status [default: None]
               --input=INPUT    input dir location [default: ./data]
-              --output=OUTPUT  output dir location
+              # --output=OUTPUT  output dir location
               --directory=DIRECTORY  execution location [default: .]
 
 
@@ -72,8 +72,8 @@ class JobCommand(PluginCommand):
               job add FILE
                 adds the jobs in the file to the jobset
 
-              job template FILE
-                creates a job template  in the file
+              job template
+                creates a job template  in the jobset
 
               job list
                 lists all jobs

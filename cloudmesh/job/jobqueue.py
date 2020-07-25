@@ -1,5 +1,5 @@
 from pathlib import Path
-import os, time, sys
+import os, time, sys, multiprocessing
 import oyaml as yaml
 from cloudmesh.common.Shell import Shell
 from cloudmesh.configuration.Config import Config
@@ -54,9 +54,27 @@ class JobQueue:
         user = None
         if sys.platform == 'win32':
             user = os.environ.get('USERNAME')
+            hostname = os.environ.get('COMPUTERNAME')
         else:
             user = os.environ.get('USER')
+            hostname = os.environ.get('HOSTNAME')
         return user
+
+    @staticmethod
+    def _sysinfo():
+        """
+        Returns value of system hostname and cpu count from environment
+        variables
+        :return: hostname and max cpu_count
+        """
+        hostname = None
+        if sys.platform == 'win32':
+            hostname = os.environ.get('COMPUTERNAME')
+        else:
+            hostname = os.environ.get('HOSTNAME')
+        cpu_count = multiprocessing.cpu_count()
+
+        return hostname, cpu_count
 
     def template(self, name=None):
         """
@@ -68,19 +86,32 @@ class JobQueue:
         name = name or "job"
         specification = dedent(
             f"""
-            {name}:
-              name: {name}
-              directory: .
-              ip: 127.0.0.1
-              input: .
-              output: .
-              status: ready
-              gpu: "" 
-              user:  {user}
-              arguments:  -lisa
-              executable: ls
-              shell: bash
-            """).strip()
+            cloudmesh:
+              default:
+                user: {user}
+              hosts:
+                localhost:
+                  name: {JobQueue._sysinfo()[0]}
+                  ip: 127.0.0.1
+                  cpu_count: {JobQueue._sysinfo()[1]}
+                  status: free
+                  job_counter: 0
+              scheduler:
+                policy: sequential
+            jobs:
+              {name}:
+                name: {name}  
+                directory: .
+                ip: 127.0.0.1
+                input: .
+                output: .
+                status: ready
+                gpu: "" 
+                user:  {user}
+                arguments:  -lisa
+                executable: ls
+                shell: bash
+              """).strip()
 
         specification = yaml.safe_load(specification)
 
