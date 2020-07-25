@@ -207,6 +207,22 @@ class JobQueue:
 
         return arguments['arg2_expanded']
 
+    def addhost(self, arguments):
+        """
+        Adds a new host in jobset yaml file
+        :param arguments: dictionary containing host info
+        :return: updates the jobset with host info
+        """
+        config = Config(self.filename)
+
+        tag = arguments.hostname
+        config[f'cloudmesh.hosts.{tag}.name'] = arguments.hostname
+        config[f'cloudmesh.hosts.{tag}.ip'] = arguments.ip
+        config[f'cloudmesh.hosts.{tag}.cpu_count'] = arguments.cpu_count
+        config[f'cloudmesh.hosts.{tag}.status'] = arguments.status or 'free'
+        config[f'cloudmesh.hosts.{tag}.job_counter'] = arguments.job_counter \
+                                                       or '0'
+
     def run_job(self, names=None):
         """
         To run the job on remote machine

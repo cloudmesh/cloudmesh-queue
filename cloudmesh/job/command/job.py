@@ -45,7 +45,8 @@ class JobCommand(PluginCommand):
             job help
             job run [--name=NAME]
             job info
-            job hosts add --name=IP --n=N
+            job hosts add --hostname=hostname --ip=IP --cpu_count=N
+                         [--status=STATUS] [--job_counter=COUNTER]
 
           This command does some useful things.
 
@@ -190,7 +191,9 @@ class JobCommand(PluginCommand):
                        "output",
                        "shell",
                        "directory",
-                       "user"
+                       "user",
+                       "hostname",
+                       "cpu_count"
                        )
         # status has to be obtained with arguments["--status"]
         # we simply set it to state so its still easy to read
@@ -239,12 +242,12 @@ class JobCommand(PluginCommand):
             variables["jobset"] = file
 
             name, directory, basename = JobQueue._location(file)
-            
+
             Console.ok(f"Jobset defined as {name} located at"
                        f"{file}")
 
-        elif arguments.add and arguments.FILE is None:
-
+        elif arguments.add and arguments.FILE is None \
+                and arguments.hosts is None:
             """
             job add --name=NAME
                     --ip=IP
@@ -295,23 +298,24 @@ class JobCommand(PluginCommand):
             jobqueue.update_spec(arguments, jobset)
 
         elif arguments.add and arguments.FILE:
-            # job add FILE
+            """
+            job add FILE
+            
+            FILE is supposed to contain job list only in following format
+              abcd:
+                name: abcd
+                directory: .
+                ip: local
+                input: ./data
+                output: ./output/abcd
+                status: ready
+                gpu: ' '
+                user: user
+                arguments: -lisa
+                executable: ls
+                shell: bash
+            """
             # Path.expanduser needed as windows can't interpret "~"
-
-            # FILE is supposed to contain job list only in following format
-            #   abcd:
-            #     name: abcd
-            #     directory: .
-            #     ip: local
-            #     input: ./data
-            #     output: ./output/abcd
-            #     status: ready
-            #     gpu: ' '
-            #     user: user
-            #     arguments: -lisa
-            #     executable: ls
-            #     shell: bash
-
             file = Path.expanduser(Path(arguments.FILE))
             _name, _directory, _basename = JobQueue._location(file)
 
@@ -486,5 +490,10 @@ class JobCommand(PluginCommand):
         elif arguments.help:
             # job help
             os.system("cms help job")
+
+        elif arguments.add and arguments.hosts:
+            jobqueue = JobQueue()
+
+            jobqueue.addhost(arguments)
 
         return ""
