@@ -8,6 +8,8 @@ from cloudmesh.common.variables import Variables
 from cloudmesh.shell.command import PluginCommand
 from cloudmesh.shell.command import command
 from cloudmesh.shell.command import map_parameters
+from cloudmesh.common.Printer import Printer
+import oyaml as yaml
 
 
 class JobCommand(PluginCommand):
@@ -107,6 +109,7 @@ class JobCommand(PluginCommand):
              ready  - ready for scheduling
              failed - job failed
              timeout - timeout
+             submitted - job submitted to remote machine for execution
 
           Job specification:
 
@@ -129,7 +132,7 @@ class JobCommand(PluginCommand):
                         interrupted
 
           The current jobset filename is stored in the cloudmesh variables under
-          the variable "jobset". It can queries with cms set jobset. It can be set witk
+          the variable "jobset". It can queries with cms set jobset. It can be set with
           cms set jobset=VALUE
           We may not even do cms job set VALUE due to this simpler existing way of interfaceing
           we can query the variables with
@@ -146,6 +149,28 @@ class JobCommand(PluginCommand):
             cms job template a.yaml --name="b[0-1]"; less a.yaml
                 Creates the jobs b0 and b1 as templates in the jobset.
 
+            cms job add --name=z[0-1] --ip=123,345 --executable='ls'
+            --input='..\data' --output='a,b'
+                Creates entries in jobset for jobs z0 and z1 with provided
+                arguments.
+
+            cms job add '~\.cloudmesh\another.yaml'
+                Adds jobs from FILE to jobset
+
+            cms job list
+                Enlist all jobs
+
+            cms job list --name='perform'
+                Enlist all jobs with the phrase 'perform' in job name
+
+            cms job list --status='ready'
+                Enlist all jobs in status 'ready'
+
+            cms job status
+                Enlists all jobs ordered by their status
+
+            cms job reset --name=NAME
+                Resets the status of the job to 'ready'.
         """
 
         from cloudmesh.job.jobqueue import JobQueue
@@ -172,11 +197,9 @@ class JobCommand(PluginCommand):
 
         names = Parameter.expand(arguments["--name"])
 
-
         file = arguments["FILE"]
 
         # do the import here to avoid long loading times for other commands
-
 
         default_location = "~/.cloudmesh/job/spec.yaml"
 
@@ -236,20 +259,14 @@ class JobCommand(PluginCommand):
                 variables["jobset"])
 
             jobqueue = JobQueue()
-            arguments.names = names
-            arguments.ip = arguments.ip or "localhost"
 
-            arguments.ips = ips = Parameter.expand(arguments.ip)
+            # fixed arguments for all jobs
+            arguments.executable = arguments.executable or 'ls'
+            arguments.status = arguments.status or 'ready'
+            arguments.shell = arguments.shell or 'bash'
+            arguments.directory = arguments.directory or '.'
 
-            if len(names) == 1 and len(ips) == 1:
-
-                pass
-                # we have one ip and one name
-
-            elif len(names) > 1 and len (ips) == 1:
-
-                # we have multiple names that are all mapped to one ip
-
+<<<<<<< HEAD
                 arguments.ips = [arguments.ip] * len(names)
 
             elif len(names) != len(ips):
@@ -290,116 +307,194 @@ class JobCommand(PluginCommand):
             status = arguments.status
 
             # gpu is like ip
+=======
+            # Variable arguments
+            arguments.names = names
+            arguments.ip = arguments.ip or "localhost"
+            arguments.input = arguments.input or "../data"
+            arguments.output = arguments.output or \
+                               "./output/" + arguments['--name']
+>>>>>>> 932caf86234be3230efab3632286c79e93ce2ae1
             arguments.gpu = arguments.gpu or " "
-            arguments.gpus = gpus = Parameter.expand(arguments.gpu)
-            print("====> ", gpus)
-            if len(names) == 1 and len(gpus) == 1:
-                pass
-            elif len(names) > 1 and len(gpus) == 1:
-                arguments.gpus = [arguments.gpu] * len(names)
-            elif len(names) != len(gpus):
-                Console.error("number of gpus must match number of names")
-                return ""
-
-            # arguments is like ip
             arguments.arguments = arguments.arguments or " "
-            arguments.argument_list = argument_list = Parameter.expand(
-                arguments.arguments)
 
-            if len(names) == 1 and len(argument_list) == 1:
-                pass
-            elif len(names) > 1 and len(argument_list) == 1:
-                arguments.argument_list = [arguments.arguments] * len(names)
-            elif len(names) != len(argument_list):
-                Console.error("number of arguments must match number of names")
-                return ""
+            var_args = ['ip', 'input', 'output', 'gpu', 'arguments']
 
-            shell = arguments.shell
+            for arg in var_args:
+                arguments[f'{arg}_list'] = jobqueue.expand_args('names', arg,
+                                                                arguments)
+                if arguments[f'{arg}_list'] == "":
+                    return ""
 
             # for debugging
-
             VERBOSE(arguments)
 
-            #
-            # now we need to call the jobset and add the right things ...
-            #
-            
-            # Calling update_spc for each job
-            # specification = dict()
-            # for idx in len(names):
-            #     specification['name'] = arguments.names[idx]
-            #     specification['remotedir'] = arguments.directory
-            #     specification['ip'] = arguments.ips[idx]
-            #
-        elif arguments.add:
-            # job add FILE
+            # now we need to call the jobset and add the right things
+            jobqueue.update_spec(arguments, jobset)
 
+        elif arguments.add and arguments.FILE:
+            # job add FILE
+            # Path.expanduser needed as windows can't interpret "~"
+            file = Path.expanduser(Path(arguments.FILE))
+            _name, _directory, _basename = JobQueue._location(file)
 
             if variables["jobset"] is None:
                 Console.error("Jobset not defined. Please use `cms job set "
                               "FILE` to define the jobset.")
                 return ""
 
+            if not file.is_file():
+                Console.error(f"File {arguments.FILE} not found.")
+                return ""
+
+            if not _basename.endswith(".yaml"):
+                Console.error("the specification file must be a yaml file "
+                              "and end with .yaml")
+                return ""
 
             jobqueue = JobQueue()
 
+            with open(file, 'r') as fi:
+                spec = yaml.load(fi, Loader=yaml.FullLoader)
 
-            """
-            if file:
-                print(f"{file} to be appended in jobset")
-
-                jobqueue.update_spec(
-                    jobset_location=_directory,
-                    jobset_name=_name,
-                    newjobset_location=_directory,
-                    newjobset_name=_name,
-                    verbose=variables["verbose"])
-            else:
-                print("Creation of individual entry")
-
-                jobqueue.update_spec(
-                    jobset_location=_directory,
-                    jobset_name=_name,
-                    newjob_dict=arguments,
-                    verbose=variables["verbose"])
-
-            """
-            # Console.error("Not yet implemented")
-
+            jobqueue.add(spec)
 
         elif arguments.status:
             # job status
-            Console.error("Not yet implemented")
+            jobset = variables["jobset"] or default_location
+            jobset = Path.expanduser(Path(jobset))
+            op_dict = dict()
+
+            with open(jobset, 'r') as fi:
+                spec = yaml.load(fi, Loader=yaml.FullLoader)
+
+            i = 0
+            for k, v in spec.items():
+                if v.get("status") is None:
+                    v["status"] = 'Unavailable'
+                op_dict[k] = {
+                    'JobName': v.get("name"),
+                    'JobStatus': v.get("status"),
+                    'RemoteIp': v.get("ip"),
+                    'Command': v.get("executable"),
+                    'Arguments': v.get("arguments"),
+                    'User': v.get('user')
+                }
+
+            order = ['JobName', 'JobStatus', 'RemoteIp', 'Command',
+                     'Arguments', 'User']
+            print(Printer.write(op_dict, order=order, sort_keys='JobStatus'))
 
         elif arguments.list and arguments["--status"]:
             # job list --status=STATUS
-            Console.error("Not yet implemented")
+            jobset = variables["jobset"] or default_location
+            jobset = Path.expanduser(Path(jobset))
+            op_dict = dict()
+
+            with open(jobset, 'r') as fi:
+                spec = yaml.load(fi, Loader=yaml.FullLoader)
+
+            i = 0
+            for k, v in spec.items():
+                if v.get('status') == arguments["--status"]:
+                    i += 1
+                    op_dict[k] = {
+                        'S.No.': i,
+                        'JobName': v.get("name"),
+                        'JobStatus': v.get("status"),
+                        'RemoteIp': v.get("ip"),
+                        'Command': v.get("executable"),
+                        'Arguments': v.get("arguments"),
+                        'User': v.get('user')
+                    }
+            order = ['S.No.', 'JobName', 'JobStatus', 'RemoteIp', 'Command',
+                     'Arguments', 'User']
+            print(Printer.write(op_dict, order=order))
 
         elif arguments.list and arguments["--name"]:
             # job list --name=NAME
-            VERBOSE(names)
-            Console.error("Not yet implemented")
+            jobset = variables["jobset"] or default_location
+            jobset = Path.expanduser(Path(jobset))
+            op_dict = dict()
+
+            with open(jobset, 'r') as fi:
+                spec = yaml.load(fi, Loader=yaml.FullLoader)
+
+            i = 0
+            for k, v in spec.items():
+                if arguments["--name"] in v.get('name'):
+                    i += 1
+                    op_dict[k] = {
+                        'S.No.': i,
+                        'JobName': v.get("name"),
+                        'JobStatus': v.get("status"),
+                        'RemoteIp': v.get("ip"),
+                        'Command': v.get("executable"),
+                        'Arguments': v.get("arguments"),
+                        'User': v.get('user')
+                    }
+            order = ['S.No.', 'JobName', 'JobStatus', 'RemoteIp', 'Command',
+                     'Arguments', 'User']
+            print(Printer.write(op_dict, order=order))
 
         elif arguments.list:
             # job list
-            Console.error("Not yet implemented")
+            jobset = variables["jobset"] or default_location
+            jobset = Path.expanduser(Path(jobset))
+            op_dict = dict()
+
+            with open(jobset, 'r') as fi:
+                spec = yaml.load(fi, Loader=yaml.FullLoader)
+
+            i = 0
+            for k, v in spec.items():
+                i += 1
+                op_dict[k] = {
+                    'S.No.': i,
+                    'JobName': v.get("name"),
+                    'JobStatus': v.get("status"),
+                    'RemoteIp': v.get("ip"),
+                    'Command': v.get("executable"),
+                    'Arguments': v.get("arguments"),
+                    'User': v.get('user')
+                }
+            order = ['S.No.', 'JobName', 'JobStatus', 'RemoteIp', 'Command',
+                     'Arguments', 'User']
+            print(Printer.write(op_dict,order=order))
 
         elif arguments.kill:
             # job kill --name=NAME
 
             VERBOSE(names)
 
-            Console.error("Not yet implemented")
+            Console.error("kill - Not yet implemented")
 
         elif arguments.reset:
             # job reset --name=NAME
-            name = arguments["--name"]
-            Console.error("Not yet implemented")
+            jobset = variables["jobset"] or default_location
+            jobset = Path.expanduser(Path(jobset))
+
+            with open(jobset, 'r') as fi:
+                spec = yaml.load(fi, Loader=yaml.FullLoader)
+
+            for name in names:
+                if not spec.get(name):
+                    Console.error(f"Job {name} not found in jobset {jobset}.")
+                    continue
+                if spec[name]['status'] == 'submitted':
+                    Console.error(f"Job {name} is already submitted for "
+                                "execution. Please kill the job before reset.")
+                else:
+                    spec[name]['status'] = 'ready'
+                    Console.ok(f"Status reset for job {name}.")
+
+            with open(jobset, 'w') as fo:
+                yaml.dump(spec, fo)
 
         elif arguments.delete:
             # job delete --name=NAME
             name = arguments["--name"]
-            Console.error("Not yet implemented")
+            Console.error("delete - Not yet implemented")
 
         elif arguments.help:
             # job help
