@@ -454,15 +454,18 @@ class JobCommand(PluginCommand):
             with open(jobset, 'r') as fi:
                 spec = yaml.load(fi, Loader=yaml.FullLoader)
 
+            if names is None:
+                names = spec['jobs'].keys()
+
             for name in names:
-                if not spec.get(name):
+                if not spec['jobs'].get(name):
                     Console.error(f"Job {name} not found in jobset {jobset}.")
                     continue
-                if spec[name]['status'] == 'submitted':
+                if spec['jobs'][name]['status'] == 'submitted':
                     Console.error(f"Job {name} is already submitted for "
                                 "execution. Please kill the job before reset.")
                 else:
-                    spec[name]['status'] = 'ready'
+                    spec['jobs'][name]['status'] = 'ready'
                     Console.ok(f"Status reset for job {name}.")
 
             with open(jobset, 'w') as fo:
