@@ -45,6 +45,7 @@ class JobCommand(PluginCommand):
             job help
             job run
             job info
+            job hosts add --name=IP --n=N
 
           This command does some useful things.
 
@@ -266,55 +267,23 @@ class JobCommand(PluginCommand):
             arguments.shell = arguments.shell or 'bash'
             arguments.directory = arguments.directory or '.'
 
-<<<<<<< HEAD
-                arguments.ips = [arguments.ip] * len(names)
-
-            elif len(names) != len(ips):
-
-                Console.error("number of ips must match number of names")
-                return ""
-
-            # executable is always just one arument
-            executable = arguments.executable
-
             # input - remote directory having input datasets
             # arguments.input = arguments.input or "./data"
             arguments.inputs = inputs = Parameter.expand(arguments.input)
-
-            if len(names) == 1 and len(inputs) == 1:
-                pass
-            elif len(names) > 1 and len (inputs) == 1:
-                arguments.inputs = [arguments.input] * len(names)
-            elif len(names) != len(inputs):
-                Console.error("number of inputs must match number of names")
-                return ""
 
             # output - remote directory to save output of the run
             arguments.output = arguments.output or \
                                "./output/" + arguments['--name']
 
-            arguments.outputs = outputs = Parameter.expand(arguments.output)
-
-            if len(names) == 1 and len(outputs) == 1:
-                pass
-            elif len(names) > 1 and len (outputs) == 1:
-                arguments.outputs = [arguments.output] * len(names)
-            elif len(names) != len(outputs):
-                Console.error("number of outputs must match number of names")
-                return ""
-            print("====> ", arguments.outputs)
-
             status = arguments.status
 
-            # gpu is like ip
-=======
             # Variable arguments
             arguments.names = names
             arguments.ip = arguments.ip or "localhost"
             arguments.input = arguments.input or "../data"
             arguments.output = arguments.output or \
                                "./output/" + arguments['--name']
->>>>>>> 932caf86234be3230efab3632286c79e93ce2ae1
+
             arguments.gpu = arguments.gpu or " "
             arguments.arguments = arguments.arguments or " "
 
@@ -399,7 +368,7 @@ class JobCommand(PluginCommand):
                 if v.get('status') == arguments["--status"]:
                     i += 1
                     op_dict[k] = {
-                        'S.No.': i,
+                        'Number': i,
                         'JobName': v.get("name"),
                         'JobStatus': v.get("status"),
                         'RemoteIp': v.get("ip"),
@@ -407,7 +376,7 @@ class JobCommand(PluginCommand):
                         'Arguments': v.get("arguments"),
                         'User': v.get('user')
                     }
-            order = ['S.No.', 'JobName', 'JobStatus', 'RemoteIp', 'Command',
+            order = ['Number', 'JobName', 'JobStatus', 'RemoteIp', 'Command',
                      'Arguments', 'User']
             print(Printer.write(op_dict, order=order))
 
@@ -425,7 +394,7 @@ class JobCommand(PluginCommand):
                 if arguments["--name"] in v.get('name'):
                     i += 1
                     op_dict[k] = {
-                        'S.No.': i,
+                        'Number': i,
                         'JobName': v.get("name"),
                         'JobStatus': v.get("status"),
                         'RemoteIp': v.get("ip"),
@@ -433,7 +402,7 @@ class JobCommand(PluginCommand):
                         'Arguments': v.get("arguments"),
                         'User': v.get('user')
                     }
-            order = ['S.No.', 'JobName', 'JobStatus', 'RemoteIp', 'Command',
+            order = ['Number', 'JobName', 'JobStatus', 'RemoteIp', 'Command',
                      'Arguments', 'User']
             print(Printer.write(op_dict, order=order))
 
