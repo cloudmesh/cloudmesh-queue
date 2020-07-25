@@ -52,6 +52,10 @@ class JobCommand(PluginCommand):
           Options:
               -f      specify the file
               --status=STATUS  the status [default: None]
+              --input=INPUT    input dir location [default: ./data]
+              --output=OUTPUT  output dir location
+              --directory=DIRECTORY  execution location [default: .]
+
 
           Description:
 
@@ -176,7 +180,6 @@ class JobCommand(PluginCommand):
 
         default_location = "~/.cloudmesh/job/spec.yaml"
 
-
         if arguments.info:
 
             jobset = variables["jobset"] or default_location
@@ -258,7 +261,7 @@ class JobCommand(PluginCommand):
             executable = arguments.executable
 
             # input - remote directory having input datasets
-            arguments.input = arguments.input or "./data"
+            # arguments.input = arguments.input or "./data"
             arguments.inputs = inputs = Parameter.expand(arguments.input)
 
             if len(names) == 1 and len(inputs) == 1:
@@ -271,7 +274,7 @@ class JobCommand(PluginCommand):
 
             # output - remote directory to save output of the run
             arguments.output = arguments.output or \
-                               "./output/"+arguments['--name']
+                               "./output/" + arguments['--name']
 
             arguments.outputs = outputs = Parameter.expand(arguments.output)
 
