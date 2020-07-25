@@ -126,15 +126,18 @@ class JobQueue:
         # if type(specification) != str:
         #     Console.error("only specify a yaml string")
 
-        # TODO: template method returns a dict object. Hence checking for dict.
         if type(specification) != dict:
             Console.error("only specify a yaml dict")
 
         jobset = Path.expanduser(Path(self.filename))
         Path.mkdir(jobset.parent, exist_ok=True)
 
-        with open(jobset, "a+") as file:
-            fruits_list = yaml.dump(specification, file)
+        with open(jobset, 'r') as file:
+            content = yaml.safe_load(file)
+            content['jobs'].update(specification)
+
+        with open(jobset, 'w') as file:
+            fruit_list = yaml.safe_dump(content, file)
 
     @staticmethod
     def define(arguments, idx):
