@@ -47,6 +47,7 @@ class JobCommand(PluginCommand):
             job info
             job hosts add --hostname=hostname --ip=IP --cpu_count=N
                          [--status=STATUS] [--job_counter=COUNTER]
+            job list hosts
 
           This command does some useful things.
 
@@ -177,6 +178,12 @@ class JobCommand(PluginCommand):
 
             cms job reset --name=NAME
                 Resets the status of the job to 'ready'.
+
+            cms job hosts add --hostname=name --ip=ip --cpu_count=n
+                Adds a host in jobset yaml file.
+
+            cms job list hosts
+                Enlists all the hosts configured in jobset
         """
 
         from cloudmesh.job.jobqueue import JobQueue
@@ -366,7 +373,8 @@ class JobCommand(PluginCommand):
                      'Arguments', 'User']
             print(Printer.write(op_dict, order=order, sort_keys='JobStatus'))
 
-        elif arguments.list and arguments["--status"]:
+        elif arguments.list and arguments["--status"] and \
+                arguments.hosts is None:
             # job list --status=STATUS
             jobset = variables["jobset"] or default_location
             jobset = Path.expanduser(Path(jobset))
@@ -392,7 +400,7 @@ class JobCommand(PluginCommand):
                      'Arguments', 'User']
             print(Printer.write(op_dict, order=order))
 
-        elif arguments.list and arguments["--name"]:
+        elif arguments.list and arguments["--name"] and arguments.hosts is None:
             # job list --name=NAME
             jobset = variables["jobset"] or default_location
             jobset = Path.expanduser(Path(jobset))
@@ -418,7 +426,7 @@ class JobCommand(PluginCommand):
                      'Arguments', 'User']
             print(Printer.write(op_dict, order=order))
 
-        elif arguments.list:
+        elif arguments.list and arguments.hosts is None:
             # job list
             jobset = variables["jobset"] or default_location
             jobset = Path.expanduser(Path(jobset))
@@ -493,7 +501,10 @@ class JobCommand(PluginCommand):
 
         elif arguments.add and arguments.hosts:
             jobqueue = JobQueue()
-
             jobqueue.addhost(arguments)
+
+        elif arguments.hosts and arguments.list:
+            jobqueue = JobQueue()
+            jobqueue.enlist_hosts()
 
         return ""

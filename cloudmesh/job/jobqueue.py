@@ -11,6 +11,7 @@ from cloudmesh.common.Shell import Shell
 from textwrap import dedent
 from cloudmesh.common.parameter import Parameter
 from cloudmesh.common.debug import VERBOSE
+from cloudmesh.common.Printer import Printer
 
 
 class JobQueue:
@@ -222,6 +223,14 @@ class JobQueue:
         config[f'cloudmesh.hosts.{tag}.status'] = arguments.status or 'free'
         config[f'cloudmesh.hosts.{tag}.job_counter'] = arguments.job_counter \
                                                        or '0'
+    def enlist_hosts(self):
+        """
+        Enlists all hosts configured in jobset
+        :return: list of hosts
+        """
+        config = Config(self.filename)
+        order = ['name', 'ip', 'cpu_count', 'status', 'job_counter']
+        print(Printer.write(config['cloudmesh.hosts'], order=order))
 
     def run_job(self, names=None):
         """
