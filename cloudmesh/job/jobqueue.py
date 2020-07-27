@@ -190,7 +190,6 @@ class JobQueue:
         Method expands arg2 and compares its length with len(arg1)
         :param arg1: Argument indicating number of jobs involved, eg. 'names'
         :param arg2: Argument to be expanded, eg 'ip'
-        # :param arg2_expanded: Name of expanded arg2, for intermediate logic
         :param arguments: dictionary containing arg1 and arg2
         :return: array of expanded arg2
         """
@@ -232,7 +231,29 @@ class JobQueue:
         order = ['name', 'ip', 'cpu_count', 'status', 'job_counter']
         print(Printer.write(config['cloudmesh.hosts'], order=order))
 
-    def get_available_ip(self, ip, spec):
+    @staticmethod
+    def _get_hostname(ip, spec):
+        """
+        Returns hostname for given host ip
+        :param ip: host ip
+        :param spec: jobset dictionary
+        :return: hostname
+        """
+        for k, v in spec['cloudmesh']['hosts'].items():
+            if v['ip'] == ip:
+                return k
+
+    @staticmethod
+    def get_available_ip(ip, spec):
+        """
+        Finds out host IP which is available for processing the job. If the
+        host configured in jobs section is not available then this method
+        refers to the scheduler.policy to decide which host to use.
+
+        :param ip: IP configured in jobset in the job section
+        :param spec: jobset dictionary
+        :return: IP of available host
+        """
         host_data = spec['cloudmesh']['hosts']
         policy = spec['cloudmesh']['scheduler']['policy']
         availability = dict()
@@ -241,8 +262,6 @@ class JobQueue:
             available = int(v['cpu_count']) - int(v['job_counter'])
             if available > 0:
                 availability[v['ip']] = available
-
-        print(availability)
 
         if availability.get(ip):
             return ip
@@ -267,13 +286,13 @@ class JobQueue:
                 Console.error(f"Scheduler policy {policy} is not configured."
                               "Available options are sequential, random, "
                               "smart, frugal.")
-                return ""
+                return None
 
     def run_job(self, names=None):
         """
         To run the job on remote machine
-        :param names:
-        :return:
+        :param names: job names
+        :return: job is submitted to the host
         """
         jobset = Path.expanduser(Path(self.filename))
         with open(jobset, 'r') as fi:
@@ -283,28 +302,32 @@ class JobQueue:
             names = spec['jobs'].keys()
 
         for k, v in spec['jobs'].items():
+
             if k in names:
 
-                ip = self.get_available_ip(v['ip'], spec)
-
-                print("Returned IP: ", ip)
+                ip = JobQueue.get_available_ip(v['ip'], spec)
 
                 if ip is not None:
-
-                    # print(command)
-                    command = f"ssh {v['user']}@{v['ip']}"  \
-                               "\"cd {v['directory']}; "    \
+                    command = f"ssh {v['user']}@{ip} "  \
+                              f"\"cd {v['directory']}; "    \
                               f"{v['executable']} {v['arguments']}\""
-
-                    print(k)
-                    print(command)
 
                     Shell.terminal(command, title=f"Running {k}")
 
-#                 spec[job]['status'] = 'Submitted'
-#
-#         with open(self.yaml_out, 'w') as fo:
-#             yaml.dump(spec, fo, default_flow_style=False)
+                    spec['jobs'][k]['status'] = 'submitted'
+                    hname = JobQueue._get_hostname(ip, spec)
+                    ctr = int(spec['cloudmesh']['hosts'][hname]['job_counter'])
+                    spec['cloudmesh']['hosts'][hname]['job_counter'] = \
+                                                                   str(ctr + 1)
+                else:
+                    Console.error(f"Job {k} could not be submitted due to "
+                                  f"missing host with ip {ip}")
+                    return ""
+
+        # Updating the status of the job as 'submitted' and increasing the
+        # job_counter at host level:
+        with open(jobset, 'w') as fo:
+            yaml.dump(spec, fo, default_flow_style=False)
 
 # class SubmitQueue:
 #     """

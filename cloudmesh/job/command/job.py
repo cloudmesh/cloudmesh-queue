@@ -48,6 +48,7 @@ class JobCommand(PluginCommand):
             job hosts add --hostname=hostname --ip=IP --cpu_count=N
                          [--status=STATUS] [--job_counter=COUNTER]
             job list hosts
+            job scheduler --policy=POLICYNAME
 
           This command does some useful things.
 
@@ -185,7 +186,9 @@ class JobCommand(PluginCommand):
             cms job list hosts
                 Enlists all the hosts configured in jobset
         """
+        # TODO: create hosts entries based on all IPs used in jobs section
 
+        # do the import here to avoid long loading times for other commands
         from cloudmesh.job.jobqueue import JobQueue
 
         map_parameters(arguments,
@@ -200,7 +203,8 @@ class JobCommand(PluginCommand):
                        "directory",
                        "user",
                        "hostname",
-                       "cpu_count"
+                       "cpu_count",
+                       "policy"
                        )
         # status has to be obtained with arguments["--status"]
         # we simply set it to state so its still easy to read
@@ -213,8 +217,6 @@ class JobCommand(PluginCommand):
         names = Parameter.expand(arguments["--name"])
 
         file = arguments["FILE"]
-
-        # do the import here to avoid long loading times for other commands
 
         default_location = "~/.cloudmesh/job/spec.yaml"
 
@@ -254,7 +256,7 @@ class JobCommand(PluginCommand):
                        f"{file}")
 
         elif arguments.add and arguments.FILE is None \
-                and arguments.hosts is None:
+                and not arguments.hosts:
             """
             job add --name=NAME
                     --ip=IP
@@ -374,7 +376,7 @@ class JobCommand(PluginCommand):
             print(Printer.write(op_dict, order=order, sort_keys='JobStatus'))
 
         elif arguments.list and arguments["--status"] and \
-                arguments.hosts is None:
+                not arguments.hosts:
             # job list --status=STATUS
             jobset = variables["jobset"] or default_location
             jobset = Path.expanduser(Path(jobset))
@@ -400,7 +402,7 @@ class JobCommand(PluginCommand):
                      'Arguments', 'User']
             print(Printer.write(op_dict, order=order))
 
-        elif arguments.list and arguments["--name"] and arguments.hosts is None:
+        elif arguments.list and arguments["--name"] and not arguments.hosts:
             # job list --name=NAME
             jobset = variables["jobset"] or default_location
             jobset = Path.expanduser(Path(jobset))
@@ -426,7 +428,7 @@ class JobCommand(PluginCommand):
                      'Arguments', 'User']
             print(Printer.write(op_dict, order=order))
 
-        elif arguments.list and arguments.hosts is None:
+        elif arguments.list and not arguments.hosts:
             # job list
             jobset = variables["jobset"] or default_location
             jobset = Path.expanduser(Path(jobset))
@@ -488,7 +490,7 @@ class JobCommand(PluginCommand):
 
             jobqueue = JobQueue()
 
-            jobqueue.run_job()
+            jobqueue.run_job(names)
 
         elif arguments.delete:
             # job delete --name=NAME
@@ -506,5 +508,9 @@ class JobCommand(PluginCommand):
         elif arguments.hosts and arguments.list:
             jobqueue = JobQueue()
             jobqueue.enlist_hosts()
+
+        elif arguments.scheduler and arguments.policy:
+            jobqueue = JobQueue()
+            jobqueue.update_policy()
 
         return ""
