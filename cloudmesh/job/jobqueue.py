@@ -329,6 +329,32 @@ class JobQueue:
         with open(jobset, 'w') as fo:
             yaml.dump(spec, fo, default_flow_style=False)
 
+    def get_policy(self):
+        """
+        Returns scheduler policy name from jobset
+        :return: policy name
+        """
+        config = Config(self.filename)
+        return config['cloudmesh.scheduler.policy']
+
+    def update_policy(self, policy):
+        """
+        Updates the scheduler policy name
+        :return: None
+        """
+        valid_policies = ['sequential', 'smart', 'frugal', 'random']
+
+        if policy in valid_policies:
+            config = Config(self.filename)
+            old_policy = config['cloudmesh.scheduler.policy']
+            config['cloudmesh.scheduler.policy'] = policy
+
+            Console.info(f"Scheduler policy changed from {old_policy} to "
+                         f"{policy}")
+        else:
+            Console.error(f"Scheduler policy {policy} is not configured."
+                          f"Available options are {','.join(valid_policies)}.")
+
 # class SubmitQueue:
 #     """
 #     Performs following tasks:

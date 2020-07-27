@@ -49,6 +49,7 @@ class JobCommand(PluginCommand):
                          [--status=STATUS] [--job_counter=COUNTER]
             job list hosts
             job scheduler --policy=POLICYNAME
+            job scheduler info
 
           This command does some useful things.
 
@@ -107,6 +108,18 @@ class JobCommand(PluginCommand):
               job run [--name=NAME]
                 Run all jobs from jobset. If --name argument is provided then
                 run a specific job
+
+              job hosts add --hostname=name --ip=ip --cpu_count=n
+                Adds a host in jobset yaml file.
+
+              job list hosts
+                Enlists all the hosts configured in jobset
+
+              job scheduler --policy=random
+                Assigns policy name to the scheduler policy
+
+              job scheduler info
+                Shows currently configured scheduler policy
 
               job help
                 prints the manual page
@@ -185,6 +198,15 @@ class JobCommand(PluginCommand):
 
             cms job list hosts
                 Enlists all the hosts configured in jobset
+
+            cms job scheduler --policy=random
+                Assigns policy name to the scheduler policy
+
+            cms job scheduler info
+                Shows currently configured scheduler policy
+
+            cms job run --name=ls_j
+                Submits job(s) to host decided by the scheduler policy
         """
         # TODO: create hosts entries based on all IPs used in jobs section
 
@@ -220,7 +242,7 @@ class JobCommand(PluginCommand):
 
         default_location = "~/.cloudmesh/job/spec.yaml"
 
-        if arguments.info:
+        if arguments.info and not arguments.scheduler:
 
             jobset = variables["jobset"] or default_location
             Console.msg(f"Jobs are defined in: {jobset}")
@@ -509,8 +531,15 @@ class JobCommand(PluginCommand):
             jobqueue = JobQueue()
             jobqueue.enlist_hosts()
 
+        elif arguments.scheduler and arguments.info:
+            jobqueue = JobQueue()
+            policy = jobqueue.get_policy()
+            print()
+            Console.info(f"Configured scheduler policy: {policy}")
+
         elif arguments.scheduler and arguments.policy:
             jobqueue = JobQueue()
-            jobqueue.update_policy()
+            print()
+            jobqueue.update_policy(arguments.policy)
 
         return ""
