@@ -1,5 +1,5 @@
 from pathlib import Path
-import os, time, sys, multiprocessing
+import os, time, sys, multiprocessing, random
 import oyaml as yaml
 from cloudmesh.common.Shell import Shell
 from cloudmesh.configuration.Config import Config
@@ -232,6 +232,43 @@ class JobQueue:
         order = ['name', 'ip', 'cpu_count', 'status', 'job_counter']
         print(Printer.write(config['cloudmesh.hosts'], order=order))
 
+    def get_available_ip(self, ip, spec):
+        host_data = spec['cloudmesh']['hosts']
+        policy = spec['cloudmesh']['scheduler']['policy']
+        availability = dict()
+
+        for k, v in host_data.items():
+            available = int(v['cpu_count']) - int(v['job_counter'])
+            if available > 0:
+                availability[v['ip']] = available
+
+        print(availability)
+
+        if availability.get(ip):
+            return ip
+        else:
+            if policy == 'sequential':
+                # First available host
+                return list(availability.keys())[0]
+            elif policy == 'random':
+                # Random available host
+                return random.choice(availability)
+            elif policy == 'smart':
+                # Host with highest availability
+                d = sorted(availability, key=lambda x: availability[x],
+                           reverse=True)
+                return d[0]
+            elif policy == 'frugal':
+                # Host with least availability
+                d = sorted(availability, key=lambda x: availability[x],
+                           reverse=False)
+                return d[0]
+            else:
+                Console.error(f"Scheduler policy {policy} is not configured."
+                              "Available options are sequential, random, "
+                              "smart, frugal.")
+                return ""
+
     def run_job(self, names=None):
         """
         To run the job on remote machine
@@ -243,20 +280,26 @@ class JobQueue:
             spec = yaml.load(fi, Loader=yaml.FullLoader)
 
         if names is None:
-            names = spec.keys()
+            names = spec['jobs'].keys()
 
-        for k, v in spec.items():
+        for k, v in spec['jobs'].items():
             if k in names:
-                # command = f"{spec[job]['install']} \"{spec[job]['run']} " \
-                # f"{args} --output={spec[job]['remote_output']}\""
-                # print(command)
-                command = f"ssh {v['user']}@{v['ip']} \"cd {v['directory']}; " \
-                          f"{v['executable']} {v['arguments']}\""
 
-                print(k)
-                print(command)
+                ip = self.get_available_ip(v['ip'], spec)
 
-                Shell.terminal(command, title=f"Running {k}")
+                print("Returned IP: ", ip)
+
+                if ip is not None:
+
+                    # print(command)
+                    command = f"ssh {v['user']}@{v['ip']}"  \
+                               "\"cd {v['directory']}; "    \
+                              f"{v['executable']} {v['arguments']}\""
+
+                    print(k)
+                    print(command)
+
+                    Shell.terminal(command, title=f"Running {k}")
 
 #                 spec[job]['status'] = 'Submitted'
 #
