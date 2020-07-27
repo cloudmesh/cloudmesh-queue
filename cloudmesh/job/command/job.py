@@ -132,6 +132,13 @@ class JobCommand(PluginCommand):
              timeout - timeout
              submitted - job submitted to remote machine for execution
 
+          Scheduler policies:
+
+             sequential - Use first available host
+             random     - Use random available host
+             smart      - Use a host with highest availability
+             frugal     - Use a host with least availability
+
           Job specification:
 
              The jobs are specified in aa yaml file
