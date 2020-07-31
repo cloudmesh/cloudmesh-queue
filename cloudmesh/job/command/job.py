@@ -51,26 +51,29 @@ class JobCommand(PluginCommand):
             job scheduler --policy=POLICYNAME
             job scheduler info
 
-          This command does some useful things.
+          This command is a job queuing and scheduling framework. It allows
+          users to leverage all the available compute resources to perform
+          tasks which have heavy usage of compute power and execution time.
 
           Arguments:
               FILE   a file name
 
           Options:
-              --name        Name(s) of jobs.        Ex: 'job[0-5]'  [default: None]
-              --ip          IP of the host.         Ex: 127.0.0.1   [default: None]
-              --executable  The command to be run.  Ex. 'ls'        [default: None]
-              --directory   Location to run job.    Ex. './'        [default: './']
-              --input       Location of input data. Ex. './data'    [default: './data']
-              --status      Status of the job.      Ex. 'ready'     [default: 'ready']
-              --gpu         Which GPU to use.       Ex. 7           [default: None]
-              --user        User on remote host     Ex. 'uname'     [default: {System user}]
-              --arguments   Args for the executable.Ex. '-lisa'     [default: None]
-              --shell       Shell to run job.       Ex. 'bash'      [default: 'bash']
-              --hostname    Host name.              Ex. 'juliet'    [default: None]
-              --cpu_count   CPU count of the host.  Ex. '12'        [default: None]
-              --job_counter Number of submitted jobsEx. '2'         [default: None]
-              --policy      Scheduler policy.       Ex. 'smart'     [default: 'sequential']
+              name=NAME               Name(s) of jobs.        Ex: 'job[0-5]'  [default: None]
+              ip=IP                   IP of the host.         Ex: 127.0.0.1   [default: None]
+              executable=EXECUTABLE   The command to be run.  Ex. 'ls'        [default: None]
+              directory=DIRECTORY     Location to run job.    Ex. './'        [default: './']
+              input=INPUT             Location of input data. Ex. './data'    [default: './data']
+              output=OUTPUT           Location of outputs.    Ex. './output'  [default: './output/job_name']
+              status=STATUS           Status of the job.      Ex. 'ready'     [default: 'ready']
+              gpu=GPU                 Which GPU to use.       Ex. 7           [default: None]
+              user=USER               User on remote host     Ex. 'uname'     [default: {System user}]
+              arguments=ARGUMENTS     Args for the executable.Ex. '-lisa'     [default: None]
+              shell=SHELL             Shell to run job.       Ex. 'bash'      [default: 'bash']
+              hostname=hostname       Host name.              Ex. 'juliet'    [default: None]
+              cpu_count=N             CPU count of the host.  Ex. '12'        [default: None]
+              job_counter=COUNTER     Number of submitted jobsEx. '2'         [default: None]
+              policy=POLICYNAME       Scheduler policy.       Ex. 'smart'     [default: 'sequential']
 
           Description:
 
