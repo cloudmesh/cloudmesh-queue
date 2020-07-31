@@ -28,6 +28,10 @@ installation documentation.
 | Documentation | <https://github.com/cloudmesh/cloudmesh-job/blob/master/README.md> |
 | Code | <https://github.com/cloudmesh/cloudmesh-job/tree/master/cloudmesh> |
 | Installation Instructions | <https://github.com/cloudmesh/cloudmesh-job/blob/master/README.md#installation> |
+| Configuration | <> |
+| Available methods | <> |
+| Command API | <> |
+| Command description | <> |
 
 ## Installation
 
@@ -44,6 +48,55 @@ This library contains a number of functions and APIs that we highlight
 here. They are used for configuration and execution of jobs in available 
 compute resources.
 
+## Configuration
+
+The current jobset filename is stored in the cloudmesh variables under the 
+variable "jobset". It can be queried with cms set jobset. It can be set with 
+cms set jobset=VALUE. 
+
+```bash
+~ cms set jobset
+set jobset
+jobset='~\.cloudmesh\job\spec.yaml'
+```
+
+Content of the jobset can be created using `cms job template` (Refer API of 
+the command.). This configuration file has following content:
+
+```yaml
+cloudmesh:
+  default:
+    user: username
+  hosts:
+    localhost:
+      name: localhost
+      ip: localhost
+      cpu_count: '2'
+      status: free
+      job_counter: '2'
+    juliet:
+      name: juliet
+      ip: juliet.futuresystems.org
+      cpu_count: '12'
+      status: free
+      job_counter: '0'
+  scheduler:
+    policy: smart
+jobs:
+  ls_j:
+    name: ls_j
+    directory: .
+    ip: juliet.futuresystems.org
+    input: ./data
+    output: ./output/ls_j
+    status: ready
+    gpu: ' '
+    user: username
+    arguments: ' '
+    executable: 'python test.py'
+    shell: bash
+    submitted_to_ip: juliet.futuresystems.org
+```  
 
 ## Available methods
  
