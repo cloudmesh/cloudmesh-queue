@@ -28,10 +28,10 @@ installation documentation.
 | Documentation | <https://github.com/cloudmesh/cloudmesh-job/blob/master/README.md> |
 | Code | <https://github.com/cloudmesh/cloudmesh-job/tree/master/cloudmesh> |
 | Installation Instructions | <https://github.com/cloudmesh/cloudmesh-job/blob/master/README.md#installation> |
-| Configuration | <> |
-| Available methods | <> |
-| Command API | <> |
-| Command description | <> |
+| Configuration | <https://github.com/cloudmesh/cloudmesh-job/blob/master/README.md#configuration> |
+| Available methods | <https://github.com/cloudmesh/cloudmesh-job/blob/master/README.md#available-methods> |
+| Command API | <https://github.com/cloudmesh/cloudmesh-job/blob/master/README.md#api-of-the-command> |
+| Command description | <https://github.com/cloudmesh/cloudmesh-job/blob/master/README.md#command-description> |
 
 ## Installation
 
