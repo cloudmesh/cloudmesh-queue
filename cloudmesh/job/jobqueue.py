@@ -271,7 +271,7 @@ class JobQueue:
                 return list(availability.keys())[0]
             elif policy == 'random':
                 # Random available host
-                return random.choice(availability)
+                return random.choice(list(availability))
             elif policy == 'smart':
                 # Host with highest availability
                 d = sorted(availability, key=lambda x: availability[x],
@@ -308,19 +308,79 @@ class JobQueue:
                 ip = JobQueue.get_available_ip(v['ip'], spec)
 
                 if ip is not None:
-                    command = f"ssh {v['user']}@{ip} "  \
-                              f"\"cd {v['directory']}; "    \
-                              f"{v['executable']} {v['arguments']}\""
+
+                    command = f"ssh {v['user']}@{ip} "       \
+                              f"\"cd {v['directory']};"      \
+                              f"sh -c 'echo \$\$ > {v['output']}/{k}_pid.log;" \
+                              f"exec {v['executable']} {v['arguments']}'\""
+
+                    # print(command)
 
                     Shell.terminal(command, title=f"Running {k}")
+                    time.sleep(5)
+
+                    # # job_pid = Shell.get_pid(name=v['executable'])
+                    # proc = subprocess.Popen([
+                    #     r"C:\Program Files\Git\git-bash.exe", "-c",
+                    #     f"ssh {v['user']}@{ip} ", 'cat', 'pid.log'],
+                    #     stdout=subprocess.PIPE,
+                    #     stderr=subprocess.PIPE)
+                    # out, err = proc.communicate()
+                    # print(out, err)
 
                     spec['jobs'][k]['status'] = 'submitted'
+                    spec['jobs'][k]['submitted_to_ip'] = ip
                     hname = JobQueue._get_hostname(ip, spec)
                     ctr = int(spec['cloudmesh']['hosts'][hname]['job_counter'])
                     spec['cloudmesh']['hosts'][hname]['job_counter'] = \
                                                                    str(ctr + 1)
                 else:
                     Console.error(f"Job {k} could not be submitted due to "
+                                  f"missing host with ip {ip}")
+                    return ""
+
+        # Updating the status of the job as 'submitted' and increasing the
+        # job_counter at host level:
+        with open(jobset, 'w') as fo:
+            yaml.dump(spec, fo, default_flow_style=False)
+
+    def kill_job(self, names=None):
+        """
+        To kill the job on remote machine
+        :param names: job names
+        :return: job is killed on the host
+        """
+        jobset = Path.expanduser(Path(self.filename))
+        with open(jobset, 'r') as fi:
+            spec = yaml.load(fi, Loader=yaml.FullLoader)
+
+        if names is None:
+            names = spec['jobs'].keys()
+
+        for k, v in spec['jobs'].items():
+
+            if k in names:
+
+                ip = v['submitted_to_ip']
+
+                if ip is not None:
+
+                    command = f"ssh {v['user']}@{ip} "       \
+                              f"\"cd {v['output']};"         \
+                              f"kill -9 \$(cat {k}_pid.log)  \""
+
+                    print(command)
+
+                    Shell.terminal(command, title=f"Running {k}")
+                    # time.sleep(5)
+
+                    spec['jobs'][k]['status'] = 'killed'
+                    hname = JobQueue._get_hostname(ip, spec)
+                    ctr = int(spec['cloudmesh']['hosts'][hname]['job_counter'])
+                    spec['cloudmesh']['hosts'][hname]['job_counter'] = \
+                                                                   str(ctr - 1)
+                else:
+                    Console.error(f"Job {k} could not be killed due to "
                                   f"missing host with ip {ip}")
                     return ""
 

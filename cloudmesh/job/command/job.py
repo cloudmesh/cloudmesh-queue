@@ -485,9 +485,8 @@ class JobCommand(PluginCommand):
         elif arguments.kill:
             # job kill --name=NAME
 
-            VERBOSE(names)
-
-            Console.error("kill - Not yet implemented")
+            jobqueue = JobQueue()
+            jobqueue.kill_job(names)
 
         elif arguments.reset:
             # job reset --name=NAME
