@@ -57,12 +57,20 @@ class JobCommand(PluginCommand):
               FILE   a file name
 
           Options:
-              -f       specify the file
-              --status the status [default: None]
-              --input=INPUT    input dir location [default: ./data]
-              # --output=OUTPUT  output dir location
-              --directory=DIRECTORY  execution location [default: .]
-
+              --name        Name(s) of jobs.        Ex: 'job[0-5]'  [default: None]
+              --ip          IP of the host.         Ex: 127.0.0.1   [default: None]
+              --executable  The command to be run.  Ex. 'ls'        [default: None]
+              --directory   Location to run job.    Ex. './'        [default: './']
+              --input       Location of input data. Ex. './data'    [default: './data']
+              --status      Status of the job.      Ex. 'ready'     [default: 'ready']
+              --gpu         Which GPU to use.       Ex. 7           [default: None]
+              --user        User on remote host     Ex. 'uname'     [default: {System user}]
+              --arguments   Args for the executable.Ex. '-lisa'     [default: None]
+              --shell       Shell to run job.       Ex. 'bash'      [default: 'bash']
+              --hostname    Host name.              Ex. 'juliet'    [default: None]
+              --cpu_count   CPU count of the host.  Ex. '12'        [default: None]
+              --job_counter Number of submitted jobsEx. '2'         [default: None]
+              --policy      Scheduler policy.       Ex. 'smart'     [default: 'sequential']
 
           Description:
 
@@ -141,31 +149,28 @@ class JobCommand(PluginCommand):
 
           Job specification:
 
-             The jobs are specified in aa yaml file
+             The jobs are specified in 'spec.yaml' file
 
              name:
                ip: ip of the host
                input: where the input comes form (locally to ip)
                output: where to store the outout (locally to ip)
                status: the status
-               gpu: the GPU specification # string such as "0,2" as defined by the
-                    GPU framework e.g. NVIDIA
+               gpu: the GPU specification # string such as "0,2" as defined by
+                    the GPU framework e.g. NVIDIA
                user: the userneme on ip to execute the job
                directory: the working directory
                arguments: the arguments passed along # lis of key values
                executable: the executable
                shell: bash # executes the job in the provided shell
                       $(SHELL) will use the default user shell
-               timeout: time to live after which the command is
-                        interrupted
 
           The current jobset filename is stored in the cloudmesh variables under
-          the variable "jobset". It can queries with cms set jobset. It can be set with
-          cms set jobset=VALUE
-          We may not even do cms job set VALUE due to this simpler existing way of interfaceing
-          we can query the variables with
-          variables = Variables() and also set them that way
-          variables["jobset"] = VALUE
+          the variable "jobset". It can be queried with cms set jobset. It
+          can be set with cms set jobset=VALUE.
+          We may not even do cms job set VALUE due to this simpler existing way
+          of interfacing we can query the variables with variables = Variables()
+          and also set them that way variables["jobset"] = VALUE.
 
           Usage examples:
             cms job info
@@ -215,7 +220,13 @@ class JobCommand(PluginCommand):
             cms job run --name=ls_j
                 Submits job(s) to host decided by the scheduler policy
 
-                
+            cms job kill --name=ls_j
+                Kills the job
+
+            cms job delete --name=ls_j
+                Deletes a job from the jobset. If job is in 'submitted'
+                status then it is killed first and then deleted from jobset.
+
         """
         # TODO: create hosts entries based on all IPs used in jobs section
 
