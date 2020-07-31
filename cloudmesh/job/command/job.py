@@ -214,6 +214,8 @@ class JobCommand(PluginCommand):
 
             cms job run --name=ls_j
                 Submits job(s) to host decided by the scheduler policy
+
+                
         """
         # TODO: create hosts entries based on all IPs used in jobs section
 
@@ -522,8 +524,8 @@ class JobCommand(PluginCommand):
 
         elif arguments.delete:
             # job delete --name=NAME
-            name = arguments["--name"]
-            Console.error("delete - Not yet implemented")
+            jobqueue = JobQueue()
+            jobqueue.delete_job(names)
 
         elif arguments.help:
             # job help

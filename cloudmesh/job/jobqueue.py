@@ -389,6 +389,35 @@ class JobQueue:
         with open(jobset, 'w') as fo:
             yaml.dump(spec, fo, default_flow_style=False)
 
+    def delete_job(self, names=None):
+        """
+        Deletes a job from jobset. If the job is already submitted for
+        execution then it is killed first and then deleted from jobset.
+        :param names: list of names of jobs to be deleted
+        :return: updates jobset
+        """
+        jobset = Path.expanduser(Path(self.filename))
+        with open(jobset, 'r') as fi:
+            spec = yaml.load(fi, Loader=yaml.FullLoader)
+
+        if names is None:
+            names = spec['jobs'].keys()
+
+        for name in names:
+
+            try:
+                if spec['jobs'][name]['status'] == 'submitted':
+                    self.kill_job(name)
+
+                del spec['jobs'][name]
+            except KeyError:
+                Console.error(f"Job '{name}' not found in jobset. ")
+            except Exception as e:
+                Console.error(f"Job {name} could not be deleted. Please check.")
+
+        with open(jobset, 'w') as fo:
+            yaml.dump(spec, fo, default_flow_style=False)
+
     def get_policy(self):
         """
         Returns scheduler policy name from jobset
