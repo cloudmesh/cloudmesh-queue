@@ -242,7 +242,7 @@ class JobQueue:
         :param spec: jobset dictionary
         :return: hostname
         """
-        for k, v in spec['cloudmesh']['hosts'].items():
+        for k, v in spec['cloudmesh.hosts'].items():
             if v['ip'] == ip:
                 return k
 
@@ -305,9 +305,7 @@ class JobQueue:
         :param names: job names
         :return: job is killed on the host
         """
-        jobset = Path.expanduser(Path(self.filename))
-        with open(jobset, 'r') as fi:
-            spec = yaml.load(fi, Loader=yaml.FullLoader)
+        spec = Config(self.filename)
 
         if names is None:
             names = spec['jobs'].keys()
@@ -329,21 +327,15 @@ class JobQueue:
                     Shell.terminal(command, title=f"Running {k}")
                     # time.sleep(5)
 
-                    spec['jobs'][k]['status'] = 'killed'
+                    spec[f'jobs.{k}.status'] = 'killed'
                     hname = JobQueue._get_hostname(ip, spec)
-                    ctr = int(spec['cloudmesh']['hosts'][hname]['job_counter'])
-                    spec['cloudmesh']['hosts'][hname]['job_counter'] = \
-                                                                   str(ctr - 1)
-                    # try out => spec[f'cloudmesh.hosts.{hname}.job_counter']
+                    ctr = int(spec[f'cloudmesh.hosts.{hname}.job_counter'])
+                    spec[f'cloudmesh.hosts.{hname}.job_counter']= str(ctr - 1)
+
                 else:
                     Console.error(f"Job {k} could not be killed due to "
                                   f"missing host with ip {ip}")
                     return ""
-
-        # Updating the status of the job as 'submitted' and increasing the
-        # job_counter at host level:
-        with open(jobset, 'w') as fo:
-            yaml.dump(spec, fo, default_flow_style=False)
 
     def delete_job(self, names=None):
         """
