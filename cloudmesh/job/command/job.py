@@ -427,66 +427,71 @@ class JobCommand(PluginCommand):
         elif arguments.kill:
             # job kill --name=NAME
 
-            jobqueue = JobQueue()
+            jobqueue = JobQueue(variables["jobset"])
             jobqueue.kill_job(names)
 
         elif arguments.reset:
             # job reset --name=NAME
-            jobset = variables["jobset"] or default_location
-            jobset = Path.expanduser(Path(jobset))
 
-            with open(jobset, 'r') as fi:
-                spec = yaml.load(fi, Loader=yaml.FullLoader)
+            jobqueue = JobQueue(variables["jobset"])
+            spec = Config(jobqueue.filename)
 
             if names is None:
                 names = spec['jobs'].keys()
 
             for name in names:
                 if not spec['jobs'].get(name):
-                    Console.error(f"Job {name} not found in jobset {jobset}.")
+                    Console.error(f"Job {name} not found in jobset "
+                                  f"{jobqueue.filename}.")
                     continue
                 if spec['jobs'][name]['status'] == 'submitted':
                     Console.error(f"Job {name} is already submitted for "
                                 "execution. Please kill the job before reset.")
                 else:
-                    spec['jobs'][name]['status'] = 'ready'
+                    spec[f'jobs.{name}.status'] = 'ready'
                     Console.ok(f"Status reset for job {name}.")
-
-            with open(jobset, 'w') as fo:
-                yaml.dump(spec, fo)
 
         elif arguments.run:
             # job run --name=NAME
 
-            jobqueue = JobQueue()
-
+            jobqueue = JobQueue(variables["jobset"])
             jobqueue.run_job(names)
 
         elif arguments.delete:
             # job delete --name=NAME
-            jobqueue = JobQueue()
+
+            jobqueue = JobQueue(variables["jobset"])
             jobqueue.delete_job(names)
 
         elif arguments.help:
             # job help
+
             os.system("cms help job")
 
         elif arguments.add and arguments.hosts:
-            jobqueue = JobQueue()
+            # job hosts add --hostname=NAME --ip=ip --cpu_count=n
+
+            jobqueue = JobQueue(variables["jobset"])
             jobqueue.addhost(arguments)
 
         elif arguments.hosts and arguments.list:
-            jobqueue = JobQueue()
+            # job list hosts
+
+            jobqueue = JobQueue(variables["jobset"])
             jobqueue.enlist_hosts()
 
         elif arguments.scheduler and arguments.info:
-            jobqueue = JobQueue()
+            # job scheduler info
+
+            jobqueue = JobQueue(variables["jobset"])
             policy = jobqueue.get_policy()
             print()
             Console.info(f"Configured scheduler policy: {policy}")
 
         elif arguments.scheduler and arguments.policy:
-            jobqueue = JobQueue()
+            # job scheduler --policy=random
+
+            jobqueue = JobQueue(variables["jobset"])
             print()
             jobqueue.update_policy(arguments.policy)
 
