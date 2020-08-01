@@ -65,7 +65,8 @@ class JobQueue:
     def _sysinfo():
         """
         Returns value of system hostname and cpu count from environment
-        variables
+        variables. This is working on local machine and populated in template
+        only.
         :return: hostname and max cpu_count
         """
         hostname = None
@@ -152,6 +153,7 @@ class JobQueue:
         _spec = {
             'name': arguments.get('names')[idx],
             'directory': arguments.get('directory') or '.',
+            # ip deafult s/b taken from command, default can be localhost
             'ip': arguments.get('ip_list')[idx] or 'r-003',
             'input': arguments.get('input_list')[idx] or './data',
             'output': arguments.get('output_list')[idx] or './data',
@@ -172,7 +174,7 @@ class JobQueue:
         :param jobset: jobset file name
         :return: None, adds jobs from specifications into the jobset
         """
-
+        # Remove hardcoded sepc.yaml  s/b instance property self.filename
         jobset = jobset or "~/.cloudmesh/job/spec.yaml"
         jobset = path_expand(jobset)
 
@@ -216,9 +218,10 @@ class JobQueue:
         config = Config(self.filename)
 
         tag = arguments.hostname
-        config[f'cloudmesh.hosts.{tag}.name'] = arguments.hostname
-        config[f'cloudmesh.hosts.{tag}.ip'] = arguments.ip
-        config[f'cloudmesh.hosts.{tag}.cpu_count'] = arguments.cpu_count
+        config[f'cloudmesh.hosts.{tag}.name'] = arguments.hostname or \
+                                                'localhost'
+        config[f'cloudmesh.hosts.{tag}.ip'] = arguments.ip or 'localhost'
+        config[f'cloudmesh.hosts.{tag}.cpu_count'] = arguments.cpu_count or '0'
         config[f'cloudmesh.hosts.{tag}.status'] = arguments.status or 'free'
         config[f'cloudmesh.hosts.{tag}.job_counter'] = arguments.job_counter \
                                                        or '0'
@@ -254,39 +257,8 @@ class JobQueue:
         :param spec: jobset dictionary
         :return: IP of available host
         """
-        host_data = spec['cloudmesh']['hosts']
-        policy = spec['cloudmesh']['scheduler']['policy']
-        availability = dict()
-
-        for k, v in host_data.items():
-            available = int(v['cpu_count']) - int(v['job_counter'])
-            if available > 0:
-                availability[v['ip']] = available
-
-        if availability.get(ip):
-            return ip
-        else:
-            if policy == 'sequential':
-                # First available host
-                return list(availability.keys())[0]
-            elif policy == 'random':
-                # Random available host
-                return random.choice(list(availability))
-            elif policy == 'smart':
-                # Host with highest availability
-                d = sorted(availability, key=lambda x: availability[x],
-                           reverse=True)
-                return d[0]
-            elif policy == 'frugal':
-                # Host with least availability
-                d = sorted(availability, key=lambda x: availability[x],
-                           reverse=False)
-                return d[0]
-            else:
-                Console.error(f"Scheduler policy {policy} is not configured."
-                              "Available options are sequential, random, "
-                              "smart, frugal.")
-                return None
+        p = Policy(ip, spec)
+        return p.get_ip()
 
     def run_job(self, names=None):
         """
@@ -294,9 +266,7 @@ class JobQueue:
         :param names: job names
         :return: job is submitted to the host
         """
-        jobset = Path.expanduser(Path(self.filename))
-        with open(jobset, 'r') as fi:
-            spec = yaml.load(fi, Loader=yaml.FullLoader)
+        spec = Config(self.filename)
 
         if names is None:
             names = spec['jobs'].keys()
@@ -314,35 +284,20 @@ class JobQueue:
                               f"sh -c 'echo \$\$ > {v['output']}/{k}_pid.log;" \
                               f"exec {v['executable']} {v['arguments']}'\""
 
-                    # print(command)
+                    VERBOSE(command)
 
                     Shell.terminal(command, title=f"Running {k}")
                     time.sleep(5)
 
-                    # # job_pid = Shell.get_pid(name=v['executable'])
-                    # proc = subprocess.Popen([
-                    #     r"C:\Program Files\Git\git-bash.exe", "-c",
-                    #     f"ssh {v['user']}@{ip} ", 'cat', 'pid.log'],
-                    #     stdout=subprocess.PIPE,
-                    #     stderr=subprocess.PIPE)
-                    # out, err = proc.communicate()
-                    # print(out, err)
-
-                    spec['jobs'][k]['status'] = 'submitted'
-                    spec['jobs'][k]['submitted_to_ip'] = ip
+                    spec[f'jobs.{k}.status'] = 'submitted'
+                    spec[f'jobs.{k}.submitted_to_ip'] = ip
                     hname = JobQueue._get_hostname(ip, spec)
-                    ctr = int(spec['cloudmesh']['hosts'][hname]['job_counter'])
-                    spec['cloudmesh']['hosts'][hname]['job_counter'] = \
-                                                                   str(ctr + 1)
+                    ctr = int(spec[f'cloudmesh.hosts.{hname}.job_counter'])
+                    spec[f'cloudmesh.hosts.{hname}.job_counter'] = str(ctr + 1)
                 else:
                     Console.error(f"Job {k} could not be submitted due to "
                                   f"missing host with ip {ip}")
                     return ""
-
-        # Updating the status of the job as 'submitted' and increasing the
-        # job_counter at host level:
-        with open(jobset, 'w') as fo:
-            yaml.dump(spec, fo, default_flow_style=False)
 
     def kill_job(self, names=None):
         """
@@ -365,11 +320,11 @@ class JobQueue:
 
                 if ip is not None:
 
-                    command = f"ssh {v['user']}@{ip} "       \
-                              f"\"cd {v['output']};"         \
-                              f"kill -9 \$(cat {k}_pid.log)  \""
+                    command = f"ssh {v['user']}@{ip} " \
+                              f"\"cd {v['output']};" \
+                              f"kill -9 \$(cat {k}_pid.log)\""
 
-                    print(command)
+                    VERBOSE(command)
 
                     Shell.terminal(command, title=f"Running {k}")
                     # time.sleep(5)
@@ -379,6 +334,7 @@ class JobQueue:
                     ctr = int(spec['cloudmesh']['hosts'][hname]['job_counter'])
                     spec['cloudmesh']['hosts'][hname]['job_counter'] = \
                                                                    str(ctr - 1)
+                    # try out => spec[f'cloudmesh.hosts.{hname}.job_counter']
                 else:
                     Console.error(f"Job {k} could not be killed due to "
                                   f"missing host with ip {ip}")
@@ -443,141 +399,63 @@ class JobQueue:
         else:
             Console.error(f"Scheduler policy {policy} is not configured."
                           f"Available options are {','.join(valid_policies)}.")
+            return ""
 
-# class SubmitQueue:
-#     """
-#     Performs following tasks:
-#     - generate: creates spec.yaml from sweep.py
-#     - submit: submits jobs from spec.yaml to target compute resource
-#     """
-#     def __init__(self, yaml_location="../data"):
-#         """
-#         Creates an empty yaml file on instantiation
-#         :param yaml_location: Local location for yaml file
-#         """
-#         self.yaml_out = Path(yaml_location, 'spec.yaml')
-#         fo = open(self.yaml_out,'w')
-#         # fo.write(f"# YAML file to submit jobs on multiple compute
-#         # resources\n# User: {getpass.getuser()}\n# Created at: {time.ctime(
-#         # )}\n")
-#         fo.close()
-#         self.yaml_dict = dict()
-#         # Counter to be used in the .yaml root node for each job
-#         self.ctr = 1
-#
-#         self.iu_config = Config()
-#         self.user = self.iu_config['cloudmesh.iu.user']
-#         self.host = self.iu_config['cloudmesh.iu.host']
-#         self.port = self.iu_config['cloudmesh.iu.port']
-#         self.gpu = self.iu_config['cloudmesh.iu.gpu']
-#         self.reservation = self.iu_config['cloudmesh.iu.reservation']
-#
-#     def generate(self, experiment,
-#                  name,
-#                  expected_run_time=None,
-#                  remote_output=".",
-#                  local_output="../data",
-#                  remote_mc_name="romeo",
-#                  install=None,
-#                  run="./cm/cloudmesh-timeseries/cloudmesh/timeseries/predict"
-#                      "/lstm-predict-n.py",
-#                  parameters=None
-#                  ):
-#         """
-#         Creates the .yaml file spec.yaml at self.yaml_location
-#         :param experiment: Experiment name
-#         :param name: Job name
-#         :param expected_run_time: Expected run time, e.g. 1h
-#         :param remote_output: Output directory on remote resource
-#         :param local_output: Output directory on local machine
-#         :param remote_mc_name: Name of the remote compute resource
-#         :param install: Commands to be run before executing predictions
-#         :param run: command to be run for predictions
-#         :param parameters: dict, additional parameters for the 'run' command
-#         :return: submits jobs to remote resource
-#         """
-#         # Console.info(f"Generating {self.yaml_out}\n")
-#
-#         if parameters is None:
-#             parameters = {'fields': ['Nbeds'], 'daysin': 1, 'n': 2,
-#                           'data': './cm/cloudmesh-timeseries/data'}
-#         if install is None:
-#             if remote_mc_name == 'romeo':
-#                 install = f'ssh -t {self.user}@juliet.futuresystems.org "ssh {self.host}"'
-#             else:
-#                 install = None
-#         self.yaml_dict['experiment'] = experiment
-#         self.yaml_dict['name'] = name
-#         self.yaml_dict['expected_run_time'] = expected_run_time
-#         self.yaml_dict['remote_output'] = f'./cm/covid_model/job{self.ctr}'
-#         self.yaml_dict['local_output'] = local_output
-#         self.yaml_dict['remote_mc_name'] = remote_mc_name
-#         self.yaml_dict['install'] = install
-#         self.yaml_dict['parameters'] = parameters
-#         self.yaml_dict['run'] = run
-#
-#         self.yaml_dict['state'] = self.yaml_dict['remote_output']+'/status.yaml'
-#         self.yaml_dict['status'] = None
-#         self.yaml_dict['run_time'] = None
-#         self.yaml_dict['gpu'] = self.gpu
-#
-#         self.out_dict = dict()
-#         self.out_dict[f'job{self.ctr}'] = self.yaml_dict
-#         self.ctr += 1
-#
-#         with open(self.yaml_out, 'a+') as fo:
-#             yaml.dump(self.out_dict, fo, default_flow_style=False)
-#
-#         # Console.info(f"Generated {self.yaml_out}\n")
-#
-#     def submit(self):
-#         """
-#         Method reads job list from spec.yaml and submits each job to
-#         designated remote compute resource
-#         :return: None
-#         """
-#         with open(self.yaml_out, 'r') as fi:
-#             spec = yaml.load(fi, Loader=yaml.FullLoader)
-#             for job in spec.keys():
-#                 args = ' '.join([f"--{k}={v}" for k,v in spec[job][
-#                     'parameters'].items()])
-#
-#                 command = f"{spec[job]['install']} \"{spec[job]['run']} " \
-#                           f"{args} --output={spec[job]['remote_output']}\""
-#                 print(command)
-#
-#                 Shell.terminal(command, title=f"Running {job}")
-#
-#                 spec[job]['status'] = 'Submitted'
-#
-#         with open(self.yaml_out, 'w') as fo:
-#             yaml.dump(spec, fo, default_flow_style=False)
-#
-#     def get_status(self, job_name='All'):
-#         with open(self.yaml_out, 'r') as fi:
-#             spec = yaml.load(fi, Loader=yaml.FullLoader)
-#
-#         f=spec[job_name]['state']
-#         command = spec[job_name]['install'] + \
-#                   f' \"cat {f} | grep \'current_status\' \"'
-#
-#         print(command)
-#
-#         content = Shell.live(command)
-#
-#         # if Path.is_dir(Path(r"C:\Program Files\Git")):
-#         #     p = subprocess.Popen([r"C:\Program Files\Git\git-bash.exe",
-#         #                           "-c", f"{command}"],
-#         #                           stdout=subprocess.PIPE,
-#         #                           stderr=subprocess.PIPE)
-#         #     # p.wait()
-#         #     print("==================")
-#         #     print(p.stdout.decode())
-#         #     print(p.stderr.decode())
-#         #     print("==================")
-#         #     content = 'if'
-#         # else:
-#         #     content = 'Unknown'
-#
-#         print("out of command")
-#         print(content)
+
+class Policy:
+    """
+    Class returns available host IP based on the scheduler policy
+    """
+    def __init__(self, ip, spec):
+        """
+        Instantiate the class and fetch scheduler.policy, available IPs
+        :param spec: Content of jobset
+        :param ip: IP of the host configured for the job
+        """
+        self.ip = ip
+        self.spec = spec
+
+        self.host_data = self.spec['cloudmesh.hosts']
+        self.policy = self.spec['cloudmesh.scheduler.policy']
+        self.availability = dict()
+
+        for k, v in self.host_data.items():
+            available = int(v['cpu_count']) - int(v['job_counter'])
+            if available > 0:
+                self.availability[v['ip']] = available
+
+        VERBOSE(self.availability)
+
+    def get_ip(self):
+        """
+        Method to return available IP. If any new scheduler policy is
+        configured, then this method should be coded accordingly.
+
+            Configured Scheduler policies:
+             sequential - Use first available host
+             random     - Use random available host
+             smart      - Use a host with highest availability
+             frugal     - Use a host with least availability
+
+        :return: IP of available host
+        """
+        if self.availability.get(self.ip):
+            return self.ip
+        else:
+            if self.policy == 'sequential':
+                return list(self.availability.keys())[0]
+            elif self.policy == 'random':
+                return random.choice(list(self.availability))
+            elif self.policy == 'smart':
+                d = sorted(self.availability, key=lambda x:self.availability[x],
+                           reverse=True)
+                return d[0]
+            elif self.policy == 'frugal':
+                d = sorted(self.availability, key=lambda x:self.availability[x],
+                           reverse=False)
+                return d[0]
+            else:
+                Console.error(f"Scheduler policy {self.policy} is not "
+                              f"configured. Available options are sequential, "
+                              f"random, smart, frugal.")
+                return None
