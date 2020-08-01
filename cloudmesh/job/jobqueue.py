@@ -27,12 +27,12 @@ class JobQueue:
         self.name, \
         self.directory, \
         self.basename = \
-            JobQueue._location(self.filename)
+            JobQueue.location(self.filename)
         if self.directory != "":
             Shell.mkdir(self.directory)
 
     @staticmethod
-    def _location(filename):
+    def location(filename):
         """
         Returns name, directory and extension of a file
         :param filename: File name
@@ -172,7 +172,7 @@ class JobQueue:
         :return: None, adds jobs from specifications into the jobset
         """
         # Remove hardcoded sepc.yaml  s/b instance property self.filename
-        jobset = jobset or "~/.cloudmesh/job/spec.yaml"
+        jobset = jobset or self.filename
         jobset = path_expand(jobset)
 
         dict_out = dict()
@@ -388,6 +388,74 @@ class JobQueue:
             Console.error(f"Scheduler policy {policy} is not configured."
                           f"Available options are {','.join(valid_policies)}.")
             return ""
+
+    def enlist_jobs(self, filter_name=None, filter_value=None, sort_var=None):
+        """
+        Enlists all jobs from the jobset. Applies filter based on the
+        filter_value and filter_name. Sorting of output is done on sort_var,
+        or by default on job order in the jobset.
+        :param filter_name: Element name to apply filter on
+        :param filter_value: Value of the element to be filtered in
+        :param sort_var: Element name to sort the output on
+        :return: Prints a table with job list
+        """
+        spec = Config(self.filename)
+        op_dict = dict()
+
+        if sort_var is None:
+            sort_var = True
+
+        i = 0
+        for k, v in spec['jobs'].items():
+            if filter_name is None:
+                i += 1
+                if v.get("status") is None:
+                    v["status"] = 'Unavailable'
+                op_dict[k] = {
+                    'Number': i,
+                    'JobName': v.get("name"),
+                    'JobStatus': v.get("status"),
+                    'RemoteIp': v.get("ip"),
+                    'Command': v.get("executable"),
+                    'Arguments': v.get("arguments"),
+                    'User': v.get('user')
+                }
+            else:
+                if filter_name == 'name':
+                    # job name can have partial match. Hence separate logic:
+                    if filter_value in v[filter_name]:
+                        i += 1
+                        if v.get("status") is None:
+                            v["status"] = 'Unavailable'
+                        op_dict[k] = {
+                            'Number': i,
+                            'JobName': v.get("name"),
+                            'JobStatus': v.get("status"),
+                            'RemoteIp': v.get("ip"),
+                            'Command': v.get("executable"),
+                            'Arguments': v.get("arguments"),
+                            'User': v.get('user')
+                        }
+                else:
+                    # Exact match on filter_name with filter_value
+                    if v[filter_name] == filter_value:
+                        i += 1
+                        if v.get("status") is None:
+                            v["status"] = 'Unavailable'
+                        op_dict[k] = {
+                            'Number': i,
+                            'JobName': v.get("name"),
+                            'JobStatus': v.get("status"),
+                            'RemoteIp': v.get("ip"),
+                            'Command': v.get("executable"),
+                            'Arguments': v.get("arguments"),
+                            'User': v.get('user')
+                        }
+
+        order = ['Number', 'JobName', 'JobStatus', 'RemoteIp', 'Command',
+                 'Arguments', 'User']
+
+        print(Printer.write(op_dict, order=order, sort_keys=sort_var))
 
 
 class Policy:

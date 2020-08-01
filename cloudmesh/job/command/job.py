@@ -9,6 +9,7 @@ from cloudmesh.shell.command import PluginCommand
 from cloudmesh.shell.command import command
 from cloudmesh.shell.command import map_parameters
 from cloudmesh.common.Printer import Printer
+from cloudmesh.configuration.Config import Config
 import oyaml as yaml
 
 
@@ -182,7 +183,7 @@ class JobCommand(PluginCommand):
             cms job set '~/.cloudmesh/job/spec.yaml'
                 Sets jobset as the FILE provided. Further process refers jobset.
 
-            cms job template a.yaml --name="b[0-1]"; less a.yaml
+            cms job template --name="b[0-1]"; less a.yaml
                 Creates the jobs b0 and b1 as templates in the jobset.
 
             cms job add --name=z[0-1] --ip=123,345 --executable='ls'
@@ -263,7 +264,9 @@ class JobCommand(PluginCommand):
 
         file = arguments["FILE"]
 
-        default_location = "~/.cloudmesh/job/spec.yaml"
+        # Instantiate JobQueue without filename to get default filename
+        jobqueue = JobQueue()
+        default_location = jobqueue.filename
 
         if arguments.info and not arguments.scheduler:
 
@@ -273,7 +276,6 @@ class JobCommand(PluginCommand):
 
         elif arguments.template:
 
-            # TODO: do we need FILE in this call?
             names = names or ["job"]
             jobset = variables["jobset"] or default_location
             variables["jobset"] = jobset
@@ -295,7 +297,8 @@ class JobCommand(PluginCommand):
 
             variables["jobset"] = file
 
-            name, directory, basename = JobQueue._location(file)
+            # _function s/b renamed as it is no longer private
+            name, directory, basename = JobQueue.location(file)
 
             Console.ok(f"Jobset defined as {name} located at"
                        f"{file}")
@@ -317,10 +320,10 @@ class JobCommand(PluginCommand):
             """
 
             jobset = variables["jobset"] or default_location
-            _name, _directory, _basename = JobQueue._location(
+            _name, _directory, _basename = JobQueue.location(
                 variables["jobset"])
 
-            jobqueue = JobQueue()
+            jobqueue = JobQueue(variables["jobset"])
 
             # fixed arguments for all jobs
             arguments.executable = arguments.executable or 'ls'
@@ -331,7 +334,7 @@ class JobCommand(PluginCommand):
             # Variable arguments
             arguments.names = names
             arguments.ip = arguments.ip or "localhost"
-            arguments.input = arguments.input or "../data"
+            arguments.input = arguments.input or "./data"
             arguments.output = arguments.output or \
                                "./output/" + arguments['--name']
             arguments.gpu = arguments.gpu or " "
@@ -371,7 +374,7 @@ class JobCommand(PluginCommand):
             """
             # Path.expanduser needed as windows can't interpret "~"
             file = Path.expanduser(Path(arguments.FILE))
-            _name, _directory, _basename = JobQueue._location(file)
+            _name, _directory, _basename = JobQueue.location(file)
 
             if variables["jobset"] is None:
                 Console.error("Jobset not defined. Please use `cms job set "
@@ -387,7 +390,7 @@ class JobCommand(PluginCommand):
                               "and end with .yaml")
                 return ""
 
-            jobqueue = JobQueue()
+            jobqueue = JobQueue(variables["jobset"])
 
             with open(file, 'r') as fi:
                 spec = yaml.load(fi, Loader=yaml.FullLoader)
@@ -395,108 +398,31 @@ class JobCommand(PluginCommand):
             jobqueue.add(spec)
 
         elif arguments.status:
+
             # job status
-            jobset = variables["jobset"] or default_location
-            jobset = Path.expanduser(Path(jobset))
-            op_dict = dict()
-
-            with open(jobset, 'r') as fi:
-                spec = yaml.load(fi, Loader=yaml.FullLoader)
-
-            i = 0
-            for k, v in spec['jobs'].items():
-                if v.get("status") is None:
-                    v["status"] = 'Unavailable'
-                op_dict[k] = {
-                    'JobName': v.get("name"),
-                    'JobStatus': v.get("status"),
-                    'RemoteIp': v.get("ip"),
-                    'Command': v.get("executable"),
-                    'Arguments': v.get("arguments"),
-                    'User': v.get('user')
-                }
-
-            order = ['JobName', 'JobStatus', 'RemoteIp', 'Command',
-                     'Arguments', 'User']
-            print(Printer.write(op_dict, order=order, sort_keys='JobStatus'))
+            jobqueue = JobQueue(variables["jobset"])
+            jobqueue.enlist_jobs(sort_var='JobStatus')
 
         elif arguments.list and arguments["--status"] and \
                 not arguments.hosts:
+
             # job list --status=STATUS
-            jobset = variables["jobset"] or default_location
-            jobset = Path.expanduser(Path(jobset))
-            op_dict = dict()
-
-            with open(jobset, 'r') as fi:
-                spec = yaml.load(fi, Loader=yaml.FullLoader)
-
-            i = 0
-            for k, v in spec['jobs'].items():
-                if v.get('status') == arguments["--status"]:
-                    i += 1
-                    op_dict[k] = {
-                        'Number': i,
-                        'JobName': v.get("name"),
-                        'JobStatus': v.get("status"),
-                        'RemoteIp': v.get("ip"),
-                        'Command': v.get("executable"),
-                        'Arguments': v.get("arguments"),
-                        'User': v.get('user')
-                    }
-            order = ['Number', 'JobName', 'JobStatus', 'RemoteIp', 'Command',
-                     'Arguments', 'User']
-            print(Printer.write(op_dict, order=order))
+            jobqueue = JobQueue(variables["jobset"])
+            jobqueue.enlist_jobs(filter_name='status',
+                                 filter_value=arguments["--status"])
 
         elif arguments.list and arguments["--name"] and not arguments.hosts:
             # job list --name=NAME
-            jobset = variables["jobset"] or default_location
-            jobset = Path.expanduser(Path(jobset))
-            op_dict = dict()
 
-            with open(jobset, 'r') as fi:
-                spec = yaml.load(fi, Loader=yaml.FullLoader)
-
-            i = 0
-            for k, v in spec['jobs'].items():
-                if arguments["--name"] in v.get('name'):
-                    i += 1
-                    op_dict[k] = {
-                        'Number': i,
-                        'JobName': v.get("name"),
-                        'JobStatus': v.get("status"),
-                        'RemoteIp': v.get("ip"),
-                        'Command': v.get("executable"),
-                        'Arguments': v.get("arguments"),
-                        'User': v.get('user')
-                    }
-            order = ['Number', 'JobName', 'JobStatus', 'RemoteIp', 'Command',
-                     'Arguments', 'User']
-            print(Printer.write(op_dict, order=order))
+            jobqueue = JobQueue(variables["jobset"])
+            jobqueue.enlist_jobs(filter_name='name',
+                                 filter_value=arguments["--name"])
 
         elif arguments.list and not arguments.hosts:
             # job list
-            jobset = variables["jobset"] or default_location
-            jobset = Path.expanduser(Path(jobset))
-            op_dict = dict()
 
-            with open(jobset, 'r') as fi:
-                spec = yaml.load(fi, Loader=yaml.FullLoader)
-
-            i = 0
-            for k, v in spec['jobs'].items():
-                i += 1
-                op_dict[k] = {
-                    'Number': i,
-                    'JobName': v.get("name"),
-                    'JobStatus': v.get("status"),
-                    'RemoteIp': v.get("ip"),
-                    'Command': v.get("executable"),
-                    'Arguments': v.get("arguments"),
-                    'User': v.get('user')
-                }
-            order = ['Number', 'JobName', 'JobStatus', 'RemoteIp', 'Command',
-                     'Arguments', 'User']
-            print(Printer.write(op_dict, order=order))
+            jobqueue = JobQueue(variables["jobset"])
+            jobqueue.enlist_jobs()
 
         elif arguments.kill:
             # job kill --name=NAME
