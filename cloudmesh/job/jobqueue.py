@@ -88,19 +88,6 @@ class JobQueue:
         name = name or "job"
         specification = dedent(
             f"""
-            cloudmesh:
-              default:
-                user: {user}
-              hosts:
-                localhost:
-                  name: {JobQueue._sysinfo()[0]}
-                  ip: 127.0.0.1
-                  cpu_count: {JobQueue._sysinfo()[1]}
-                  status: free
-                  job_counter: 0
-              scheduler:
-                policy: sequential
-            jobs:
               {name}:
                 name: {name}  
                 directory: .
@@ -118,6 +105,44 @@ class JobQueue:
         specification = yaml.safe_load(specification)
 
         return specification
+
+    def add_template(self, specification):
+        """
+        Adds template in the jobset
+        :param specification: dictionary containing jobset configuration
+        :return: None, creates sample jobset
+        """
+        user = JobQueue._user()
+
+        if type(specification) != dict:
+            Console.error("only specify a yaml dict")
+
+        jobset = Path.expanduser(Path(self.filename))
+        Path.mkdir(jobset.parent, exist_ok=True)
+
+        template = dedent(
+            f"""
+            cloudmesh:
+              default:
+                user: {user}
+              hosts:
+                localhost:
+                  name: {JobQueue._sysinfo()[0]}
+                  ip: 127.0.0.1
+                  cpu_count: {JobQueue._sysinfo()[1]}
+                  status: free
+                  job_counter: 0
+              scheduler:
+                policy: sequential
+            """).strip()
+
+        template = yaml.safe_load(template)
+        template.update({'jobs': specification})
+
+        VERBOSE(template)
+
+        with open(jobset, 'w') as fo:
+            yaml.safe_dump(template, fo)
 
     def add(self, specification):
         """

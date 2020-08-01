@@ -232,7 +232,6 @@ class JobCommand(PluginCommand):
                 status then it is killed first and then deleted from jobset.
 
         """
-        # TODO: create hosts entries based on all IPs used in jobs section
 
         # do the import here to avoid long loading times for other commands
         from cloudmesh.job.jobqueue import JobQueue
@@ -269,27 +268,31 @@ class JobCommand(PluginCommand):
         default_location = jobqueue.filename
 
         if arguments.info and not arguments.scheduler:
+            # cms job info
 
             jobset = variables["jobset"] or default_location
             Console.msg(f"Jobs are defined in: {jobset}")
             return ""
 
         elif arguments.template:
+            # cms job template --name=job[1-2]
 
             names = names or ["job"]
             jobset = variables["jobset"] or default_location
             variables["jobset"] = jobset
+            template = dict()
 
             jobs = JobQueue(jobset)
             for name in names:
-                template = jobs.template(name=name)
-                jobs.add(template)
+                # template = jobs.template(name=name)
+                template.update(jobs.template(name=name))
+                jobs.add_template(template)
 
             Console.msg(f"Jobs are defined in: {jobset}")
 
         elif arguments.set:
-
             # job set FILE
+
             if not file.endswith(".yaml"):
                 Console.error("the specification file must be a yaml file "
                               "and end with .yaml")
