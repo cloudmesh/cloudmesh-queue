@@ -131,12 +131,13 @@ class JobQueue:
         jobset = Path.expanduser(Path(self.filename))
         Path.mkdir(jobset.parent, exist_ok=True)
 
-        with open(jobset, 'r') as file:
-            content = yaml.safe_load(file)
-            content['jobs'].update(specification)
+        spec = Config(self.filename)
 
-        with open(jobset, 'w') as file:
-            fruit_list = yaml.safe_dump(content, file)
+        spec['jobs'].update(specification)
+
+        VERBOSE(spec['jobs'])
+
+        spec.save(self.filename)
 
     @staticmethod
     def define(arguments, idx):
@@ -150,10 +151,9 @@ class JobQueue:
         _spec = {
             'name': arguments.get('names')[idx],
             'directory': arguments.get('directory') or '.',
-            # ip deafult s/b taken from command, default can be localhost
-            'ip': arguments.get('ip_list')[idx] or 'r-003',
+            'ip': arguments.get('ip_list')[idx] or 'localhost',
             'input': arguments.get('input_list')[idx] or './data',
-            'output': arguments.get('output_list')[idx] or './data',
+            'output': arguments.get('output_list')[idx] or './output',
             'status': arguments.get('status') or 'ready',
             'gpu': arguments.get('gpu_list')[idx] or "",
             'user': arguments.get('user') or user,
@@ -222,6 +222,7 @@ class JobQueue:
         config[f'cloudmesh.hosts.{tag}.status'] = arguments.status or 'free'
         config[f'cloudmesh.hosts.{tag}.job_counter'] = arguments.job_counter \
                                                        or '0'
+
     def enlist_hosts(self):
         """
         Enlists all hosts configured in jobset
@@ -353,10 +354,8 @@ class JobQueue:
                     self.kill_job([name])
 
                 del spec['jobs'][name]
-                # Config() __delitem__ did not work
-                jobset = Path.expanduser(Path(self.filename))
-                with open(jobset, 'w') as file:
-                    fruit_list = yaml.safe_dump(spec.data, file)
+
+                spec.save(self.filename)
 
             except KeyError:
                 Console.error(f"Job '{name}' not found in jobset. ")
