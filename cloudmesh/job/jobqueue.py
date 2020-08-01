@@ -125,9 +125,6 @@ class JobQueue:
         :param specification: dictionary containing details of the jobs
         :return: None, appends the job in jobset
         """
-        # if type(specification) != str:
-        #     Console.error("only specify a yaml string")
-
         if type(specification) != dict:
             Console.error("only specify a yaml dict")
 
@@ -344,9 +341,7 @@ class JobQueue:
         :param names: list of names of jobs to be deleted
         :return: updates jobset
         """
-        jobset = Path.expanduser(Path(self.filename))
-        with open(jobset, 'r') as fi:
-            spec = yaml.load(fi, Loader=yaml.FullLoader)
+        spec = Config(self.filename)
 
         if names is None:
             names = spec['jobs'].keys()
@@ -354,17 +349,19 @@ class JobQueue:
         for name in names:
 
             try:
-                if spec['jobs'][name]['status'] == 'submitted':
-                    self.kill_job(name)
+                if spec[f'jobs.{name}.status'] == 'submitted':
+                    self.kill_job([name])
 
                 del spec['jobs'][name]
+                # Config() __delitem__ did not work
+                jobset = Path.expanduser(Path(self.filename))
+                with open(jobset, 'w') as file:
+                    fruit_list = yaml.safe_dump(spec.data, file)
+
             except KeyError:
                 Console.error(f"Job '{name}' not found in jobset. ")
             except Exception as e:
                 Console.error(f"Job {name} could not be deleted. Please check.")
-
-        with open(jobset, 'w') as fo:
-            yaml.dump(spec, fo, default_flow_style=False)
 
     def get_policy(self):
         """
