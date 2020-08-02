@@ -447,7 +447,7 @@ class JobCommand(PluginCommand):
                     Console.error(f"Job {name} not found in jobset "
                                   f"{jobqueue.filename}.")
                     continue
-                if spec['jobs'][name]['status'] == 'submitted':
+                if spec[f'jobs.{name}.status'] == 'submitted':
                     Console.error(f"Job {name} is already submitted for "
                                 "execution. Please kill the job before reset.")
                 else:

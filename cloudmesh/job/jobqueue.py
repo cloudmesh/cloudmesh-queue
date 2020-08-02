@@ -141,6 +141,9 @@ class JobQueue:
 
         VERBOSE(template)
 
+        # Creating the jobset yaml file. This will replace the file if it
+        # already exists.
+        # TODO: This should take backup of existing yaml file
         with open(jobset, 'w') as fo:
             yaml.safe_dump(template, fo)
 

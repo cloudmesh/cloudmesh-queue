@@ -1,0 +1,12 @@
+pytest_job:
+  name: pytest_job
+  directory: .
+  ip: local
+  input: ./data
+  output: ./output/abcd
+  status: ready
+  gpu: ' '
+  user: user
+  arguments: -lisa
+  executable: ls
+  shell: bash
