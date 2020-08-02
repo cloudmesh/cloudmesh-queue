@@ -7,7 +7,7 @@ import pytest
 from cloudmesh.common.Shell import Shell
 from cloudmesh.common.debug import VERBOSE
 from cloudmesh.common.util import HEADING
-from cloudmesh.common3.Benchmark import Benchmark
+from cloudmesh.common.Benchmark import Benchmark
 from cloudmesh.common.variables import Variables
 from cloudmesh.configuration.Config import Config
 from textwrap import dedent
