@@ -12,7 +12,7 @@ from cloudmesh.common.variables import Variables
 from cloudmesh.configuration.Config import Config
 from textwrap import dedent
 import oyaml as yaml
-import re
+import re, time
 
 Benchmark.debug()
 
@@ -97,9 +97,11 @@ class TestJob:
 
         Benchmark.Start()
         result = Shell.execute('cms job add --name=\'pytest_job1\' ' \
-                               '--ip=localhost ' \
-                               '--executable=\'python sample.py\' ' \
-                               '--arguments=\'--gpu=7\' ', shell=True)
+                               '--ip=juliet.futuresystems.org ' \
+                               '--executable=\'ls\' ' \
+                               '--arguments=\'-lisa\' ' \
+                               '--user=\'ketanp\' ',
+                               shell=True)
         Benchmark.Stop()
         VERBOSE(result)
 
@@ -122,6 +124,37 @@ class TestJob:
         job_count_2 = len(spec['jobs'].keys())
 
         assert job_count_1 == job_count_2
+
+    def test_run(self):
+        HEADING()
+
+        Benchmark.Start()
+        result = Shell.execute("cms job run --name='pytest_job1'", shell=True)
+        Benchmark.Stop()
+        VERBOSE(result)
+
+        time.sleep(10)
+        spec = Config(TestJob.configured_jobset)
+        job_status = spec['jobs.pytest_job1.status']
+
+        assert job_status == 'submitted'
+        assert spec['jobs.pytest_job1.submitted_to_ip'] is not None
+
+    def test_kill(self):
+        HEADING()
+
+        Benchmark.Start()
+        result = Shell.execute("cms job kill --name='pytest_job1'", shell=True)
+        Benchmark.Stop()
+        VERBOSE(result)
+
+        time.sleep(10)
+        spec = Config(TestJob.configured_jobset)
+        job_status = spec['jobs.pytest_job1.status']
+
+        assert job_status == 'killed'
+
+
 
     # def test_vm(self):
     #     HEADING()
