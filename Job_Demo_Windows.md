@@ -449,6 +449,51 @@ WARNING: The key 'cloudmesh.profile.user' could not be found in the yaml file '~
 
 (ENV3) C:\>
 ``` 
+## Delete a job from configuration file
+
+Command `cms job delete` provides an ability to users to delete a job from 
+the configuration file. The delete operation first kills a job if it is in 
+`submitted` status and then deletes it from the job set.
+
+- Checking existing list of jobs:
+```cmd
+(ENV3) C:\Study\IUMSDS\Fall2019\CloudComputing\cm\cloudmesh-job>cms job list
+job list
+WARNING: The key 'cloudmesh.profile.user' could not be found in the yaml file 'C:\Users\kpimp\.cloudmesh\job\spec.yaml'
++--------+-------------+-----------+--------------------------+------------------+--------------------------------------------------+--------+
+| Number | JobName     | JobStatus | RemoteIp                 | Command          | Arguments                                        | User   |
++--------+-------------+-----------+--------------------------+------------------+--------------------------------------------------+--------+
+| 1      | job1        | ready     | 127.0.0.1                | ls               | -lisa                                            | keTan  |
+| 2      | job2        | ready     | 127.0.0.1                | ls               | -lisa                                            | keTan  |
+| 3      | pytest_job  | ready     | local                    | ls               | -lisa                                            | user   |
+| 4      | test_juliet | submitted | juliet.futuresystems.org | python test.py   | --input=./data --output=./output/test_juliet     | ketanp |
+|        |             |           |                          |                  | --gpu=7                                          |        |
+| 5      | sample      | killed    | localhost                | python sample.py | --gpu=7                                          | keTan  |
+| 6      | pytest_job1 | submitted | juliet.futuresystems.org | ls               | -lisa                                            | ketanp |
++--------+-------------+-----------+--------------------------+------------------+--------------------------------------------------+--------+
+```
+- Deleting `sample` job and checking the list again
+
+```cmd
+(ENV3) C:\Study\IUMSDS\Fall2019\CloudComputing\cm\cloudmesh-job>cms job delete --name=sample
+job delete --name=sample
+WARNING: The key 'cloudmesh.profile.user' could not be found in the yaml file 'C:\Users\kpimp\.cloudmesh\job\spec.yaml'
+
+
+(ENV3) C:\Study\IUMSDS\Fall2019\CloudComputing\cm\cloudmesh-job>cms job list
+job list
+WARNING: The key 'cloudmesh.profile.user' could not be found in the yaml file 'C:\Users\kpimp\.cloudmesh\job\spec.yaml'
++--------+-------------+-----------+--------------------------+----------------+--------------------------------------------------+--------+
+| Number | JobName     | JobStatus | RemoteIp                 | Command        | Arguments                                        | User   |
++--------+-------------+-----------+--------------------------+----------------+--------------------------------------------------+--------+
+| 1      | job1        | ready     | 127.0.0.1                | ls             | -lisa                                            | keTan  |
+| 2      | job2        | ready     | 127.0.0.1                | ls             | -lisa                                            | keTan  |
+| 3      | pytest_job  | ready     | local                    | ls             | -lisa                                            | user   |
+| 4      | test_juliet | submitted | juliet.futuresystems.org | python test.py | --input=./data --output=./output/test_juliet     | ketanp |
+|        |             |           |                          |                | --gpu=7                                          |        |
+| 5      | pytest_job1 | submitted | juliet.futuresystems.org | ls             | -lisa                                            | ketanp |
++--------+-------------+-----------+--------------------------+----------------+--------------------------------------------------+--------+
+```
 
 
 ## Add a host

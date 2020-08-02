@@ -257,7 +257,7 @@ class JobCommand(PluginCommand):
 
         variables = Variables()
 
-        VERBOSE(arguments)
+        # VERBOSE(arguments)
 
         names = Parameter.expand(arguments["--name"])
 
