@@ -12,7 +12,9 @@ from cloudmesh.common.variables import Variables
 from cloudmesh.configuration.Config import Config
 from textwrap import dedent
 import oyaml as yaml
-import re, time
+import re
+import time
+from pathlib import Path
 
 Benchmark.debug()
 
@@ -23,6 +25,7 @@ class TestJob:
     variables = Variables()
     configured_jobset = variables["jobset"]
 
+    # def fetch_spec(self, ):
     def test_help(self):
         HEADING()
 
@@ -88,93 +91,114 @@ class TestJob:
         Benchmark.Stop()
         VERBOSE(result)
 
-        spec = Config(TestJob.configured_jobset)
-        jobs = spec['jobs'].keys()
-        assert 'pytest_job' in jobs
-
-    def test_add_cli(self):
-        HEADING()
-
-        Benchmark.Start()
-        result = Shell.execute('cms job add --name=\'pytest_job1\' ' \
-                               '--ip=juliet.futuresystems.org ' \
-                               '--executable=\'ls\' ' \
-                               '--arguments=\'-lisa\' ' \
-                               '--user=\'ketanp\' ',
-                               shell=True)
-        Benchmark.Stop()
-        VERBOSE(result)
-
-        spec = Config(TestJob.configured_jobset)
-        jobs = spec['jobs'].keys()
-        assert 'pytest_job1' in jobs
-
-    def test_list(self):
-        HEADING()
-
-        Benchmark.Start()
-        result = Shell.execute("cms job list", shell=True)
-        Benchmark.Stop()
-
-        job_count_1 = len(re.findall(r"\|\s\d+\s+\|", result, re.MULTILINE))
-
-        VERBOSE(result)
-
-        spec = Config(TestJob.configured_jobset)
-        job_count_2 = len(spec['jobs'].keys())
-
-        assert job_count_1 == job_count_2
-
-    def test_run(self):
-        HEADING()
-
-        Benchmark.Start()
-        result = Shell.execute("cms job run --name='pytest_job1'", shell=True)
-        Benchmark.Stop()
-        VERBOSE(result)
-
         time.sleep(10)
-        spec = Config(TestJob.configured_jobset)
-        job_status = spec['jobs.pytest_job1.status']
+        # print("===> ", TestJob.configured_jobset)
+        # spec1 = Config(TestJob.configured_jobset)
+        # jobs1 = spec1['jobs'].keys()
+        # print("======> ", jobs1, list(jobs1))
+        spec_file = Path.expanduser(Path(TestJob.configured_jobset))
+        with open(spec_file, 'r') as fi:
+            spec = yaml.safe_load(fi)
 
-        assert job_status == 'submitted'
-        assert spec['jobs.pytest_job1.submitted_to_ip'] is not None
+        jobs1 = spec['jobs'].keys()
+        print("======> ", jobs1, list(jobs1))
 
-    def test_kill(self):
-        HEADING()
+        assert 'pytest_job' in jobs1
 
-        Benchmark.Start()
-        result = Shell.execute("cms job kill --name='pytest_job1'", shell=True)
-        Benchmark.Stop()
-        VERBOSE(result)
-
-        time.sleep(10)
-        spec = Config(TestJob.configured_jobset)
-        job_status = spec['jobs.pytest_job1.status']
-
-        assert job_status == 'killed'
-
-
-
-    # def test_vm(self):
-    #     HEADING()
-    #     Benchmark.Start()
-    #     result = Shell.execute("cms help vm", shell=True)
-    #     Benchmark.Stop()
-    #     VERBOSE(result)
-    #
-    #     assert "['sample1', 'sample2', 'sample3', 'sample18']" in result
-    #
-    # def test_help_again(self):
+    # def test_add_cli(self):
     #     HEADING()
     #
     #     Benchmark.Start()
-    #     result = Shell.execute("cms help", shell=True)
+    #     result = Shell.execute('cms job add --name=\'pytest_job1\' ' \
+    #                            '--ip=juliet.futuresystems.org ' \
+    #                            '--executable=\'ls\' ' \
+    #                            '--arguments=\'-lisa\' ' \
+    #                            '--user=\'ketanp\' ',
+    #                            shell=True)
     #     Benchmark.Stop()
     #     VERBOSE(result)
     #
-    #     assert "quit" in result
-    #     assert "clear" in result
+    #     spec = Config(TestJob.configured_jobset)
+    #     jobs = spec['jobs'].keys()
+    #     assert 'pytest_job1' in jobs
+    #
+    # def test_list(self):
+    #     HEADING()
+    #
+    #     Benchmark.Start()
+    #     result = Shell.execute("cms job list", shell=True)
+    #     Benchmark.Stop()
+    #
+    #     job_count_1 = len(re.findall(r"\|\s\d+\s+\|", result, re.MULTILINE))
+    #
+    #     VERBOSE(result)
+    #
+    #     spec = Config(TestJob.configured_jobset)
+    #     job_count_2 = len(spec['jobs'].keys())
+    #
+    #     assert job_count_1 == job_count_2
+    #
+    # def test_add_host(self):
+    #     pass
+    #     # cms job hosts add --hostname='juliet' --ip='juliet.futuresystems.org' --cpu_count='12'
+    #
+    # def test_run(self):
+    #     HEADING()
+    #
+    #     Benchmark.Start()
+    #     result = Shell.execute("cms job run --name='pytest_job1'", shell=True)
+    #     Benchmark.Stop()
+    #     VERBOSE(result)
+    #
+    #     time.sleep(10)
+    #     spec = Config(TestJob.configured_jobset)
+    #     job_status = spec['jobs.pytest_job1.status']
+    #
+    #     assert job_status == 'submitted'
+    #     assert spec['jobs.pytest_job1.submitted_to_ip'] is not None
+    #
+    # def test_kill(self):
+    #     HEADING()
+    #
+    #     Benchmark.Start()
+    #     result = Shell.execute("cms job kill --name='pytest_job1'", shell=True)
+    #     Benchmark.Stop()
+    #     VERBOSE(result)
+    #
+    #     time.sleep(10)
+    #     spec = Config(TestJob.configured_jobset)
+    #     job_status = spec['jobs.pytest_job1.status']
+    #
+    #     assert job_status == 'killed'
+    #
+    # def test_reset(self):
+    #     HEADING()
+    #
+    #     Benchmark.Start()
+    #     result = Shell.execute("cms job reset --name='pytest_job1'", shell=True)
+    #     Benchmark.Stop()
+    #     VERBOSE(result)
+    #
+    #     time.sleep(5)
+    #     spec = Config(TestJob.configured_jobset)
+    #     job_status = spec['jobs.pytest_job1.status']
+    #
+    #     assert job_status == 'ready'
+    #
+    # def test_delete(self):
+    #     HEADING()
+    #
+    #     Benchmark.Start()
+    #     result = Shell.execute("cms job delete --name='pytest_job1'",
+    #                            shell=True)
+    #     Benchmark.Stop()
+    #     VERBOSE(result)
+    #
+    #     time.sleep(5)
+    #     spec = Config(TestJob.configured_jobset)
+    #     jobs = spec['jobs'].keys()
+    #
+    #     assert 'pytest_job1' not in jobs
     #
     def test_benchmark(self):
         HEADING()
