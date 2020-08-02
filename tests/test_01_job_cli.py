@@ -11,19 +11,25 @@ from cloudmesh.common.Benchmark import Benchmark
 from cloudmesh.common.variables import Variables
 from cloudmesh.configuration.Config import Config
 from textwrap import dedent
+from cloudmesh.common.util import path_expand
+
 import oyaml as yaml
 import re
 import time
 from pathlib import Path
 
+
 Benchmark.debug()
+
+variables = Variables()
+variables["jobset"] = path_expand("./a.yaml")
+
+configured_jobset = variables["jobset"]
+
 
 
 @pytest.mark.incremental
 class TestJob:
-
-    variables = Variables()
-    configured_jobset = variables["jobset"]
 
     # def fetch_spec(self, ):
     def test_help(self):
@@ -57,11 +63,15 @@ class TestJob:
         Benchmark.Stop()
         VERBOSE(result)
 
-        spec = Config(TestJob.configured_jobset)
+        print("GGG", configured_jobset)
+
+        spec = Config(configured_jobset)
         assert spec['cloudmesh.hosts'] is not None
         jobs = spec['jobs'].keys()
         assert 'job1' in jobs
         assert 'job2' in jobs
+
+class other:
 
     def test_add_file(self):
         HEADING()
@@ -92,8 +102,8 @@ class TestJob:
         VERBOSE(result)
 
         time.sleep(10)
-        # print("===> ", TestJob.configured_jobset)
-        # spec1 = Config(TestJob.configured_jobset)
+        # print("===> ", configured_jobset)
+        # spec1 = Config(configured_jobset)
         # jobs1 = spec1['jobs'].keys()
         # print("======> ", jobs1, list(jobs1))
         spec_file = Path.expanduser(Path(TestJob.configured_jobset))
@@ -118,7 +128,7 @@ class TestJob:
     #     Benchmark.Stop()
     #     VERBOSE(result)
     #
-    #     spec = Config(TestJob.configured_jobset)
+    #     spec = Config(configured_jobset)
     #     jobs = spec['jobs'].keys()
     #     assert 'pytest_job1' in jobs
     #
@@ -133,7 +143,7 @@ class TestJob:
     #
     #     VERBOSE(result)
     #
-    #     spec = Config(TestJob.configured_jobset)
+    #     spec = Config(configured_jobset)
     #     job_count_2 = len(spec['jobs'].keys())
     #
     #     assert job_count_1 == job_count_2
@@ -151,7 +161,7 @@ class TestJob:
     #     VERBOSE(result)
     #
     #     time.sleep(10)
-    #     spec = Config(TestJob.configured_jobset)
+    #     spec = Config(configured_jobset)
     #     job_status = spec['jobs.pytest_job1.status']
     #
     #     assert job_status == 'submitted'
@@ -166,7 +176,7 @@ class TestJob:
     #     VERBOSE(result)
     #
     #     time.sleep(10)
-    #     spec = Config(TestJob.configured_jobset)
+    #     spec = Config(configured_jobset)
     #     job_status = spec['jobs.pytest_job1.status']
     #
     #     assert job_status == 'killed'
@@ -180,7 +190,7 @@ class TestJob:
     #     VERBOSE(result)
     #
     #     time.sleep(5)
-    #     spec = Config(TestJob.configured_jobset)
+    #     spec = Config(configured_jobset)
     #     job_status = spec['jobs.pytest_job1.status']
     #
     #     assert job_status == 'ready'
@@ -195,7 +205,7 @@ class TestJob:
     #     VERBOSE(result)
     #
     #     time.sleep(5)
-    #     spec = Config(TestJob.configured_jobset)
+    #     spec = Config(configured_jobset)
     #     jobs = spec['jobs'].keys()
     #
     #     assert 'pytest_job1' not in jobs
