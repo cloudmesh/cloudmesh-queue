@@ -241,16 +241,20 @@ class JobQueue:
         :param arguments: dictionary containing host info
         :return: updates the jobset with host info
         """
-        config = Config(self.filename)
+        config = Configuration(self.filename)
 
         tag = arguments.hostname
-        config[f'cloudmesh.hosts.{tag}.name'] = arguments.hostname or \
-                                                'localhost'
-        config[f'cloudmesh.hosts.{tag}.ip'] = arguments.ip or 'localhost'
-        config[f'cloudmesh.hosts.{tag}.cpu_count'] = arguments.cpu_count or '0'
-        config[f'cloudmesh.hosts.{tag}.status'] = arguments.status or 'free'
-        config[f'cloudmesh.hosts.{tag}.job_counter'] = arguments.job_counter \
-                                                       or '0'
+        config[f'cloudmesh.jobset.hosts.{tag}.name'] = arguments.hostname or \
+            'localhost'
+        config[f'cloudmesh.jobset.hosts.{tag}.ip'] = arguments.ip or 'localhost'
+        config[f'cloudmesh.jobset.hosts.{tag}.cpu_count'] = \
+            arguments.cpu_count or '0'
+        config[f'cloudmesh.jobset.hosts.{tag}.status'] = arguments.status or \
+            'free'
+        config[f'cloudmesh.jobset.hosts.{tag}.job_counter'] = \
+            arguments.job_counter or '0'
+
+        Console.ok(f"Host {arguments.hostname } added to jobset.")
 
     def enlist_hosts(self):
         """
@@ -269,7 +273,7 @@ class JobQueue:
         :param spec: jobset dictionary
         :return: hostname
         """
-        for k, v in spec['cloudmesh.hosts'].items():
+        for k, v in spec['cloudmesh.jobset.hosts'].items():
             if v['ip'] == ip:
                 return k
 
@@ -285,7 +289,12 @@ class JobQueue:
         :return: IP of available host
         """
         p = Policy(ip, spec)
-        return p.get_ip()
+        available_ip = p.get_ip()
+
+        if ip != available_ip:
+            Console.info(f"Host {ip} is unavailable, hence submitted the job "
+                         f"on available host {available_ip}")
+        return available_ip
 
     def run_job(self, names=None):
         """
@@ -293,12 +302,12 @@ class JobQueue:
         :param names: job names
         :return: job is submitted to the host
         """
-        spec = Config(self.filename)
+        spec = Configuration(self.filename)
 
         if names is None:
-            names = spec['jobs'].keys()
+            names = spec['cloudmesh.jobset.jobs'].keys()
 
-        for k, v in spec['jobs'].items():
+        for k, v in spec['cloudmesh.jobset.jobs'].items():
 
             if k in names:
 
@@ -310,17 +319,18 @@ class JobQueue:
                               f"\"cd {v['directory']};"      \
                               f"sh -c 'echo \$\$ > {v['output']}/{k}_pid.log;" \
                               f"exec {v['executable']} {v['arguments']}'\""
-
-                    VERBOSE(command)
+                    # VERBOSE(command)
 
                     Shell.terminal(command, title=f"Running {k}")
                     time.sleep(5)
 
-                    spec[f'jobs.{k}.status'] = 'submitted'
-                    spec[f'jobs.{k}.submitted_to_ip'] = ip
+                    spec[f'cloudmesh.jobset.jobs.{k}.status'] = 'submitted'
+                    spec[f'cloudmesh.jobset.jobs.{k}.submitted_to_ip'] = ip
                     hname = JobQueue._get_hostname(ip, spec)
-                    ctr = int(spec[f'cloudmesh.hosts.{hname}.job_counter'])
-                    spec[f'cloudmesh.hosts.{hname}.job_counter'] = str(ctr + 1)
+                    ctr = int(spec[f'cloudmesh.jobset.hosts.{hname}.job_counter'
+                                   ])
+                    spec[f'cloudmesh.jobset.hosts.{hname}.job_counter'] = \
+                        str(ctr + 1)
                 else:
                     Console.error(f"Job {k} could not be submitted due to "
                                   f"missing host with ip {ip}")
@@ -500,8 +510,8 @@ class Policy:
         self.ip = ip
         self.spec = spec
 
-        self.host_data = self.spec['cloudmesh.hosts']
-        self.policy = self.spec['cloudmesh.scheduler.policy']
+        self.host_data = self.spec['cloudmesh.jobset.hosts']
+        self.policy = self.spec['cloudmesh.jobset.scheduler.policy']
         self.availability = dict()
 
         for k, v in self.host_data.items():
@@ -509,7 +519,7 @@ class Policy:
             if available > 0:
                 self.availability[v['ip']] = available
 
-        VERBOSE(self.availability)
+        # VERBOSE(self.availability)
 
     def get_ip(self):
         """
