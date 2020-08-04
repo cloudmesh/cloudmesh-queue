@@ -342,12 +342,12 @@ class JobQueue:
         :param names: job names
         :return: job is killed on the host
         """
-        spec = Config(self.filename)
+        spec = Configuration(self.filename)
 
         if names is None:
-            names = spec['jobs'].keys()
+            names = spec['cloudmesh.jobset.jobs'].keys()
 
-        for k, v in spec['jobs'].items():
+        for k, v in spec['cloudmesh.jobset.jobs'].items():
 
             if k in names:
 
@@ -359,15 +359,17 @@ class JobQueue:
                               f"\"cd {v['output']};" \
                               f"kill -9 \$(cat {k}_pid.log)\""
 
-                    VERBOSE(command)
+                    # VERBOSE(command)
 
                     Shell.terminal(command, title=f"Running {k}")
                     # time.sleep(5)
 
-                    spec[f'jobs.{k}.status'] = 'killed'
+                    spec[f'cloudmesh.jobset.jobs.{k}.status'] = 'killed'
                     hname = JobQueue._get_hostname(ip, spec)
-                    ctr = int(spec[f'cloudmesh.hosts.{hname}.job_counter'])
-                    spec[f'cloudmesh.hosts.{hname}.job_counter']= str(ctr - 1)
+                    ctr = int(spec[f'cloudmesh.jobset.hosts.{hname}.job_counter'
+                                   ])
+                    spec[f'cloudmesh.jobset.hosts.{hname}.job_counter'] = \
+                        str(ctr - 1)
 
                 else:
                     Console.error(f"Job {k} could not be killed due to "
@@ -381,21 +383,21 @@ class JobQueue:
         :param names: list of names of jobs to be deleted
         :return: updates jobset
         """
-        spec = Config(self.filename)
+        spec = Configuration(self.filename)
 
         if names is None:
-            names = spec['jobs'].keys()
+            names = spec['cloudmesh.jobset.jobs'].keys()
 
         for name in names:
 
             try:
-                if spec[f'jobs.{name}.status'] == 'submitted':
+                if spec[f'cloudmesh.jobset.jobs.{name}.status'] == 'submitted':
                     self.kill_job([name])
 
-                del spec['jobs'][name]
+                del spec['cloudmesh.jobset.jobs'][name]
 
                 spec.save(self.filename)
-
+    
             except KeyError:
                 Console.error(f"Job '{name}' not found in jobset. ")
             except Exception as e:
