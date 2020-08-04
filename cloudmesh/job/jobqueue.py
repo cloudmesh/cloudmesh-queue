@@ -3,6 +3,7 @@ import os, time, sys, multiprocessing, random
 import oyaml as yaml
 from cloudmesh.common.Shell import Shell
 from cloudmesh.configuration.Config import Config
+from cloudmesh.configuration.Configuration import Configuration
 from cloudmesh.common.console import Console
 import subprocess
 from cloudmesh.common.util import path_expand
@@ -125,21 +126,22 @@ class JobQueue:
             cloudmesh:
               default:
                 user: {user}
-              hosts:
-                localhost:
-                  name: {JobQueue._sysinfo()[0]}
-                  ip: 127.0.0.1
-                  cpu_count: {JobQueue._sysinfo()[1]}
-                  status: free
-                  job_counter: 0
-              scheduler:
-                policy: sequential
+              jobset:
+                hosts:
+                  localhost:
+                    name: {JobQueue._sysinfo()[0]}
+                    ip: 127.0.0.1
+                    cpu_count: {JobQueue._sysinfo()[1]}
+                    status: free
+                    job_counter: 0
+                scheduler:
+                  policy: sequential
             """).strip()
 
         template = yaml.safe_load(template)
-        template.update({'jobs': specification})
+        template['cloudmesh']['jobset'].update({'jobs': specification})
 
-        VERBOSE(template)
+        # VERBOSE(template)
 
         # Creating the jobset yaml file. This will replace the file if it
         # already exists.
@@ -159,11 +161,12 @@ class JobQueue:
         jobset = Path.expanduser(Path(self.filename))
         Path.mkdir(jobset.parent, exist_ok=True)
 
-        spec = Config(self.filename)
+        print("===> self.filename ", self.filename)
+        # spec = Config(self.filename)
+        spec = Configuration(self.filename)
 
-        spec['jobs'].update(specification)
-
-        VERBOSE(spec['jobs'])
+        spec['cloudmesh.jobset.jobs'].update(specification)
+        # VERBOSE(spec['jobs'])
 
         spec.save(self.filename)
 

@@ -284,7 +284,6 @@ class JobCommand(PluginCommand):
 
             jobs = JobQueue(jobset)
             for name in names:
-                # template = jobs.template(name=name)
                 template.update(jobs.template(name=name))
                 jobs.add_template(template)
 

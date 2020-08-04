@@ -10,6 +10,7 @@ from cloudmesh.common.util import HEADING
 from cloudmesh.common.Benchmark import Benchmark
 from cloudmesh.common.variables import Variables
 from cloudmesh.configuration.Config import Config
+from cloudmesh.configuration.Configuration import Configuration
 from textwrap import dedent
 from cloudmesh.common.util import path_expand
 
@@ -65,13 +66,16 @@ class TestJob:
 
         print("GGG", configured_jobset)
 
-        spec = Config(configured_jobset)
+        # spec = Config(configured_jobset)
+        print(configured_jobset)
+        spec = Configuration(configured_jobset)
+
+        print(spec)
+
         assert spec['cloudmesh.hosts'] is not None
         jobs = spec['jobs'].keys()
         assert 'job1' in jobs
         assert 'job2' in jobs
-
-class other:
 
     def test_add_file(self):
         HEADING()
@@ -102,52 +106,52 @@ class other:
         VERBOSE(result)
 
         time.sleep(10)
-        # print("===> ", configured_jobset)
-        # spec1 = Config(configured_jobset)
-        # jobs1 = spec1['jobs'].keys()
-        # print("======> ", jobs1, list(jobs1))
-        spec_file = Path.expanduser(Path(TestJob.configured_jobset))
-        with open(spec_file, 'r') as fi:
-            spec = yaml.safe_load(fi)
 
-        jobs1 = spec['jobs'].keys()
-        print("======> ", jobs1, list(jobs1))
+        spec1 = Configuration(configured_jobset)
+        jobs1 = spec1['jobs'].keys()
+
+        # spec_file = Path.expanduser(Path(TestJob.configured_jobset))
+        # with open(spec_file, 'r') as fi:
+        #     spec = yaml.safe_load(fi)
+        #
+        # jobs1 = spec['jobs'].keys()
+        # print("======> ", jobs1, list(jobs1))
 
         assert 'pytest_job' in jobs1
 
-    # def test_add_cli(self):
-    #     HEADING()
-    #
-    #     Benchmark.Start()
-    #     result = Shell.execute('cms job add --name=\'pytest_job1\' ' \
-    #                            '--ip=juliet.futuresystems.org ' \
-    #                            '--executable=\'ls\' ' \
-    #                            '--arguments=\'-lisa\' ' \
-    #                            '--user=\'ketanp\' ',
-    #                            shell=True)
-    #     Benchmark.Stop()
-    #     VERBOSE(result)
-    #
-    #     spec = Config(configured_jobset)
-    #     jobs = spec['jobs'].keys()
-    #     assert 'pytest_job1' in jobs
-    #
-    # def test_list(self):
-    #     HEADING()
-    #
-    #     Benchmark.Start()
-    #     result = Shell.execute("cms job list", shell=True)
-    #     Benchmark.Stop()
-    #
-    #     job_count_1 = len(re.findall(r"\|\s\d+\s+\|", result, re.MULTILINE))
-    #
-    #     VERBOSE(result)
-    #
-    #     spec = Config(configured_jobset)
-    #     job_count_2 = len(spec['jobs'].keys())
-    #
-    #     assert job_count_1 == job_count_2
-    #
+    def test_add_cli(self):
+        HEADING()
+
+        Benchmark.Start()
+        result = Shell.execute('cms job add --name=\'pytest_job1\' ' \
+                               '--ip=juliet.futuresystems.org ' \
+                               '--executable=\'ls\' ' \
+                               '--arguments=\'-lisa\' ' \
+                               '--user=\'ketanp\' ',
+                               shell=True)
+        Benchmark.Stop()
+        VERBOSE(result)
+
+        spec = Configuration(configured_jobset)
+        jobs = spec['jobs'].keys()
+        assert 'pytest_job1' in jobs
+
+    def test_list(self):
+        HEADING()
+
+        Benchmark.Start()
+        result = Shell.execute("cms job list", shell=True)
+        Benchmark.Stop()
+
+        job_count_1 = len(re.findall(r"\|\s\d+\s+\|", result, re.MULTILINE))
+
+        VERBOSE(result)
+
+        spec = Configuration(configured_jobset)
+        job_count_2 = len(spec['jobs'].keys())
+
+        assert job_count_1 == job_count_2
+
     # def test_add_host(self):
     #     pass
     #     # cms job hosts add --hostname='juliet' --ip='juliet.futuresystems.org' --cpu_count='12'

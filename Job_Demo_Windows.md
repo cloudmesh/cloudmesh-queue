@@ -1,3 +1,7 @@
+# Demo of `cms job` in Windows command prompt
+
+## Table of Content
+
 - [Demo of `cms job` in Windows command prompt](#demo-of--cms-job--in-windows-command-prompt)
   * [Setting up location of config file](#setting-up-location-of-config-file)
   * [Verification of config file location in `cms job`](#verification-of-config-file-location-in--cms-job-)
@@ -15,9 +19,6 @@
   * [Kill a job on remote host](#kill-a-job-on-remote-host)
   * [Reset status and rerun a job](#reset-status-and-rerun-a-job)
   * [Add a host](#add-a-host)
-  
-# Demo of `cms job` in Windows command prompt
-
 ## Setting up location of config file
 Use `cms job set` to configure location of the configuration file with name 
 `jobset`. In this example file `spec.yaml` is used as the configuration file.
@@ -53,40 +54,41 @@ this command **replaces existing spec.yaml file** with default content.
 cloudmesh:
   default:
     user: keTan
-  hosts:
-    localhost:
-      name: DESKTOP-HUC37G2
-      ip: 127.0.0.1
-      cpu_count: 4
-      status: free
-      job_counter: 0
-  scheduler:
-    policy: sequential
-jobs:
-  job1:
-    name: job1
-    directory: .
-    ip: 127.0.0.1
-    input: .
-    output: .
-    status: ready
-    gpu: ''
-    user: keTan
-    arguments: -lisa
-    executable: ls
-    shell: bash
-  job2:
-    name: job2
-    directory: .
-    ip: 127.0.0.1
-    input: .
-    output: .
-    status: ready
-    gpu: ''
-    user: keTan
-    arguments: -lisa
-    executable: ls
-    shell: bash
+  jobset:
+    hosts:
+      localhost:
+        name: DESKTOP-HUC37G2
+        ip: 127.0.0.1
+        cpu_count: 4
+        status: free
+        job_counter: 0
+    scheduler:
+      policy: sequential
+    jobs:
+      job1:
+        name: job1
+        directory: .
+        ip: 127.0.0.1
+        input: .
+        output: .
+        status: ready
+        gpu: ''
+        user: keTan
+        arguments: -lisa
+        executable: ls
+        shell: bash
+      job2:
+        name: job2
+        directory: .
+        ip: 127.0.0.1
+        input: .
+        output: .
+        status: ready
+        gpu: ''
+        user: keTan
+        arguments: -lisa
+        executable: ls
+        shell: bash
 ```
 
 ## Adding a new job in configuration file from another yaml file
