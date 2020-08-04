@@ -261,9 +261,9 @@ class JobQueue:
         Enlists all hosts configured in jobset
         :return: list of hosts
         """
-        config = Config(self.filename)
+        config = Configuration(self.filename)
         order = ['name', 'ip', 'cpu_count', 'status', 'job_counter']
-        print(Printer.write(config['cloudmesh.hosts'], order=order))
+        print(Printer.write(config['cloudmesh.jobset.hosts'], order=order))
 
     @staticmethod
     def _get_hostname(ip, spec):
@@ -397,7 +397,7 @@ class JobQueue:
                 del spec['cloudmesh.jobset.jobs'][name]
 
                 spec.save(self.filename)
-    
+
             except KeyError:
                 Console.error(f"Job '{name}' not found in jobset. ")
             except Exception as e:
@@ -408,8 +408,8 @@ class JobQueue:
         Returns scheduler policy name from jobset
         :return: policy name
         """
-        config = Config(self.filename)
-        return config['cloudmesh.scheduler.policy']
+        config = Configuration(self.filename)
+        return config['cloudmesh.jobset.scheduler.policy']
 
     def update_policy(self, policy):
         """
@@ -419,9 +419,9 @@ class JobQueue:
         valid_policies = ['sequential', 'smart', 'frugal', 'random']
 
         if policy in valid_policies:
-            config = Config(self.filename)
-            old_policy = config['cloudmesh.scheduler.policy']
-            config['cloudmesh.scheduler.policy'] = policy
+            config = Configuration(self.filename)
+            old_policy = config['cloudmesh.jobset.scheduler.policy']
+            config['cloudmesh.jobset.scheduler.policy'] = policy
 
             Console.info(f"Scheduler policy changed from {old_policy} to "
                          f"{policy}")

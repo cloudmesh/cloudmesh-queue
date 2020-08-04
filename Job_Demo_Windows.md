@@ -459,9 +459,9 @@ the configuration file. The delete operation first kills a job if it is in
 
 - Checking existing list of jobs:
 ```cmd
-(ENV3) C:\Study\IUMSDS\Fall2019\CloudComputing\cm\cloudmesh-job>cms job list
+(ENV3) C:\>cms job list
 job list
-WARNING: The key 'cloudmesh.profile.user' could not be found in the yaml file 'C:\Users\kpimp\.cloudmesh\job\spec.yaml'
+WARNING: The key 'cloudmesh.profile.user' could not be found in the yaml file '~\.cloudmesh\job\spec.yaml'
 +--------+-------------+-----------+--------------------------+------------------+--------------------------------------------------+--------+
 | Number | JobName     | JobStatus | RemoteIp                 | Command          | Arguments                                        | User   |
 +--------+-------------+-----------+--------------------------+------------------+--------------------------------------------------+--------+
@@ -477,14 +477,14 @@ WARNING: The key 'cloudmesh.profile.user' could not be found in the yaml file 'C
 - Deleting `sample` job and checking the list again
 
 ```cmd
-(ENV3) C:\Study\IUMSDS\Fall2019\CloudComputing\cm\cloudmesh-job>cms job delete --name=sample
+(ENV3) C:\>cms job delete --name=sample
 job delete --name=sample
-WARNING: The key 'cloudmesh.profile.user' could not be found in the yaml file 'C:\Users\kpimp\.cloudmesh\job\spec.yaml'
+WARNING: The key 'cloudmesh.profile.user' could not be found in the yaml file '~\.cloudmesh\job\spec.yaml'
 
 
-(ENV3) C:\Study\IUMSDS\Fall2019\CloudComputing\cm\cloudmesh-job>cms job list
+(ENV3) C:\>cms job list
 job list
-WARNING: The key 'cloudmesh.profile.user' could not be found in the yaml file 'C:\Users\kpimp\.cloudmesh\job\spec.yaml'
+WARNING: The key 'cloudmesh.profile.user' could not be found in the yaml file '~\.cloudmesh\job\spec.yaml'
 +--------+-------------+-----------+--------------------------+----------------+--------------------------------------------------+--------+
 | Number | JobName     | JobStatus | RemoteIp                 | Command        | Arguments                                        | User   |
 +--------+-------------+-----------+--------------------------+----------------+--------------------------------------------------+--------+
@@ -512,7 +512,7 @@ WARNING: The key 'cloudmesh.profile.user' could not be found in the yaml file '~
       ip: 127.0.0.1
       cpu_count: 4
       status: free
-      job_counter: '1'
+      job_counter: '0'
     juliet:
       name: juliet
       ip: juliet.futuresystems.org
@@ -521,3 +521,32 @@ WARNING: The key 'cloudmesh.profile.user' could not be found in the yaml file '~
       job_counter: '0'
 ```
 
+## Enlist hosts
+```bash
+(ENV3) C:\>cms job list hosts
+job list hosts
++-----------------+--------------------------+-----------+--------+-------------+
+| name            | ip                       | cpu_count | status | job_counter |
++-----------------+--------------------------+-----------+--------+-------------+
+| DESKTOP-HUC37G2 | 127.0.0.1                | 4         | free   | 0           |
+| juliet          | juliet.futuresystems.org | 12        | free   | 0           |
++-----------------+--------------------------+-----------+--------+-------------+
+```
+
+## Job scheduler management
+
+### Find out currently configured scheduler
+
+### Re-configure the scheduler
+
+```cmd
+(ENV3) C:\>cms job scheduler info
+job scheduler info
+
+INFO: Configured scheduler policy: sequential
+
+(ENV3) C:\>cms job scheduler --policy=smart
+job scheduler --policy=smart
+
+INFO: Scheduler policy changed from sequential to smart
+```
