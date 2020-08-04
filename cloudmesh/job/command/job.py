@@ -351,7 +351,7 @@ class JobCommand(PluginCommand):
                     return ""
 
             # for debugging
-            VERBOSE(arguments)
+            # VERBOSE(arguments)
 
             # now we need to call the jobset and add the right things
             jobqueue.update_spec(arguments, jobset)

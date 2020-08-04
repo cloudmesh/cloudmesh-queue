@@ -161,8 +161,6 @@ class JobQueue:
         jobset = Path.expanduser(Path(self.filename))
         Path.mkdir(jobset.parent, exist_ok=True)
 
-        print("===> self.filename ", self.filename)
-        # spec = Config(self.filename)
         spec = Configuration(self.filename)
 
         spec['cloudmesh.jobset.jobs'].update(specification)
@@ -210,7 +208,7 @@ class JobQueue:
         for idx in range(len(specification['names'])):
             dict_out[specification['names'][idx]] = JobQueue.define(
                 specification, idx)
-        VERBOSE(dict_out)
+        # VERBOSE(dict_out)
 
         self.add(dict_out)
 
@@ -430,14 +428,14 @@ class JobQueue:
         :param sort_var: Element name to sort the output on
         :return: Prints a table with job list
         """
-        spec = Config(self.filename)
+        spec = Configuration(self.filename)
         op_dict = dict()
 
         if sort_var is None:
             sort_var = True
 
         i = 0
-        for k, v in spec['jobs'].items():
+        for k, v in spec['cloudmesh.jobset.jobs'].items():
             if filter_name is None:
                 i += 1
                 if v.get("status") is None:
