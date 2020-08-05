@@ -496,7 +496,9 @@ class JobQueue:
         order = ['Number', 'JobName', 'JobStatus', 'RemoteIp', 'Command',
                  'Arguments', 'User']
 
-        print(Printer.write(op_dict, order=order, sort_keys=sort_var))
+        out = Printer.write(op_dict, order=order, sort_keys=sort_var)
+        print(out)
+        return out
 
 
 class Policy:

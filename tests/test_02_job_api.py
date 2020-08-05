@@ -125,6 +125,23 @@ class TestJob:
         jobs = spec['cloudmesh.jobset.jobs'].keys()
         assert 'pytest_job1' in jobs
 
+    def test_list(self):
+        HEADING()
+
+        Benchmark.Start()
+        result = jobqueue.enlist_jobs()
+        Benchmark.Stop()
+
+        job_count_1 = len(re.findall(r"\|\s\d+\s+\|", str(result),
+                                     re.MULTILINE))
+
+        VERBOSE(result)
+
+        spec = Configuration(configured_jobset)
+        job_count_2 = len(spec['cloudmesh.jobset.jobs'].keys())
+
+        assert job_count_1 == job_count_2
+
 
 
 
