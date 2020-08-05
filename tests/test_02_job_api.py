@@ -14,6 +14,7 @@ from textwrap import dedent
 from cloudmesh.common.util import path_expand
 from cloudmesh.job.jobqueue import JobQueue
 from cloudmesh.job.command.job import JobCommand
+from cloudmesh.common.dotdict import dotdict
 
 import oyaml as yaml
 import re
@@ -30,7 +31,7 @@ jobqueue = JobQueue(configured_jobset)
 
 remote_host_ip = 'juliet.futuresystems.org'
 remote_host_user = 'ketanp'
-
+remote_host_name = 'juliet'
 
 @pytest.mark.incremental
 class TestJob:
@@ -57,6 +58,8 @@ class TestJob:
             template.update(jobqueue.template(name=name))
             jobqueue.add_template(template)
 
+        Benchmark.Stop()
+        
         spec = Configuration(configured_jobset)
 
         assert spec['cloudmesh.jobset.hosts'] is not None
@@ -134,7 +137,7 @@ class TestJob:
 
         job_count_1 = len(re.findall(r"\|\s\d+\s+\|", str(result),
                                      re.MULTILINE))
-
+        Benchmark.Stop()
         VERBOSE(result)
 
         spec = Configuration(configured_jobset)
@@ -142,19 +145,71 @@ class TestJob:
 
         assert job_count_1 == job_count_2
 
+    def test_add_host(self):
+        HEADING()
 
+        Benchmark.Start()
+        arguments = dict()
 
+        arguments['hostname'] = remote_host_name
+        arguments['ip'] = remote_host_ip
+        arguments['cpu_count'] = '12'
+        arguments['status'] = 'free'
+        arguments['job_counter'] = '0'
 
+        dotdict()
+        jobqueue.addhost(dotdict(arguments))
+        Benchmark.Stop()
 
+        spec = Configuration(configured_jobset)
+        host_list = spec['cloudmesh.jobset.hosts'].keys()
 
+        assert remote_host_name in host_list
 
+    def test_run(self):
+        HEADING()
 
+        Benchmark.Start()
+        result = jobqueue.run_job(['pytest_job1'])
+        Benchmark.Stop()
+        VERBOSE(result)
 
+        time.sleep(5)
+        spec = Configuration(configured_jobset)
+        job_status = spec['cloudmesh.jobset.jobs.pytest_job1.status']
 
+        assert job_status == 'submitted'
+        assert spec['cloudmesh.jobset.jobs.pytest_job1.submitted_to_ip'] \
+               is not None
 
+    def test_kill(self):
+        HEADING()
 
-    # def test_benchmark(self):
-    #     Benchmark.print(sysinfo=False, csv=True, tag=cloud)
+        Benchmark.Start()
+        result = jobqueue.kill_job(['pytest_job1'])
+        Benchmark.Stop()
+        VERBOSE(result)
+
+        time.sleep(5)
+        spec = Configuration(configured_jobset)
+        job_status = spec['cloudmesh.jobset.jobs.pytest_job1.status']
+
+        assert job_status == 'killed'
+
+    def test_delete(self):
+        HEADING()
+
+        Benchmark.Start()
+        result = jobqueue.delete_job(['pytest_job1'])
+        Benchmark.Stop()
+        VERBOSE(result)
+
+        time.sleep(5)
+        spec = Configuration(configured_jobset)
+        jobs = spec['cloudmesh.jobset.jobs'].keys()
+
+        assert 'pytest_job1' not in jobs
+
     def test_benchmark(self):
         HEADING()
         Benchmark.print(csv=True, sysinfo=False)
