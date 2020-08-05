@@ -30,7 +30,6 @@ remote_host_user = 'ketanp'
 @pytest.mark.incremental
 class TestJob:
 
-    # def fetch_spec(self, ):
     def test_help(self):
         HEADING()
 
