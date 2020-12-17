@@ -19,6 +19,8 @@
   * [Kill a job on remote host](#kill-a-job-on-remote-host)
   * [Reset status and rerun a job](#reset-status-and-rerun-a-job)
   * [Add a host](#add-a-host)
+
+  
 ## Setting up location of config file
 Use `cms job set` to configure location of the configuration file with name 
 `jobset`. In this example file `spec.yaml` is used as the configuration file.
@@ -498,7 +500,10 @@ WARNING: The key 'cloudmesh.profile.user' could not be found in the yaml file '~
 ```
 
 
-## Add a host
+## Remote host management
+Command `cms job hosts` facilitates configuration of remote hosts in the 
+configuration file. 
+
 
 ```cmd
 (ENV3) C:\>cms job hosts add --hostname='juliet' --ip='juliet.futuresystems.org' --cpu_count='12'
@@ -535,16 +540,29 @@ job list hosts
 
 ## Job scheduler management
 
+The command `cms job scheduler` enables users to configure job scheduler 
+policies. These policies come in effect when the host configured with the job
+is not available for further job submissions. In such scenario, `cms job 
+run` searches the next available host based on the scheduler policy and 
+submits the job on that host.
+It is assumed that this next host has all input data needed for the job and 
+also the output locations. Available scheduler policies are:
+
+* sequential - Use first available host
+* random     - Use random available host
+* smart      - Use a host with highest availability
+* frugal     - Use a host with least availability
+  
 ### Find out currently configured scheduler
-
-### Re-configure the scheduler
-
-```cmd
+```cmd 
 (ENV3) C:\>cms job scheduler info
 job scheduler info
 
 INFO: Configured scheduler policy: sequential
+```
 
+### Re-configure the scheduler
+```cmd
 (ENV3) C:\>cms job scheduler --policy=smart
 job scheduler --policy=smart
 
