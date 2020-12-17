@@ -59,7 +59,7 @@ class TestJob:
             jobqueue.add_template(template)
 
         Benchmark.Stop()
-        
+
         spec = Configuration(configured_jobset)
 
         assert spec['cloudmesh.jobset.hosts'] is not None
