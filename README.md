@@ -8,17 +8,17 @@
 The *cloudmesh-job* provides a job queuing and scheduling framework. It 
 includes a library as well as a commandline interface. Both
 allow users to leverage all the available compute resources to 
-perform tasks which have heavy usage of compute power and execution time.
-A user can configure all available compute resources as 'hosts' in a 
+perform tasks which have heavy usage of compute power and high execution 
+time. A user can configure all available compute resources as 'hosts' in a 
 configuration file along with the list of jobs to be executed. Then, based 
 on the scheduler policy, user can schedule these jobs on configured hosts. 
 
 
 ## Prerequisits
 
-* Cloudmesh-job uses `ssh` access to the remote compute machine. ssh clients are avalaible on oll mayor platforms including macOS, Linux, Windows.
-* It is assumed that you use public keys to authenticate to rempte machines. We assume you use ssh-add and/or keychain to avoid issuing passwords when you use the cloudmehs-job
-* We do not recommend using passwordless keys as ssh-add and keychain exisst to avoid this.
+* Cloudmesh-job uses `ssh` access to the remote compute machine. ssh clients are avalaible on all major platforms including macOS, Linux, Windows.
+* It is assumed that you use public keys to authenticate to remote machines. We assume you use ssh-add and/or keychain to avoid issuing passwords when you use the cloudmehs-job
+* We do not recommend using passwordless keys as ssh-add and keychain exist to avoid this.
  
 
 ## Installation
@@ -339,9 +339,9 @@ of interfacing we can query the variables with variables = Variables()
 and also set them that way variables["jobset"] = VALUE.
 ```
 
-## Alternative Installation and Additional Documentation for CLoudmesh
+## Alternative Installation and Additional Documentation for Cloudmesh-job
 
-You can savely ignore this section if you installed cloudmehs-job with the previous method
+You can safely ignore this section if you installed cloudmehs-job with the previous method.
 
 Please note that several other methods are available which are pointed to in the
 installation documentation.
