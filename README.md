@@ -23,31 +23,15 @@ on the scheduler policy, user can schedule these jobs on configured hosts.
 
 ## Installation
 
+We assume you have a venv such as ~/ENV in which you have python 3.8 or python 3.9
+
 ```bash
 $ pip install cloudmesh-installer
-$ cloudmesh-installer install cms
-$ git clone https://github.com/cloudmesh/cloudmesh-job
+$ cloudmesh-installer install job
 $ cd cloudmesh-job
-$ pip install .
 ```
 
 
-## Alternative Installation and Additional Documentation for CLoudmesh
-
-You can savely ignore this section if you installed cloudmehs-job
-
-Please note that several methods are available which are pointed to in the
-installation documentation.
-
-|  | Links |
-|---------------|-------|
-| Documentation | <https://github.com/cloudmesh/cloudmesh-job/blob/master/README.md> |
-| Code | <https://github.com/cloudmesh/cloudmesh-job/tree/master/cloudmesh> |
-| Installation Instructions | <https://github.com/cloudmesh/cloudmesh-job/blob/master/README.md#installation> |
-| Configuration | <https://github.com/cloudmesh/cloudmesh-job/blob/master/README.md#configuration> |
-| Available methods | <https://github.com/cloudmesh/cloudmesh-job/blob/master/README.md#available-methods> |
-| Command API | <https://github.com/cloudmesh/cloudmesh-job/blob/master/README.md#api-of-the-command> |
-| Command description | <https://github.com/cloudmesh/cloudmesh-job/blob/master/README.md#command-description> |
 
 
 ## Configuration
@@ -344,4 +328,20 @@ of interfacing we can query the variables with variables = Variables()
 and also set them that way variables["jobset"] = VALUE.
 ```
 
+## Alternative Installation and Additional Documentation for CLoudmesh
+
+You can savely ignore this section if you installed cloudmehs-job with the previous method
+
+Please note that several other methods are available which are pointed to in the
+installation documentation.
+
+|  | Links |
+|---------------|-------|
+| Documentation | <https://github.com/cloudmesh/cloudmesh-job/blob/master/README.md> |
+| Code | <https://github.com/cloudmesh/cloudmesh-job/tree/master/cloudmesh> |
+| Installation Instructions | <https://github.com/cloudmesh/cloudmesh-job/blob/master/README.md#installation> |
+| Configuration | <https://github.com/cloudmesh/cloudmesh-job/blob/master/README.md#configuration> |
+| Available methods | <https://github.com/cloudmesh/cloudmesh-job/blob/master/README.md#available-methods> |
+| Command API | <https://github.com/cloudmesh/cloudmesh-job/blob/master/README.md#api-of-the-command> |
+| Command description | <https://github.com/cloudmesh/cloudmesh-job/blob/master/README.md#command-description> |
 
