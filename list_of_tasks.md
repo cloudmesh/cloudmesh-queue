@@ -1,4 +1,8 @@
-# List of tasks completed for Independent Study under the guidance of Prof. Gregor
+# List of tasks completed for Independent Study 
+
+Semester: ?
+Course number: ?
+Under which prof has this ben registerd Gregor or Geoffrey?
 
 branch indicated in brackets
 
