@@ -12,6 +12,13 @@ perform tasks which have heavy usage of compute power and execution time.
 A user can configure all available compute resources as 'hosts' in a 
 configuration file along with the list of jobs to be executed. Then, based 
 on the scheduler policy, user can schedule these jobs on configured hosts. 
+
+
+## Prerequisits
+
+* Cloudmesh-job uses `ssh` access to the remote compute machine. ssh clients are avalaible on oll mayor platforms including macOS, Linux, Windows.
+* It is assumed that you use public keys to authenticate to rempte machines. We assume you use ssh-add and/or keychain to avoid issuing passwords when you use the cloudmehs-job
+* We do not recommend using passwordless keys as ssh-add and keychain exisst to avoid this.
  
 
 ## Installation
@@ -23,10 +30,7 @@ $ git clone https://github.com/cloudmesh/cloudmesh-job
 $ cd cloudmesh-job
 $ pip install .
 ```
- 
-This library contains a number of functions and APIs that we highlight
-here. They are used for configuration and execution of jobs in available 
-compute resources.
+
 
 ## Alternative Installation and Additional Documentation for CLoudmesh
 
@@ -338,9 +342,4 @@ API and to inquire, modify and schedule jobs from the configuration file.
   and also set them that way variables["jobset"] = VALUE.
 ```
 
-## Scope and Limitations
 
-* Command assumes `ssh` access to the remote compute machine.
-* If command is to be run on local machine, then `ssh` permission to local 
-machine is needed.
-* Cloudmesh-common module should be installed. 
