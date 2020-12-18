@@ -32,22 +32,30 @@ $ cd cloudmesh-job
 ```
 
 
-
-
 ## Configuration
 
 The current jobset filename is stored in the cloudmesh variables under the 
-variable "jobset". It can be queried with cms set jobset. It can be set with 
-cms set jobset=VALUE. 
+variable `jobset`. It can be queried with
+
+```cms set jobset```
+
+It can be set with
+
+```cms set jobset=VALUE```
+
+An exmple is
 
 ```bash
 $ cms set jobset
 set jobset
-jobset='~\.cloudmesh\job\spec.yaml'
+jobset='~/.cloudmesh/job/spec.yaml'
 ```
 
-Content of the jobset can be created using `cms job template` (Refer API of 
-the command.). This configuration file has following content:
+The content of the jobset can be created using
+
+```cms job template```
+
+This template configuration will than have the following content:
 
 ```yaml
 cloudmesh:
@@ -86,9 +94,11 @@ jobs:
 
 ## Available methods
  
-### Hosts 
-Api to configure available compute resources as 'hosts' in the configuration 
-file.  
+### Hosts
+
+To configer available compute resources as 'hosts' in the configuration
+file you can use the following command, that will generate a hosts file
+in the `jobs` directory. To list the hosts we have a convenient list command.
 
 ```bash
 cms job hosts add --hostname=name --ip=ip --cpu_count=n
@@ -100,14 +110,17 @@ cms job list hosts
 
 ### Scheduler
 
-API to inquire and configure a scheduler policy which is used by the `cms 
+One can configure and To inquire  a scheduler policy
+taht is used by the `cms
 job run` command to schedule and execute jobs.  
-Available scheduler policies:
+The following scheduler policies are available:
 
 * sequential - Use first available host
 * random     - Use random available host
 * smart      - Use a host with highest availability
 * frugal     - Use a host with least availability
+
+To set it and inquire information about is use the commands
 
 ```bash
 cms job scheduler --policy=random
@@ -119,7 +132,7 @@ cms job scheduler info
 
 ### Jobs
 
-API and to inquire, modify and schedule jobs from the configuration file. 
+To schedule, modify and inquire the jobs please use the following commands:
 
 ```bash
 cms job info
@@ -132,11 +145,11 @@ cms job template a.yaml --name="b[0-1]"; less a.yaml
     Creates the jobs b0 and b1 as templates in the jobset.
 
 cms job add --name=z[0-1] --ip=123,345 --executable='ls'
---input='..\data' --output='a,b'
+--input='../data' --output='a,b'
     Creates entries in jobset for jobs z0 and z1 with provided
     arguments.
 
-cms job add '~\.cloudmeshnother.yaml'
+cms job add '~/.cloudmeshnother.yaml'
     Adds jobs from FILE to jobset
 
 cms job list
@@ -165,7 +178,9 @@ cms job delete --name=ls_j
     status then it is killed first and then deleted from jobset.
 ``` 
 
-## API of the command
+## Manual Page
+
+Tha abbreviated manual page of the command is
 
 ```bash
 Usage:
@@ -222,11 +237,7 @@ Options:
   cpu_count=N             CPU count of the host.  Ex. '12'        [default: None]
   job_counter=COUNTER     Number of submitted jobsEx. '2'         [default: None]
   policy=POLICYNAME       Scheduler policy.       Ex. 'smart'     [default: 'sequential']
-```
 
-## Command description
-
-```bash
 Description:
 
   job info
