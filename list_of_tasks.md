@@ -1,9 +1,7 @@
 # List of tasks completed for Independent Study 
 
-* Semester: ? if semester less than a year old no extension needed ;-)
+* Semester: May 2020 
 * Course number: ?
-* Under which prof has this ben registerd Gregor or Geoffrey?
-* send form you filled out to IU or send info via e-mail
 
 branch indicated in brackets
 
