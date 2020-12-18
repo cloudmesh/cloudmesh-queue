@@ -13,6 +13,13 @@ A user can configure all available compute resources as 'hosts' in a
 configuration file along with the list of jobs to be executed. Then, based 
 on the scheduler policy, user can schedule these jobs on configured hosts. 
 
+# Table of Contents
+
+* [Prerequisits](#Prerequisits)
+* [Installation](#Installation)
+* [Configuration](#Configuration)
+
+
 
 ## Prerequisits
 
@@ -355,4 +362,3 @@ installation documentation.
 | Available methods | <https://github.com/cloudmesh/cloudmesh-job/blob/master/README.md#available-methods> |
 | Command API | <https://github.com/cloudmesh/cloudmesh-job/blob/master/README.md#api-of-the-command> |
 | Command description | <https://github.com/cloudmesh/cloudmesh-job/blob/master/README.md#command-description> |
-
