@@ -1,7 +1,7 @@
 ###############################################################
-# pytest -v --capture=no tests/test_01_job_cli.py
-# pytest -v  tests/test_01_job_cli.py
-# pytest -v --capture=no  tests/test_01_job_cli.py::TestJob::<METHODNAME>
+# pytest -v --capture=no tests/test_01_job_cli.py | tee tests/output/test_01_job_cli_results.txt
+# pytest -v  tests/test_01_job_cli.py | tee tests/output/test_01_job_cli_results.txt
+# pytest -v --capture=no  tests/test_01_job_cli.py::TestJob::<METHODNAME> | tee tests/output/test_01_job_cli_results.txt
 ###############################################################
 import pytest
 from cloudmesh.common.Shell import Shell
