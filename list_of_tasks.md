@@ -33,10 +33,10 @@ Submitted by: Ketan Pimparkar
     
 2. cloudmesh-job
 
-   1. [Worked on the development of cloudmesh-job module.](https://github.com/cloudmesh/cloudmesh-job)
+   1. (main) [Worked on the development of cloudmesh-job module.](https://github.com/cloudmesh/cloudmesh-job)
    
-   2. [Worked on methods such as job run/kill/delete.](https://github.com/cloudmesh/cloudmesh-job/blob/master/cloudmesh/job/command/job.py)
+   2. (main) [Worked on methods such as job run/kill/delete.](https://github.com/cloudmesh/cloudmesh-job/blob/master/cloudmesh/job/command/job.py)
    
-   3. [Documented demo of the cloudmesh job workflow.](https://github.com/cloudmesh/cloudmesh-job/blob/master/Job_Demo_Windows.md)
+   3. (main) [Documented demo of the cloudmesh job workflow.](https://github.com/cloudmesh/cloudmesh-job/blob/master/Job_Demo_Windows.md)
    
-   4. [Created pytests and documented results.](https://github.com/cloudmesh/cloudmesh-job/tree/master/tests)
+   4. (main) [Created pytests and documented results.](https://github.com/cloudmesh/cloudmesh-job/tree/master/tests)
