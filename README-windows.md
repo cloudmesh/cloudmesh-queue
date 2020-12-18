@@ -1,24 +1,34 @@
 # Demo of `cms job` in Windows command prompt
 
-## Table of Content
+# Table of Contents
 
-- [Demo of `cms job` in Windows command prompt](#demo-of--cms-job--in-windows-command-prompt)
-  * [Setting up location of config file](#setting-up-location-of-config-file)
-  * [Verification of config file location in `cms job`](#verification-of-config-file-location-in--cms-job-)
-  * [Creating a template of configuration file](#creating-a-template-of-configuration-file)
-  * [Adding a new job in configuration file from another yaml file](#adding-a-new-job-in-configuration-file-from-another-yaml-file)
-  * [Adding a new job using command line arguments](#adding-a-new-job-using-command-line-arguments)
-  * [Enlisting configured jobs](#enlisting-configured-jobs)
-    + [Enlist all jobs](#enlist-all-jobs)
-    + [Enlist jobs with certain status](#enlist-jobs-with-certain-status)
-    + [Enlist jobs with certain pattern in the job name](#enlist-jobs-with-certain-pattern-in-the-job-name)
-    + [Enlist jobs sorted on job status](#enlist-jobs-sorted-on-job-status)
-  * [Submit a job for execution on remote host](#submit-a-job-for-execution-on-remote-host)
-    + [Outputs on remote host](#outputs-on-remote-host)
-    + [Python script used for testing](#python-script-used-for-testing)
-  * [Kill a job on remote host](#kill-a-job-on-remote-host)
-  * [Reset status and rerun a job](#reset-status-and-rerun-a-job)
-  * [Add a host](#add-a-host)
+* [Notation](#Notation)
+* [Instalation on Windows](#Instalation-on-Windows)
+* [Setting up location of config file](#Setting-up-location-of-config-file)
+* [Verification of config file location in `cms job` ](#Verification-of-config-file-location-in-`cms-job`)
+* [Creating a template of configuration file](#Creating-a-template-of-configuration-file)
+* [Adding a new job in configuration file from another yaml file](#Adding-a-new-job-in-configuration-file-from-another-yaml-file)
+* [Adding a new job using command line arguments](#Adding-a-new-job-using-command-line-arguments)
+* [Enlisting configured jobs](#Enlisting-configured-jobs)
+	* [Enlist all jobs](#Enlist-all-jobs)
+	* [Enlist jobs with certain status](#Enlist-jobs-with-certain-status)
+	* [Enlist jobs with certain pattern in the job name](#Enlist-jobs-with-certain-pattern-in-the-job-name)
+	* [Enlist jobs sorted on job status](#Enlist-jobs-sorted-on-job-status)
+* [Submit a job for execution on remote host](#Submit-a-job-for-execution-on-remote-host)
+	* [Outputs on remote host](#Outputs-on-remote-host)
+	* [Python script used for testing](#Python-script-used-for-testing)
+* [Kill a job on remote host](#Kill-a-job-on-remote-host)
+	* [Local machine </th>](#Local-machine-</th>)
+	* [Remote machine](#Remote-machine)
+	* [TODO: SOME OTHER THING THAT WAS NOT IN TABLE](#TODO:-SOME-OTHER-THING-THAT-WAS-NOT-IN-TABLE)
+* [Reset status and rerun a job](#Reset-status-and-rerun-a-job)
+* [Delete a job from configuration file](#Delete-a-job-from-configuration-file)
+* [Remote host management](#Remote-host-management)
+* [Enlist hosts](#Enlist-hosts)
+* [Job scheduler management](#Job-scheduler-management)
+	* [Find out currently configured scheduler](#Find-out-currently-configured-scheduler)
+	* [Re-configure the scheduler](#Re-configure-the-scheduler)
+
 
 
 ## Notation
