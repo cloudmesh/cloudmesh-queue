@@ -57,7 +57,7 @@ variable "jobset". It can be queried with cms set jobset. It can be set with
 cms set jobset=VALUE. 
 
 ```bash
-~ cms set jobset
+$ cms set jobset
 set jobset
 jobset='~\.cloudmesh\job\spec.yaml'
 ```
@@ -105,6 +105,7 @@ jobs:
 ### Hosts 
 Api to configure available compute resources as 'hosts' in the configuration 
 file.  
+
 ```bash
     cms job hosts add --hostname=name --ip=ip --cpu_count=n
         Adds a host in jobset yaml file.
@@ -114,6 +115,7 @@ file.
 ```
 
 ### Scheduler
+
 API to inquire and configure a scheduler policy which is used by the `cms 
 job run` command to schedule and execute jobs.  
 Available scheduler policies:
@@ -132,6 +134,7 @@ Available scheduler policies:
 ```
 
 ### Jobs
+
 API and to inquire, modify and schedule jobs from the configuration file. 
 
 ```bash
@@ -176,11 +179,10 @@ API and to inquire, modify and schedule jobs from the configuration file.
     cms job delete --name=ls_j
         Deletes a job from the jobset. If job is in 'submitted'
         status then it is killed first and then deleted from jobset.
-
 ``` 
 
-
 ## API of the command
+
 ```bash
   Usage:
     job set FILE
