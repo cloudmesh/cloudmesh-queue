@@ -8,13 +8,13 @@ Submitted by: Ketan Pimparkar
     
    1. (hopkins) [Built a Covid-19 dataset similar to IU dataset.](https://github.com/cloudmesh/cloudmesh-timeseries/blob/hopkins/notes.md)
    
-   2. [Integrated Hopkins Covid-19 dataset.](https://github.com/cloudmesh/cloudmesh-timeseries/commit/0b05586567422739b888305c8924b0a8c13b6687)
+   2. (hopkins) [Integrated Hopkins Covid-19 dataset.](https://github.com/cloudmesh/cloudmesh-timeseries/commit/0b05586567422739b888305c8924b0a8c13b6687)
    
    3. (hopkins) [Created visualization of Covid-19 geographic data.](https://github.com/cloudmesh/cloudmesh-timeseries/blob/hopkins/notebook/Geo_plot_hopkins.ipynb)
    
    4. (hopkins) [Tested existing timeseries visualizations on Hopkins dataset.](https://github.com/cloudmesh/cloudmesh-timeseries/blob/hopkins/notebook/Hopkins.ipynb)
    
-   5. [Worked on Date.py to add method "between" and added corresponding pytest.](https://github.com/cloudmesh/cloudmesh-timeseries/commit/38cb59f41179288d185562f867f096afe085feb0)
+   5. (master) [Worked on Date.py to add method "between" and added corresponding pytest.](https://github.com/cloudmesh/cloudmesh-timeseries/commit/38cb59f41179288d185562f867f096afe085feb0)
    
    6. (hopkins) [Worked on gathering references for timeseries/Covid data.](https://github.com/cloudmesh/cloudmesh-timeseries/blob/hopkins/timeseries.bib)
     
