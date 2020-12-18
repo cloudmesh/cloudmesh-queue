@@ -42,6 +42,6 @@ Submitted by: Ketan Pimparkar
    
    2. (main) [Worked on methods such as job run/kill/delete.](https://github.com/cloudmesh/cloudmesh-job/blob/master/cloudmesh/job/command/job.py)
    
-   3. (main) [Documented demo of the cloudmesh job workflow.](https://github.com/cloudmesh/cloudmesh-job/blob/master/Job_Demo_Windows.md)
+   3. (main) [Documented demo of the cloudmesh job workflow.](https://github.com/cloudmesh/cloudmesh-job/blob/main/README-windows.md)
    
-   4. (main) [Created pytests and documented results.](https://github.com/cloudmesh/cloudmesh-job/tree/master/tests)
+   4. (main) [Created pytests and documented results.](https://github.com/cloudmesh/cloudmesh-job/tree/main/tests)
