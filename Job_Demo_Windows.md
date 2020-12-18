@@ -1,3 +1,7 @@
+# Demo of `cms job` in Windows command prompt
+
+## Table of Content
+
 - [Demo of `cms job` in Windows command prompt](#demo-of--cms-job--in-windows-command-prompt)
   * [Setting up location of config file](#setting-up-location-of-config-file)
   * [Verification of config file location in `cms job`](#verification-of-config-file-location-in--cms-job-)
@@ -15,10 +19,10 @@
   * [Kill a job on remote host](#kill-a-job-on-remote-host)
   * [Reset status and rerun a job](#reset-status-and-rerun-a-job)
   * [Add a host](#add-a-host)
-  
-# Demo of `cms job` in Windows command prompt
 
+  
 ## Setting up location of config file
+
 Use `cms job set` to configure location of the configuration file with name 
 `jobset`. In this example file `spec.yaml` is used as the configuration file.
 
@@ -41,6 +45,7 @@ Jobs are defined in: ~\.cloudmesh\job\spec.yaml
 ```
 
 ## Creating a template of configuration file
+
 Command `cms job template` can be used to create a sample configuration file:
 ```
 (ENV3) C:\>cms job template --name=job[1-2]
@@ -53,40 +58,41 @@ this command **replaces existing spec.yaml file** with default content.
 cloudmesh:
   default:
     user: keTan
-  hosts:
-    localhost:
-      name: DESKTOP-HUC37G2
-      ip: 127.0.0.1
-      cpu_count: 4
-      status: free
-      job_counter: 0
-  scheduler:
-    policy: sequential
-jobs:
-  job1:
-    name: job1
-    directory: .
-    ip: 127.0.0.1
-    input: .
-    output: .
-    status: ready
-    gpu: ''
-    user: keTan
-    arguments: -lisa
-    executable: ls
-    shell: bash
-  job2:
-    name: job2
-    directory: .
-    ip: 127.0.0.1
-    input: .
-    output: .
-    status: ready
-    gpu: ''
-    user: keTan
-    arguments: -lisa
-    executable: ls
-    shell: bash
+  jobset:
+    hosts:
+      localhost:
+        name: DESKTOP-HUC37G2
+        ip: 127.0.0.1
+        cpu_count: 4
+        status: free
+        job_counter: 0
+    scheduler:
+      policy: sequential
+    jobs:
+      job1:
+        name: job1
+        directory: .
+        ip: 127.0.0.1
+        input: .
+        output: .
+        status: ready
+        gpu: ''
+        user: keTan
+        arguments: -lisa
+        executable: ls
+        shell: bash
+      job2:
+        name: job2
+        directory: .
+        ip: 127.0.0.1
+        input: .
+        output: .
+        status: ready
+        gpu: ''
+        user: keTan
+        arguments: -lisa
+        executable: ls
+        shell: bash
 ```
 
 ## Adding a new job in configuration file from another yaml file
@@ -148,8 +154,10 @@ WARNING: The key 'cloudmesh.profile.user' could not be found in the yaml file '~
 ```
 
 ## Adding a new job using command line arguments
+
 Command `cms job add` also allows users to add a new job in the list of 
 configured jobs from command line:
+
 ```cmd
 (ENV3) C:\>cms job add --name='sample' --ip=localhost --executable='python sample.py' --arguments='--gpu=7' --directory='./scripts' --input='./data' --output='./output' --status='ready'
 job add --name='sample' --ip=localhost --executable='python sample.py' --arguments='--gpu=7' --directory='./scripts' --input='./data' --output='./output' --status='ready'
@@ -170,11 +178,14 @@ WARNING: The key 'cloudmesh.profile.user' could not be found in the yaml file '~
 ```
 
 ## Enlisting configured jobs
+
 Command `cms job list` allows users to enlist all the jobs configured in the 
 configuration file. This job also shows some basic details of these jobs such
 as job name, job status, executable, remote host IP and the user.
 There are few variation of this command as follows:
+
 ### Enlist all jobs
+
 ```cmd
 (ENV3) C:\>cms job list
 job list
@@ -191,6 +202,7 @@ WARNING: The key 'cloudmesh.profile.user' could not be found in the yaml file '~
 +--------+-------------+-----------+--------------------------+------------------+-------------+--------+
 ```
 ### Enlist jobs with certain status
+
 ```cmd
 (ENV3) C:\>cms job list --status='submitted'
 job list --status='submitted'
@@ -201,7 +213,9 @@ WARNING: The key 'cloudmesh.profile.user' could not be found in the yaml file '~
 | 1      | ls_juliet | submitted | juliet.futuresystems.org | ls      | -lisa; bash | ketanp |
 +--------+-----------+-----------+--------------------------+---------+-------------+--------+
 ```
+
 ### Enlist jobs with certain pattern in the job name
+
 ```cmd
 (ENV3) C:\>cms job list --name='pytest'
 job list --name='pytest'
@@ -213,7 +227,9 @@ WARNING: The key 'cloudmesh.profile.user' could not be found in the yaml file '~
 | 2      | pytest_job1 | ready     | localhost | python sample.py | --gpu=7   | keTan |
 +--------+-------------+-----------+-----------+------------------+-----------+-------+
 ```
+
 ### Enlist jobs sorted on job status
+
 ```cmd
 (ENV3) C:\>cms job status
 job status
@@ -239,6 +255,7 @@ WARNING: The key 'cloudmesh.profile.user' could not be found in the yaml file '~
 ```
 
 ### Outputs on remote host
+
 ```cmd
 [ketanp@j-login1 test_juliet]$ pwd
 /N/u/ketanp/output/test_juliet
@@ -262,6 +279,7 @@ WARNING: The key 'cloudmesh.profile.user' could not be found in the yaml file '~
 [ketanp@j-login1 test_juliet]$
 
 ```
+
 ### Python script used for testing
 
 ```python
@@ -311,20 +329,7 @@ logging.debug("End of the script")
 
 ## Kill a job on remote host
 
-<!--
-<table style="width: 100%">
-    <colgroup>
-       <col span="1" style="width: 30%;">
-       <col span="1" style="width: 70%;">
-    </colgroup>
--->
-<table "width:200px; height:250px;overflow:hidden">
-<tr>
-<th> Local machine </th>
-<th> Remote host </th>
-</tr>
-<tr>
-<td>
+### Local machine </th>
 
 ```cmd
 (ENV3) C:\>cms job run --name=test_juliet
@@ -339,8 +344,7 @@ WARNING: The key 'cloudmesh.profile.user' could not be found in the yaml file
 '~\.cloudmesh\job\spec.yaml'
 ```
 
-</td>
-<td>
+### Remote machine
 
 ```bash
 [ketanp@j-login1 test_juliet]$ while [ 1 == 1 ];
@@ -384,9 +388,7 @@ ketanp   18279  3720  0 04:43 pts/8    00:00:00 grep --color=auto test.py
 
 ```
 
-</td>
-</tr>
-</table>
+### TODO: SOME OTHER THING THAT WAS NOT IN TABLE
 
 ```cmd
 (ENV3) C:\>cms job list --name='juliet'
@@ -398,7 +400,6 @@ WARNING: The key 'cloudmesh.profile.user' could not be found in the yaml file '~
 | 1      | test_juliet | killed    | juliet.futuresystems.org | python test.py | --input=./data --output=./output/test_juliet     | ketanp |
 |        |             |           |                          |                | --gpu=7                                          |        |
 +--------+-------------+-----------+--------------------------+----------------+--------------------------------------------------+--------+
-
 ```
 
 ## Reset status and rerun a job
@@ -446,9 +447,8 @@ WARNING: The key 'cloudmesh.profile.user' could not be found in the yaml file '~
 | 1      | test_juliet | submitted | juliet.futuresystems.org | python test.py | --input=./data --output=./output/test_juliet     | ketanp |
 |        |             |           |                          |                | --gpu=7                                          |        |
 +--------+-------------+-----------+--------------------------+----------------+--------------------------------------------------+--------+
-
-(ENV3) C:\>
 ``` 
+
 ## Delete a job from configuration file
 
 Command `cms job delete` provides an ability to users to delete a job from 
@@ -457,9 +457,9 @@ the configuration file. The delete operation first kills a job if it is in
 
 - Checking existing list of jobs:
 ```cmd
-(ENV3) C:\Study\IUMSDS\Fall2019\CloudComputing\cm\cloudmesh-job>cms job list
+(ENV3) C:\>cms job list
 job list
-WARNING: The key 'cloudmesh.profile.user' could not be found in the yaml file 'C:\Users\kpimp\.cloudmesh\job\spec.yaml'
+WARNING: The key 'cloudmesh.profile.user' could not be found in the yaml file '~\.cloudmesh\job\spec.yaml'
 +--------+-------------+-----------+--------------------------+------------------+--------------------------------------------------+--------+
 | Number | JobName     | JobStatus | RemoteIp                 | Command          | Arguments                                        | User   |
 +--------+-------------+-----------+--------------------------+------------------+--------------------------------------------------+--------+
@@ -475,14 +475,14 @@ WARNING: The key 'cloudmesh.profile.user' could not be found in the yaml file 'C
 - Deleting `sample` job and checking the list again
 
 ```cmd
-(ENV3) C:\Study\IUMSDS\Fall2019\CloudComputing\cm\cloudmesh-job>cms job delete --name=sample
+(ENV3) C:\>cms job delete --name=sample
 job delete --name=sample
-WARNING: The key 'cloudmesh.profile.user' could not be found in the yaml file 'C:\Users\kpimp\.cloudmesh\job\spec.yaml'
+WARNING: The key 'cloudmesh.profile.user' could not be found in the yaml file '~\.cloudmesh\job\spec.yaml'
 
 
-(ENV3) C:\Study\IUMSDS\Fall2019\CloudComputing\cm\cloudmesh-job>cms job list
+(ENV3) C:\>cms job list
 job list
-WARNING: The key 'cloudmesh.profile.user' could not be found in the yaml file 'C:\Users\kpimp\.cloudmesh\job\spec.yaml'
+WARNING: The key 'cloudmesh.profile.user' could not be found in the yaml file '~\.cloudmesh\job\spec.yaml'
 +--------+-------------+-----------+--------------------------+----------------+--------------------------------------------------+--------+
 | Number | JobName     | JobStatus | RemoteIp                 | Command        | Arguments                                        | User   |
 +--------+-------------+-----------+--------------------------+----------------+--------------------------------------------------+--------+
@@ -496,7 +496,11 @@ WARNING: The key 'cloudmesh.profile.user' could not be found in the yaml file 'C
 ```
 
 
-## Add a host
+## Remote host management
+
+Command `cms job hosts` facilitates configuration of remote hosts in the 
+configuration file. 
+
 
 ```cmd
 (ENV3) C:\>cms job hosts add --hostname='juliet' --ip='juliet.futuresystems.org' --cpu_count='12'
@@ -510,7 +514,7 @@ WARNING: The key 'cloudmesh.profile.user' could not be found in the yaml file '~
       ip: 127.0.0.1
       cpu_count: 4
       status: free
-      job_counter: '1'
+      job_counter: '0'
     juliet:
       name: juliet
       ip: juliet.futuresystems.org
@@ -519,3 +523,48 @@ WARNING: The key 'cloudmesh.profile.user' could not be found in the yaml file '~
       job_counter: '0'
 ```
 
+## Enlist hosts
+
+```bash
+(ENV3) C:\>cms job list hosts
+job list hosts
++-----------------+--------------------------+-----------+--------+-------------+
+| name            | ip                       | cpu_count | status | job_counter |
++-----------------+--------------------------+-----------+--------+-------------+
+| DESKTOP-HUC37G2 | 127.0.0.1                | 4         | free   | 0           |
+| juliet          | juliet.futuresystems.org | 12        | free   | 0           |
++-----------------+--------------------------+-----------+--------+-------------+
+```
+
+## Job scheduler management
+
+The command `cms job scheduler` enables users to configure job scheduler 
+policies. These policies come in effect when the host configured with the job
+is not available for further job submissions. In such scenario, `cms job 
+run` searches the next available host based on the scheduler policy and 
+submits the job on that host.
+It is assumed that this next host has all input data needed for the job and 
+also the output locations. Available scheduler policies are:
+
+* sequential - Use first available host
+* random     - Use random available host
+* smart      - Use a host with highest availability
+* frugal     - Use a host with least availability
+  
+### Find out currently configured scheduler
+
+```cmd 
+(ENV3) C:\>cms job scheduler info
+job scheduler info
+
+INFO: Configured scheduler policy: sequential
+```
+
+### Re-configure the scheduler
+
+```cmd
+(ENV3) C:\>cms job scheduler --policy=smart
+job scheduler --policy=smart
+
+INFO: Scheduler policy changed from sequential to smart
+```

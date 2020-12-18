@@ -10,6 +10,7 @@ from cloudmesh.shell.command import command
 from cloudmesh.shell.command import map_parameters
 from cloudmesh.common.Printer import Printer
 from cloudmesh.configuration.Config import Config
+from cloudmesh.configuration.Configuration import Configuration
 import oyaml as yaml
 
 
@@ -284,7 +285,6 @@ class JobCommand(PluginCommand):
 
             jobs = JobQueue(jobset)
             for name in names:
-                # template = jobs.template(name=name)
                 template.update(jobs.template(name=name))
                 jobs.add_template(template)
 
@@ -352,7 +352,7 @@ class JobCommand(PluginCommand):
                     return ""
 
             # for debugging
-            VERBOSE(arguments)
+            # VERBOSE(arguments)
 
             # now we need to call the jobset and add the right things
             jobqueue.update_spec(arguments, jobset)
@@ -437,21 +437,21 @@ class JobCommand(PluginCommand):
             # job reset --name=NAME
 
             jobqueue = JobQueue(variables["jobset"])
-            spec = Config(jobqueue.filename)
+            spec = Configuration(jobqueue.filename)
 
             if names is None:
-                names = spec['jobs'].keys()
+                names = spec['cloudmesh.jobset.jobs'].keys()
 
             for name in names:
-                if not spec['jobs'].get(name):
+                if not spec['cloudmesh.jobset.jobs'].get(name):
                     Console.error(f"Job {name} not found in jobset "
                                   f"{jobqueue.filename}.")
                     continue
-                if spec[f'jobs.{name}.status'] == 'submitted':
+                if spec[f'cloudmesh.jobset.jobs.{name}.status'] == 'submitted':
                     Console.error(f"Job {name} is already submitted for "
                                 "execution. Please kill the job before reset.")
                 else:
-                    spec[f'jobs.{name}.status'] = 'ready'
+                    spec[f'cloudmesh.jobset.jobs.{name}.status'] = 'ready'
                     Console.ok(f"Status reset for job {name}.")
 
         elif arguments.run:

@@ -1,0 +1,390 @@
+(ENV4) C:\Study\IUMSDS\Fall2019\CloudComputing\cm\cloudmesh-job>pytest -v --capture=no tests\test_02_job_api.py
+======================================================================================= test session starts ========================================================================================
+platform win32 -- Python 3.8.5, pytest-6.0.1, py-1.9.0, pluggy-0.13.1 -- c:\study\iumsds\fall2019\cloudcomputing\env4\scripts\python.exe
+cachedir: .pytest_cache
+rootdir: C:\Study\IUMSDS\Fall2019\CloudComputing\cm\cloudmesh-job, configfile: pytest.ini
+plugins: cov-2.10.0
+collected 10 items
+
+tests/test_02_job_api.py::TestJob::test_help
+[35m
+# ######################################################################
+# test_help \tests\test_02_job_api.py 39
+# ######################################################################
+[0m
+[34m
+# ----------------------------------------------------------------------
+# result
+# ----------------------------------------------------------------------
+# 45:test_help .\tests\test_02_job_api.py
+# ----------------------------------------------------------------------
+# ('\n'
+#  '::\n'
+#  '\n'
+#  '  Usage:\n'
+#  '    job set FILE\n'
+#  '    job template [--name=NAME]\n'
+#  '    job add FILE\n'
+#  '    job add --name=NAME\n'
+#  '            --ip=IP\n'
+#  '            --executable=EXECUTABLE\n'
+#  '            [--directory=DIRECTORY]\n'
+#  '            [--input=INPUT]\n'
+#  '            [--output=OUTPUT]\n'
+#  '            [--status=STATUS]\n'
+#  '            [--gpu=GPU]\n'
+#  '            [--user=USER]\n'
+#  '            [--arguments=ARGUMENTS]\n'
+#  '            [--shell=SHELL]\n'
+#  '    job status\n'
+#  '    job list --status=STATUS\n'
+#  '    job list --name=NAME\n'
+#  '    job list\n'
+#  '    job kill [--name=NAME]\n'
+#  '    job reset [--name=NAME]\n'
+#  '    job delete [--name=NAME]\n'
+#  '    job help\n'
+#  '    job run [--name=NAME]\n'
+#  '    job info\n'
+#  '    job hosts add --hostname=hostname --ip=IP --cpu_count=N\n'
+#  '                 [--status=STATUS] [--job_counter=COUNTER]\n'
+#  '    job list hosts\n'
+#  '    job scheduler --policy=POLICYNAME\n'
+#  '    job scheduler info\n'
+#  '\n'
+#  '  This command is a job queuing and scheduling framework. It allows\n'
+#  '  users to leverage all the available compute resources to perform\n'
+#  '  tasks which have heavy usage of compute power and execution time.\n'
+#  '\n'
+#  '  Arguments:\n'
+#  '      FILE   a file name\n'
+#  '\n'
+#  '  Options:\n'
+#  "      name=NAME               Name(s) of jobs.        Ex: 'job[0-5]'  "
+#  '[default: None]\n'
+#  '      ip=IP                   IP of the host.         Ex: 127.0.0.1   '
+#  '[default: None]\n'
+#  "      executable=EXECUTABLE   The command to be run.  Ex. 'ls'        "
+#  '[default: None]\n'
+#  "      directory=DIRECTORY     Location to run job.    Ex. './'        "
+#  "[default: './']\n"
+#  "      input=INPUT             Location of input data. Ex. './data'    "
+#  "[default: './data']\n"
+#  "      output=OUTPUT           Location of outputs.    Ex. './output'  "
+#  "[default: './output/job_name']\n"
+#  "      status=STATUS           Status of the job.      Ex. 'ready'     "
+#  "[default: 'ready']\n"
+#  '      gpu=GPU                 Which GPU to use.       Ex. 7           '
+#  '[default: None]\n'
+#  "      user=USER               User on remote host     Ex. 'uname'     "
+#  '[default: {System user}]\n'
+#  "      arguments=ARGUMENTS     Args for the executable.Ex. '-lisa'     "
+#  '[default: None]\n'
+#  "      shell=SHELL             Shell to run job.       Ex. 'bash'      "
+#  "[default: 'bash']\n"
+#  "      hostname=hostname       Host name.              Ex. 'juliet'    "
+#  '[default: None]\n'
+#  "      cpu_count=N             CPU count of the host.  Ex. '12'        "
+#  '[default: None]\n'
+#  "      job_counter=COUNTER     Number of submitted jobsEx. '2'         "
+#  '[default: None]\n'
+#  "      policy=POLICYNAME       Scheduler policy.       Ex. 'smart'     "
+#  "[default: 'sequential']\n"
+#  '\n'
+#  '  Description:\n'
+#  '\n'
+#  '      job info\n'
+#  '        prints the information for the queued jobs\n'
+#  '\n'
+#  '      job set FILE\n'
+#  '        sets the jobset to the file name. All other commands will be\n'
+#  '        applied to a jobset\n'
+#  '\n'
+#  '      job add FILE\n'
+#  '        adds the jobs in the file to the jobset\n'
+#  '\n'
+#  '      job template\n'
+#  '        creates a job template  in the jobset\n'
+#  '\n'
+#  '      job list\n'
+#  '        lists all jobs\n'
+#  '\n'
+#  '      job list --status=open\n'
+#  '        lists all jobs with a specific status\n'
+#  '\n'
+#  '      job list --name=NAME\n'
+#  '        lists teh job with the given name pattern\n'
+#  '\n'
+#  '      job status\n'
+#  '        shows the status of all jobs\n'
+#  '\n'
+#  '      job kill --name=NAME\n'
+#  '        kills the given jobs base on a name pattern such as\n'
+#  '        name[01-04] which would kill all jobs with the given names\n'
+#  '\n'
+#  '      job status [--name=NAME] [--status=STATUS]\n'
+#  '        sets the status of all jobs to the status\n'
+#  '\n'
+#  '      job reset [--name=NAME]\n'
+#  '        resets the job to be rerun\n'
+#  '\n'
+#  '      job delete --name=NAME\n'
+#  '        deletes the given jobs base on a name pattern such as\n'
+#  '        name[01-04] which would kill all jobs with the given names\n'
+#  '\n'
+#  '      job run [--name=NAME]\n'
+#  '        Run all jobs from jobset. If --name argument is provided then\n'
+#  '        run a specific job\n'
+#  '\n'
+#  '      job hosts add --hostname=name --ip=ip --cpu_count=n\n'
+#  '        Adds a host in jobset yaml file.\n'
+#  '\n'
+#  '      job list hosts\n'
+#  '        Enlists all the hosts configured in jobset\n'
+#  '\n'
+#  '      job scheduler --policy=random\n'
+#  '        Assigns policy name to the scheduler policy\n'
+#  '\n'
+#  '      job scheduler info\n'
+#  '        Shows currently configured scheduler policy\n'
+#  '\n'
+#  '      job help\n'
+#  '        prints the manual page\n'
+#  '\n'
+#  '  Job States:\n'
+#  '\n'
+#  '     done   - job completed\n'
+#  '     ready  - ready for scheduling\n'
+#  '     failed - job failed\n'
+#  '     timeout - timeout\n'
+#  '     submitted - job submitted to remote machine for execution\n'
+#  '\n'
+#  '  Scheduler policies:\n'
+#  '\n'
+#  '     sequential - Use first available host\n'
+#  '     random     - Use random available host\n'
+#  '     smart      - Use a host with highest availability\n'
+#  '     frugal     - Use a host with least availability\n'
+#  '\n'
+#  '  Job specification:\n'
+#  '\n'
+#  "     The jobs are specified in 'spec.yaml' file\n"
+#  '\n'
+#  '     name:\n'
+#  '       ip: ip of the host\n'
+#  '       input: where the input comes form (locally to ip)\n'
+#  '       output: where to store the outout (locally to ip)\n'
+#  '       status: the status\n'
+#  '       gpu: the GPU specification # string such as "0,2" as defined by\n'
+#  '            the GPU framework e.g. NVIDIA\n'
+#  '       user: the userneme on ip to execute the job\n'
+#  '       directory: the working directory\n'
+#  '       arguments: the arguments passed along # lis of key values\n'
+#  '       executable: the executable\n'
+#  '       shell: bash # executes the job in the provided shell\n'
+#  '              $(SHELL) will use the default user shell\n'
+#  '\n'
+#  '  The current jobset filename is stored in the cloudmesh variables under\n'
+#  '  the variable "jobset". It can be queried with cms set jobset. It\n'
+#  '  can be set with cms set jobset=VALUE.\n'
+#  '  We may not even do cms job set VALUE due to this simpler existing way\n'
+#  '  of interfacing we can query the variables with variables = Variables()\n'
+#  '  and also set them that way variables["jobset"] = VALUE.\n'
+#  '\n'
+#  '  Usage examples:\n'
+#  '    cms job info\n'
+#  '        Prints location of job queue file.\n'
+#  '\n'
+#  "    cms job set '~/.cloudmesh/job/spec.yaml'\n"
+#  '        Sets jobset as the FILE provided. Further process refers jobset.\n'
+#  '\n'
+#  '    cms job template --name="b[0-1]"; less a.yaml\n'
+#  '        Creates the jobs b0 and b1 as templates in the jobset.\n'
+#  '\n'
+#  "    cms job add --name=z[0-1] --ip=123,345 --executable='ls'\n"
+#  "    --input='..\\data' --output='a,b'\n"
+#  '        Creates entries in jobset for jobs z0 and z1 with provided\n'
+#  '        arguments.\n'
+#  '\n'
+#  "    cms job add '~\\.cloudmesh\x07nother.yaml'\n"
+#  '        Adds jobs from FILE to jobset\n'
+#  '\n'
+#  '    cms job list\n'
+#  '        Enlist all jobs\n'
+#  '\n'
+#  "    cms job list --name='perform'\n"
+#  "        Enlist all jobs with the phrase 'perform' in job name\n"
+#  '\n'
+#  "    cms job list --status='ready'\n"
+#  "        Enlist all jobs in status 'ready'\n"
+#  '\n'
+#  '    cms job status\n'
+#  '        Enlists all jobs ordered by their status\n'
+#  '\n'
+#  '    cms job reset --name=NAME\n'
+#  "        Resets the status of the job to 'ready'.\n"
+#  '\n'
+#  '    cms job hosts add --hostname=name --ip=ip --cpu_count=n\n'
+#  '        Adds a host in jobset yaml file.\n'
+#  '\n'
+#  '    cms job list hosts\n'
+#  '        Enlists all the hosts configured in jobset\n'
+#  '\n'
+#  '    cms job scheduler --policy=random\n'
+#  '        Assigns policy name to the scheduler policy\n'
+#  '\n'
+#  '    cms job scheduler info\n'
+#  '        Shows currently configured scheduler policy\n'
+#  '\n'
+#  '    cms job run --name=ls_j\n'
+#  '        Submits job(s) to host decided by the scheduler policy\n'
+#  '\n'
+#  '    cms job kill --name=ls_j\n'
+#  '        Kills the job\n'
+#  '\n'
+#  '    cms job delete --name=ls_j\n'
+#  "        Deletes a job from the jobset. If job is in 'submitted'\n"
+#  '        status then it is killed first and then deleted from jobset.\n'
+#  '\n')
+# ----------------------------------------------------------------------
+[0m
+PASSED
+tests/test_02_job_api.py::TestJob::test_template
+[35m
+# ######################################################################
+# test_template \tests\test_02_job_api.py 50
+# ######################################################################
+[0m
+PASSED
+tests/test_02_job_api.py::TestJob::test_add_file
+[35m
+# ######################################################################
+# test_add_file \tests\test_02_job_api.py 70
+# ######################################################################
+[0m
+PASSED
+tests/test_02_job_api.py::TestJob::test_add_cli
+[35m
+# ######################################################################
+# test_add_cli \tests\test_02_job_api.py 105
+# ######################################################################
+[0m
+PASSED
+tests/test_02_job_api.py::TestJob::test_list
+[35m
+# ######################################################################
+# test_list \tests\test_02_job_api.py 131
+# ######################################################################
+[0m
++--------+-------------+-----------+--------------------------+---------+-----------+--------+
+| Number | JobName     | JobStatus | RemoteIp                 | Command | Arguments | User   |
++--------+-------------+-----------+--------------------------+---------+-----------+--------+
+| 1      | job1        | ready     | 127.0.0.1                | ls      | -lisa     | keTan  |
+| 2      | job2        | ready     | 127.0.0.1                | ls      | -lisa     | keTan  |
+| 3      | pytest_job  | ready     | local                    | ls      | -lisa     | user   |
+| 4      | pytest_job1 | ready     | juliet.futuresystems.org | ls      | -lisa     | ketanp |
++--------+-------------+-----------+--------------------------+---------+-----------+--------+
+[34m
+# ----------------------------------------------------------------------
+# result
+# ----------------------------------------------------------------------
+# 141:test_list .\tests\test_02_job_api.py
+# ----------------------------------------------------------------------
+# <cloudmesh.common.prettytable.PrettyTable object at 0x000001E3C5B9C4F0>
+# ----------------------------------------------------------------------
+[0m
+PASSED
+tests/test_02_job_api.py::TestJob::test_add_host
+[35m
+# ######################################################################
+# test_add_host \tests\test_02_job_api.py 148
+# ######################################################################
+[0m
+[32mHost juliet added to jobset.[0m
+PASSED
+tests/test_02_job_api.py::TestJob::test_run
+[35m
+# ######################################################################
+# test_run \tests\test_02_job_api.py 169
+# ######################################################################
+[0m
+win32
+[34m
+# ----------------------------------------------------------------------
+# result
+# ----------------------------------------------------------------------
+# 175:test_run .\tests\test_02_job_api.py
+# ----------------------------------------------------------------------
+# None
+# ----------------------------------------------------------------------
+[0m
+PASSED
+tests/test_02_job_api.py::TestJob::test_kill
+[35m
+# ######################################################################
+# test_kill \tests\test_02_job_api.py 185
+# ######################################################################
+[0m
+win32
+[34m
+# ----------------------------------------------------------------------
+# result
+# ----------------------------------------------------------------------
+# 191:test_kill .\tests\test_02_job_api.py
+# ----------------------------------------------------------------------
+# None
+# ----------------------------------------------------------------------
+[0m
+PASSED
+tests/test_02_job_api.py::TestJob::test_delete
+[35m
+# ######################################################################
+# test_delete \tests\test_02_job_api.py 199
+# ######################################################################
+[0m
+[34m
+# ----------------------------------------------------------------------
+# result
+# ----------------------------------------------------------------------
+# 205:test_delete .\tests\test_02_job_api.py
+# ----------------------------------------------------------------------
+# None
+# ----------------------------------------------------------------------
+[0m
+PASSED
+tests/test_02_job_api.py::TestJob::test_benchmark
+[35m
+# ######################################################################
+# test_benchmark \tests\test_02_job_api.py 213
+# ######################################################################
+[0m
+
+
++-------------------------------+----------+--------+---------------------+-------+-----------------+--------+---------+----------------------------------------------------+
+| Name                          | Status   |   Time | Start               | tag   | Node            | User   | OS      | Version                                            |
+|-------------------------------+----------+--------+---------------------+-------+-----------------+--------+---------+----------------------------------------------------|
+| test_02_job_api/test_help     | ok       |  0.01  | 2020-08-05 06:50:44 |       | DESKTOP-HUC37G2 | keTan  | Windows | ('10', '10.0.18362', 'SP0', 'Multiprocessor Free') |
+| test_02_job_api/test_template | ok       |  0.023 | 2020-08-05 06:50:44 |       | DESKTOP-HUC37G2 | keTan  | Windows | ('10', '10.0.18362', 'SP0', 'Multiprocessor Free') |
+| test_02_job_api/test_add_file | ok       |  0.026 | 2020-08-05 06:50:44 |       | DESKTOP-HUC37G2 | keTan  | Windows | ('10', '10.0.18362', 'SP0', 'Multiprocessor Free') |
+| test_02_job_api/test_add_cli  | ok       |  0.026 | 2020-08-05 06:50:49 |       | DESKTOP-HUC37G2 | keTan  | Windows | ('10', '10.0.18362', 'SP0', 'Multiprocessor Free') |
+| test_02_job_api/test_list     | ok       |  0.041 | 2020-08-05 06:50:49 |       | DESKTOP-HUC37G2 | keTan  | Windows | ('10', '10.0.18362', 'SP0', 'Multiprocessor Free') |
+| test_02_job_api/test_add_host | ok       |  0.05  | 2020-08-05 06:50:49 |       | DESKTOP-HUC37G2 | keTan  | Windows | ('10', '10.0.18362', 'SP0', 'Multiprocessor Free') |
+| test_02_job_api/test_run      | ok       |  5.076 | 2020-08-05 06:50:50 |       | DESKTOP-HUC37G2 | keTan  | Windows | ('10', '10.0.18362', 'SP0', 'Multiprocessor Free') |
+| test_02_job_api/test_kill     | ok       |  0.051 | 2020-08-05 06:51:00 |       | DESKTOP-HUC37G2 | keTan  | Windows | ('10', '10.0.18362', 'SP0', 'Multiprocessor Free') |
+| test_02_job_api/test_delete   | ok       |  0.027 | 2020-08-05 06:51:05 |       | DESKTOP-HUC37G2 | keTan  | Windows | ('10', '10.0.18362', 'SP0', 'Multiprocessor Free') |
++-------------------------------+----------+--------+---------------------+-------+-----------------+--------+---------+----------------------------------------------------+
+
+# csv,timer,status,time,start,tag,uname.node,user,uname.system,platform.version
+# csv,test_02_job_api/test_help,ok,0.01,2020-08-05 06:50:44,,DESKTOP-HUC37G2,keTan,Windows,('10', '10.0.18362', 'SP0', 'Multiprocessor Free')
+# csv,test_02_job_api/test_template,ok,0.023,2020-08-05 06:50:44,,DESKTOP-HUC37G2,keTan,Windows,('10', '10.0.18362', 'SP0', 'Multiprocessor Free')
+# csv,test_02_job_api/test_add_file,ok,0.026,2020-08-05 06:50:44,,DESKTOP-HUC37G2,keTan,Windows,('10', '10.0.18362', 'SP0', 'Multiprocessor Free')
+# csv,test_02_job_api/test_add_cli,ok,0.026,2020-08-05 06:50:49,,DESKTOP-HUC37G2,keTan,Windows,('10', '10.0.18362', 'SP0', 'Multiprocessor Free')
+# csv,test_02_job_api/test_list,ok,0.041,2020-08-05 06:50:49,,DESKTOP-HUC37G2,keTan,Windows,('10', '10.0.18362', 'SP0', 'Multiprocessor Free')
+# csv,test_02_job_api/test_add_host,ok,0.05,2020-08-05 06:50:49,,DESKTOP-HUC37G2,keTan,Windows,('10', '10.0.18362', 'SP0', 'Multiprocessor Free')
+# csv,test_02_job_api/test_run,ok,5.076,2020-08-05 06:50:50,,DESKTOP-HUC37G2,keTan,Windows,('10', '10.0.18362', 'SP0', 'Multiprocessor Free')
+# csv,test_02_job_api/test_kill,ok,0.051,2020-08-05 06:51:00,,DESKTOP-HUC37G2,keTan,Windows,('10', '10.0.18362', 'SP0', 'Multiprocessor Free')
+# csv,test_02_job_api/test_delete,ok,0.027,2020-08-05 06:51:05,,DESKTOP-HUC37G2,keTan,Windows,('10', '10.0.18362', 'SP0', 'Multiprocessor Free')
+
+PASSED
+
+======================================================================================= 10 passed in 27.55s ========================================================================================

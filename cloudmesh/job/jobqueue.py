@@ -3,6 +3,7 @@ import os, time, sys, multiprocessing, random
 import oyaml as yaml
 from cloudmesh.common.Shell import Shell
 from cloudmesh.configuration.Config import Config
+from cloudmesh.configuration.Configuration import Configuration
 from cloudmesh.common.console import Console
 import subprocess
 from cloudmesh.common.util import path_expand
@@ -125,21 +126,22 @@ class JobQueue:
             cloudmesh:
               default:
                 user: {user}
-              hosts:
-                localhost:
-                  name: {JobQueue._sysinfo()[0]}
-                  ip: 127.0.0.1
-                  cpu_count: {JobQueue._sysinfo()[1]}
-                  status: free
-                  job_counter: 0
-              scheduler:
-                policy: sequential
+              jobset:
+                hosts:
+                  localhost:
+                    name: {JobQueue._sysinfo()[0]}
+                    ip: 127.0.0.1
+                    cpu_count: {JobQueue._sysinfo()[1]}
+                    status: free
+                    job_counter: 0
+                scheduler:
+                  policy: sequential
             """).strip()
 
         template = yaml.safe_load(template)
-        template.update({'jobs': specification})
+        template['cloudmesh']['jobset'].update({'jobs': specification})
 
-        VERBOSE(template)
+        # VERBOSE(template)
 
         # Creating the jobset yaml file. This will replace the file if it
         # already exists.
@@ -159,11 +161,10 @@ class JobQueue:
         jobset = Path.expanduser(Path(self.filename))
         Path.mkdir(jobset.parent, exist_ok=True)
 
-        spec = Config(self.filename)
+        spec = Configuration(self.filename)
 
-        spec['jobs'].update(specification)
-
-        VERBOSE(spec['jobs'])
+        spec['cloudmesh.jobset.jobs'].update(specification)
+        # VERBOSE(spec['jobs'])
 
         spec.save(self.filename)
 
@@ -207,7 +208,7 @@ class JobQueue:
         for idx in range(len(specification['names'])):
             dict_out[specification['names'][idx]] = JobQueue.define(
                 specification, idx)
-        VERBOSE(dict_out)
+        # VERBOSE(dict_out)
 
         self.add(dict_out)
 
@@ -240,25 +241,29 @@ class JobQueue:
         :param arguments: dictionary containing host info
         :return: updates the jobset with host info
         """
-        config = Config(self.filename)
+        config = Configuration(self.filename)
 
         tag = arguments.hostname
-        config[f'cloudmesh.hosts.{tag}.name'] = arguments.hostname or \
-                                                'localhost'
-        config[f'cloudmesh.hosts.{tag}.ip'] = arguments.ip or 'localhost'
-        config[f'cloudmesh.hosts.{tag}.cpu_count'] = arguments.cpu_count or '0'
-        config[f'cloudmesh.hosts.{tag}.status'] = arguments.status or 'free'
-        config[f'cloudmesh.hosts.{tag}.job_counter'] = arguments.job_counter \
-                                                       or '0'
+        config[f'cloudmesh.jobset.hosts.{tag}.name'] = arguments.hostname or \
+            'localhost'
+        config[f'cloudmesh.jobset.hosts.{tag}.ip'] = arguments.ip or 'localhost'
+        config[f'cloudmesh.jobset.hosts.{tag}.cpu_count'] = \
+            arguments.cpu_count or '0'
+        config[f'cloudmesh.jobset.hosts.{tag}.status'] = arguments.status or \
+            'free'
+        config[f'cloudmesh.jobset.hosts.{tag}.job_counter'] = \
+            arguments.job_counter or '0'
+
+        Console.ok(f"Host {arguments.hostname } added to jobset.")
 
     def enlist_hosts(self):
         """
         Enlists all hosts configured in jobset
         :return: list of hosts
         """
-        config = Config(self.filename)
+        config = Configuration(self.filename)
         order = ['name', 'ip', 'cpu_count', 'status', 'job_counter']
-        print(Printer.write(config['cloudmesh.hosts'], order=order))
+        print(Printer.write(config['cloudmesh.jobset.hosts'], order=order))
 
     @staticmethod
     def _get_hostname(ip, spec):
@@ -268,7 +273,7 @@ class JobQueue:
         :param spec: jobset dictionary
         :return: hostname
         """
-        for k, v in spec['cloudmesh.hosts'].items():
+        for k, v in spec['cloudmesh.jobset.hosts'].items():
             if v['ip'] == ip:
                 return k
 
@@ -284,7 +289,12 @@ class JobQueue:
         :return: IP of available host
         """
         p = Policy(ip, spec)
-        return p.get_ip()
+        available_ip = p.get_ip()
+
+        if ip != available_ip:
+            Console.info(f"Host {ip} is unavailable, hence submitted the job "
+                         f"on available host {available_ip}")
+        return available_ip
 
     def run_job(self, names=None):
         """
@@ -292,12 +302,12 @@ class JobQueue:
         :param names: job names
         :return: job is submitted to the host
         """
-        spec = Config(self.filename)
+        spec = Configuration(self.filename)
 
         if names is None:
-            names = spec['jobs'].keys()
+            names = spec['cloudmesh.jobset.jobs'].keys()
 
-        for k, v in spec['jobs'].items():
+        for k, v in spec['cloudmesh.jobset.jobs'].items():
 
             if k in names:
 
@@ -309,17 +319,18 @@ class JobQueue:
                               f"\"cd {v['directory']};"      \
                               f"sh -c 'echo \$\$ > {v['output']}/{k}_pid.log;" \
                               f"exec {v['executable']} {v['arguments']}'\""
-
-                    VERBOSE(command)
+                    # VERBOSE(command)
 
                     Shell.terminal(command, title=f"Running {k}")
                     time.sleep(5)
 
-                    spec[f'jobs.{k}.status'] = 'submitted'
-                    spec[f'jobs.{k}.submitted_to_ip'] = ip
+                    spec[f'cloudmesh.jobset.jobs.{k}.status'] = 'submitted'
+                    spec[f'cloudmesh.jobset.jobs.{k}.submitted_to_ip'] = ip
                     hname = JobQueue._get_hostname(ip, spec)
-                    ctr = int(spec[f'cloudmesh.hosts.{hname}.job_counter'])
-                    spec[f'cloudmesh.hosts.{hname}.job_counter'] = str(ctr + 1)
+                    ctr = int(spec[f'cloudmesh.jobset.hosts.{hname}.job_counter'
+                                   ])
+                    spec[f'cloudmesh.jobset.hosts.{hname}.job_counter'] = \
+                        str(ctr + 1)
                 else:
                     Console.error(f"Job {k} could not be submitted due to "
                                   f"missing host with ip {ip}")
@@ -331,12 +342,12 @@ class JobQueue:
         :param names: job names
         :return: job is killed on the host
         """
-        spec = Config(self.filename)
+        spec = Configuration(self.filename)
 
         if names is None:
-            names = spec['jobs'].keys()
+            names = spec['cloudmesh.jobset.jobs'].keys()
 
-        for k, v in spec['jobs'].items():
+        for k, v in spec['cloudmesh.jobset.jobs'].items():
 
             if k in names:
 
@@ -348,15 +359,17 @@ class JobQueue:
                               f"\"cd {v['output']};" \
                               f"kill -9 \$(cat {k}_pid.log)\""
 
-                    VERBOSE(command)
+                    # VERBOSE(command)
 
                     Shell.terminal(command, title=f"Running {k}")
                     # time.sleep(5)
 
-                    spec[f'jobs.{k}.status'] = 'killed'
+                    spec[f'cloudmesh.jobset.jobs.{k}.status'] = 'killed'
                     hname = JobQueue._get_hostname(ip, spec)
-                    ctr = int(spec[f'cloudmesh.hosts.{hname}.job_counter'])
-                    spec[f'cloudmesh.hosts.{hname}.job_counter']= str(ctr - 1)
+                    ctr = int(spec[f'cloudmesh.jobset.hosts.{hname}.job_counter'
+                                   ])
+                    spec[f'cloudmesh.jobset.hosts.{hname}.job_counter'] = \
+                        str(ctr - 1)
 
                 else:
                     Console.error(f"Job {k} could not be killed due to "
@@ -370,18 +383,18 @@ class JobQueue:
         :param names: list of names of jobs to be deleted
         :return: updates jobset
         """
-        spec = Config(self.filename)
+        spec = Configuration(self.filename)
 
         if names is None:
-            names = spec['jobs'].keys()
+            names = spec['cloudmesh.jobset.jobs'].keys()
 
         for name in names:
 
             try:
-                if spec[f'jobs.{name}.status'] == 'submitted':
+                if spec[f'cloudmesh.jobset.jobs.{name}.status'] == 'submitted':
                     self.kill_job([name])
 
-                del spec['jobs'][name]
+                del spec['cloudmesh.jobset.jobs'][name]
 
                 spec.save(self.filename)
 
@@ -395,8 +408,8 @@ class JobQueue:
         Returns scheduler policy name from jobset
         :return: policy name
         """
-        config = Config(self.filename)
-        return config['cloudmesh.scheduler.policy']
+        config = Configuration(self.filename)
+        return config['cloudmesh.jobset.scheduler.policy']
 
     def update_policy(self, policy):
         """
@@ -406,9 +419,9 @@ class JobQueue:
         valid_policies = ['sequential', 'smart', 'frugal', 'random']
 
         if policy in valid_policies:
-            config = Config(self.filename)
-            old_policy = config['cloudmesh.scheduler.policy']
-            config['cloudmesh.scheduler.policy'] = policy
+            config = Configuration(self.filename)
+            old_policy = config['cloudmesh.jobset.scheduler.policy']
+            config['cloudmesh.jobset.scheduler.policy'] = policy
 
             Console.info(f"Scheduler policy changed from {old_policy} to "
                          f"{policy}")
@@ -427,14 +440,14 @@ class JobQueue:
         :param sort_var: Element name to sort the output on
         :return: Prints a table with job list
         """
-        spec = Config(self.filename)
+        spec = Configuration(self.filename)
         op_dict = dict()
 
         if sort_var is None:
             sort_var = True
 
         i = 0
-        for k, v in spec['jobs'].items():
+        for k, v in spec['cloudmesh.jobset.jobs'].items():
             if filter_name is None:
                 i += 1
                 if v.get("status") is None:
@@ -483,7 +496,9 @@ class JobQueue:
         order = ['Number', 'JobName', 'JobStatus', 'RemoteIp', 'Command',
                  'Arguments', 'User']
 
-        print(Printer.write(op_dict, order=order, sort_keys=sort_var))
+        out = Printer.write(op_dict, order=order, sort_keys=sort_var)
+        print(out)
+        return out
 
 
 class Policy:
@@ -499,8 +514,8 @@ class Policy:
         self.ip = ip
         self.spec = spec
 
-        self.host_data = self.spec['cloudmesh.hosts']
-        self.policy = self.spec['cloudmesh.scheduler.policy']
+        self.host_data = self.spec['cloudmesh.jobset.hosts']
+        self.policy = self.spec['cloudmesh.jobset.scheduler.policy']
         self.availability = dict()
 
         for k, v in self.host_data.items():
@@ -508,7 +523,7 @@ class Policy:
             if available > 0:
                 self.availability[v['ip']] = available
 
-        VERBOSE(self.availability)
+        # VERBOSE(self.availability)
 
     def get_ip(self):
         """
