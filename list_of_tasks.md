@@ -9,6 +9,9 @@ Submitted by: Ketan Pimparkar
     4. [Tested existing timeseries visualizations on Hopkins dataset.](https://github.com/cloudmesh/cloudmesh-timeseries/blob/hopkins/notebook/Hopkins.ipynb)
     5. [Worked on Date.py to add method "between" and added corresponding pytest.](https://github.com/cloudmesh/cloudmesh-timeseries/commit/38cb59f41179288d185562f867f096afe085feb0)
     6. [Worked on gathering references for timeseries/Covid data.](https://github.com/cloudmesh/cloudmesh-timeseries/blob/hopkins/timeseries.bib)
+    
+        1. Gregor fixed format
+        
     7. [Benchmarked lstm-predict-n.py on romeo and colab.](https://github.com/cloudmesh/cloudmesh-timeseries/tree/master/notebook/benchmarks)
     8. [Included GRU algorithm for Covid-19 timeseries analysis.](https://github.com/cloudmesh/cloudmesh-timeseries/commit/e94cad5171bb3fafa595e00e2151a528a2cb9703)
     9. [Documented the use of single/multiple GPUs in a python script.](https://github.com/cloudmesh/cloudmesh-timeseries/blob/dev/README-MultiGPU.md)
