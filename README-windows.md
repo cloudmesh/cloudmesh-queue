@@ -20,7 +20,28 @@
   * [Reset status and rerun a job](#reset-status-and-rerun-a-job)
   * [Add a host](#add-a-host)
 
-  
+
+## Notation
+
+For better readability some lines in this documentation have been split over
+multiple lines. Please adjust whne issuing the commands
+
+TODO: In linux we use \ at the end of the line is there something similar in Windows.
+
+## Instalation on Windows
+
+Create a venv using python 3.8 or python 3.9 in ~/ENV3
+Activate the ENV3
+
+TODO: provide how to activate that in windows as different from linux/mac
+
+```
+mkdir cm
+cd cm
+pip install cloudmesh-installer
+cloudmesh-installer install jobs
+```
+
 ## Setting up location of config file
 
 Use `cms job set` to configure location of the configuration file with name 
@@ -28,11 +49,9 @@ Use `cms job set` to configure location of the configuration file with name
 
 ```cmd
 (ENV3) C:\>cms job set '~/.cloudmesh/job/spec.yaml'
-job set '~/.cloudmesh/job/spec.yaml'
 Jobset defined as spec located at ~\.cloudmesh\job\spec.yaml
 
 (ENV3) C:\>cms set jobset
-set jobset
 jobset='~\.cloudmesh\job\spec.yaml'
 ```
 
@@ -40,20 +59,21 @@ jobset='~\.cloudmesh\job\spec.yaml'
 
 ```cmd
 (ENV3) C:\>cms job info
-job info
 Jobs are defined in: ~\.cloudmesh\job\spec.yaml
 ```
 
 ## Creating a template of configuration file
 
 Command `cms job template` can be used to create a sample configuration file:
+
 ```
 (ENV3) C:\>cms job template --name=job[1-2]
-job template --name=job[1-2]
 Jobs are defined in: ~\.cloudmesh\job\spec.yaml
 ```
-This generates following content in ~\.cloudmesh\job\spec.yaml. Please note 
+
+This generates following content in ~\.cloudmesh\job\spec.yaml. Please note
 this command **replaces existing spec.yaml file** with default content.
+
 ```yaml
 cloudmesh:
   default:
@@ -98,11 +118,12 @@ cloudmesh:
 ## Adding a new job in configuration file from another yaml file
 
 The command `cms job add FILENAME` allows user to add job(s) from a yaml file
- to the configuration file. Jobs from the yaml file are appended to the list 
- of existing jobs.
+to the configuration file. Jobs from the yaml file are appended to the list
+of existing jobs.
  
 For the demo purpose, a new yaml file called `new.yaml` is created with 
 following content:
+
 ```yaml
 ls_juliet:
   name: ls_juliet
@@ -118,14 +139,16 @@ ls_juliet:
   shell: bash
   host: null
 ```
+
 Execution of `cms job add FILENAME` adds this job to the configured list of 
 jobs:
 
 Currently configured jobs:
+
 ```cmd
 (ENV3) C:\>cms job list
-job list
-WARNING: The key 'cloudmesh.profile.user' could not be found in the yaml file '~\.cloudmesh\job\spec.yaml'
+WARNING: The key 'cloudmesh.profile.user' could not be found in the yaml
+         file '~\.cloudmesh\job\spec.yaml'
 +--------+------------+-----------+-----------+---------+-----------+-------+
 | Number | JobName    | JobStatus | RemoteIp  | Command | Arguments | User  |
 +--------+------------+-----------+-----------+---------+-----------+-------+
@@ -137,12 +160,12 @@ WARNING: The key 'cloudmesh.profile.user' could not be found in the yaml file '~
 Adding the job from `new.yaml` and checking list of jobs:
 ```cmd
 (ENV3) C:\>cms job add '~/.cloudmesh/job/new.yaml'
-job add '~/.cloudmesh/job/new.yaml'
-WARNING: The key 'cloudmesh.profile.user' could not be found in the yaml file '~\.cloudmesh\job\spec.yaml'
+WARNING: The key 'cloudmesh.profile.user' could not be found in the yaml
+         file '~\.cloudmesh\job\spec.yaml'
 
 (ENV3) C:\>cms job list
-job list
-WARNING: The key 'cloudmesh.profile.user' could not be found in the yaml file '~\.cloudmesh\job\spec.yaml'
+WARNING: The key 'cloudmesh.profile.user' could not be found in the yaml
+         file '~\.cloudmesh\job\spec.yaml'
 +--------+------------+-----------+--------------------------+---------+-------------+--------+
 | Number | JobName    | JobStatus | RemoteIp                 | Command | Arguments   | User   |
 +--------+------------+-----------+--------------------------+---------+-------------+--------+
@@ -159,12 +182,18 @@ Command `cms job add` also allows users to add a new job in the list of
 configured jobs from command line:
 
 ```cmd
-(ENV3) C:\>cms job add --name='sample' --ip=localhost --executable='python sample.py' --arguments='--gpu=7' --directory='./scripts' --input='./data' --output='./output' --status='ready'
-job add --name='sample' --ip=localhost --executable='python sample.py' --arguments='--gpu=7' --directory='./scripts' --input='./data' --output='./output' --status='ready'
-WARNING: The key 'cloudmesh.profile.user' could not be found in the yaml file '~\.cloudmesh\job\spec.yaml'
+(ENV3) C:\>cms job add --name='sample'
+                       --ip=localhost
+                       --executable='python sample.py'
+                       --arguments='--gpu=7'
+                       --directory='./scripts'
+                       --input='./data'
+                       --output='./output'
+                       --status='ready'
+WARNING: The key 'cloudmesh.profile.user' could not be found in the yaml
+         file '~\.cloudmesh\job\spec.yaml'
 
 (ENV3) C:\>cms job list
-job list
 WARNING: The key 'cloudmesh.profile.user' could not be found in the yaml file '~\.cloudmesh\job\spec.yaml'
 +--------+------------+-----------+--------------------------+------------------+-------------+--------+
 | Number | JobName    | JobStatus | RemoteIp                 | Command          | Arguments   | User   |
@@ -188,7 +217,6 @@ There are few variation of this command as follows:
 
 ```cmd
 (ENV3) C:\>cms job list
-job list
 WARNING: The key 'cloudmesh.profile.user' could not be found in the yaml file '~\.cloudmesh\job\spec.yaml'
 +--------+-------------+-----------+--------------------------+------------------+-------------+--------+
 | Number | JobName     | JobStatus | RemoteIp                 | Command          | Arguments   | User   |
@@ -205,7 +233,6 @@ WARNING: The key 'cloudmesh.profile.user' could not be found in the yaml file '~
 
 ```cmd
 (ENV3) C:\>cms job list --status='submitted'
-job list --status='submitted'
 WARNING: The key 'cloudmesh.profile.user' could not be found in the yaml file '~\.cloudmesh\job\spec.yaml'
 +--------+-----------+-----------+--------------------------+---------+-------------+--------+
 | Number | JobName   | JobStatus | RemoteIp                 | Command | Arguments   | User   |
@@ -218,7 +245,6 @@ WARNING: The key 'cloudmesh.profile.user' could not be found in the yaml file '~
 
 ```cmd
 (ENV3) C:\>cms job list --name='pytest'
-job list --name='pytest'
 WARNING: The key 'cloudmesh.profile.user' could not be found in the yaml file '~\.cloudmesh\job\spec.yaml'
 +--------+-------------+-----------+-----------+------------------+-----------+-------+
 | Number | JobName     | JobStatus | RemoteIp  | Command          | Arguments | User  |
@@ -232,7 +258,6 @@ WARNING: The key 'cloudmesh.profile.user' could not be found in the yaml file '~
 
 ```cmd
 (ENV3) C:\>cms job status
-job status
 WARNING: The key 'cloudmesh.profile.user' could not be found in the yaml file '~\.cloudmesh\job\spec.yaml'
 +--------+-------------+-----------+--------------------------+------------------+-------------+--------+
 | Number | JobName     | JobStatus | RemoteIp                 | Command          | Arguments   | User   |
@@ -250,8 +275,8 @@ WARNING: The key 'cloudmesh.profile.user' could not be found in the yaml file '~
 
 ```cmd
 (ENV3) C:\>cms job run --name=test_juliet
-job run --name=test_juliet
-WARNING: The key 'cloudmesh.profile.user' could not be found in the yaml file '~\.cloudmesh\job\spec.yaml'
+WARNING: The key 'cloudmesh.profile.user' could not be found in the yaml
+         file '~\.cloudmesh\job\spec.yaml'
 ```
 
 ### Outputs on remote host
@@ -333,14 +358,12 @@ logging.debug("End of the script")
 
 ```cmd
 (ENV3) C:\>cms job run --name=test_juliet
-job run --name=test_juliet
-WARNING: The key 'cloudmesh.profile.user' could not be found in the yaml file 
+WARNING: The key 'cloudmesh.profile.user' could not be found in the yaml file
 '~\.cloudmesh\job\spec.yaml'
 
 
 (ENV3) C:\>cms job kill --name=test_juliet
-job kill --name=test_juliet
-WARNING: The key 'cloudmesh.profile.user' could not be found in the yaml file 
+WARNING: The key 'cloudmesh.profile.user' could not be found in the yaml file
 '~\.cloudmesh\job\spec.yaml'
 ```
 
@@ -383,17 +406,14 @@ ketanp   18276  3720  0 04:43 pts/8    00:00:00 grep --color=auto test.py
 =======================================
 ketanp   18279  3720  0 04:43 pts/8    00:00:00 grep --color=auto test.py
 =======================================
-^C
-[ketanp@j-login1 test_juliet]$
-
 ```
 
 ### TODO: SOME OTHER THING THAT WAS NOT IN TABLE
 
 ```cmd
 (ENV3) C:\>cms job list --name='juliet'
-job list --name='juliet'
-WARNING: The key 'cloudmesh.profile.user' could not be found in the yaml file '~\.cloudmesh\job\spec.yaml'
+WARNING: The key 'cloudmesh.profile.user' could not be found in the yaml
+         file '~\.cloudmesh\job\spec.yaml'
 +--------+-------------+-----------+--------------------------+----------------+--------------------------------------------------+--------+
 | Number | JobName     | JobStatus | RemoteIp                 | Command        | Arguments                                        | User   |
 +--------+-------------+-----------+--------------------------+----------------+--------------------------------------------------+--------+
@@ -406,8 +426,8 @@ WARNING: The key 'cloudmesh.profile.user' could not be found in the yaml file '~
 
 ```cmd
 (ENV3) C:\>cms job list --name='juliet'
-job list --name='juliet'
-WARNING: The key 'cloudmesh.profile.user' could not be found in the yaml file '~\.cloudmesh\job\spec.yaml'
+WARNING: The key 'cloudmesh.profile.user' could not be found in the yaml
+         file '~\.cloudmesh\job\spec.yaml'
 +--------+-------------+-----------+--------------------------+----------------+--------------------------------------------------+--------+
 | Number | JobName     | JobStatus | RemoteIp                 | Command        | Arguments                                        | User   |
 +--------+-------------+-----------+--------------------------+----------------+--------------------------------------------------+--------+
@@ -417,13 +437,12 @@ WARNING: The key 'cloudmesh.profile.user' could not be found in the yaml file '~
 
 
 (ENV3) C:\>cms job reset --name='test_juliet'
-job reset --name='test_juliet'
-WARNING: The key 'cloudmesh.profile.user' could not be found in the yaml file '~\.cloudmesh\job\spec.yaml'
+WARNING: The key 'cloudmesh.profile.user' could not be found in the yaml
+         file '~\.cloudmesh\job\spec.yaml'
 Status reset for job test_juliet.
 
 
 (ENV3) C:\>cms job list --name='juliet'
-job list --name='juliet'
 WARNING: The key 'cloudmesh.profile.user' could not be found in the yaml file '~\.cloudmesh\job\spec.yaml'
 +--------+-------------+-----------+--------------------------+----------------+--------------------------------------------------+--------+
 | Number | JobName     | JobStatus | RemoteIp                 | Command        | Arguments                                        | User   |
@@ -434,12 +453,11 @@ WARNING: The key 'cloudmesh.profile.user' could not be found in the yaml file '~
 
 
 (ENV3) C:\>cms job run --name=test_juliet
-job run --name=test_juliet
-WARNING: The key 'cloudmesh.profile.user' could not be found in the yaml file '~\.cloudmesh\job\spec.yaml'
+WARNING: The key 'cloudmesh.profile.user' could not be found in the yaml
+         file '~\.cloudmesh\job\spec.yaml'
 
 
 (ENV3) C:\>cms job list --name='juliet'
-job list --name='juliet'
 WARNING: The key 'cloudmesh.profile.user' could not be found in the yaml file '~\.cloudmesh\job\spec.yaml'
 +--------+-------------+-----------+--------------------------+----------------+--------------------------------------------------+--------+
 | Number | JobName     | JobStatus | RemoteIp                 | Command        | Arguments                                        | User   |
@@ -458,8 +476,8 @@ the configuration file. The delete operation first kills a job if it is in
 - Checking existing list of jobs:
 ```cmd
 (ENV3) C:\>cms job list
-job list
-WARNING: The key 'cloudmesh.profile.user' could not be found in the yaml file '~\.cloudmesh\job\spec.yaml'
+WARNING: The key 'cloudmesh.profile.user' could not be found in the yaml
+         file '~\.cloudmesh\job\spec.yaml'
 +--------+-------------+-----------+--------------------------+------------------+--------------------------------------------------+--------+
 | Number | JobName     | JobStatus | RemoteIp                 | Command          | Arguments                                        | User   |
 +--------+-------------+-----------+--------------------------+------------------+--------------------------------------------------+--------+
@@ -476,12 +494,11 @@ WARNING: The key 'cloudmesh.profile.user' could not be found in the yaml file '~
 
 ```cmd
 (ENV3) C:\>cms job delete --name=sample
-job delete --name=sample
-WARNING: The key 'cloudmesh.profile.user' could not be found in the yaml file '~\.cloudmesh\job\spec.yaml'
+WARNING: The key 'cloudmesh.profile.user' could not be found in the yaml
+         file '~\.cloudmesh\job\spec.yaml'
 
 
 (ENV3) C:\>cms job list
-job list
 WARNING: The key 'cloudmesh.profile.user' could not be found in the yaml file '~\.cloudmesh\job\spec.yaml'
 +--------+-------------+-----------+--------------------------+----------------+--------------------------------------------------+--------+
 | Number | JobName     | JobStatus | RemoteIp                 | Command        | Arguments                                        | User   |
@@ -503,9 +520,12 @@ configuration file.
 
 
 ```cmd
-(ENV3) C:\>cms job hosts add --hostname='juliet' --ip='juliet.futuresystems.org' --cpu_count='12'
+(ENV3) C:\>cms job hosts add --hostname='juliet'
+                             --ip='juliet.futuresystems.org'
+                             --cpu_count='12'
 job hosts add --hostname='juliet' --ip='juliet.futuresystems.org' --cpu_count='12'
-WARNING: The key 'cloudmesh.profile.user' could not be found in the yaml file '~\.cloudmesh\job\spec.yaml'
+WARNING: The key 'cloudmesh.profile.user' could not be found in the
+         yaml file '~\.cloudmesh\job\spec.yaml'
 ```
 ```yaml
   hosts:
@@ -555,7 +575,6 @@ also the output locations. Available scheduler policies are:
 
 ```cmd 
 (ENV3) C:\>cms job scheduler info
-job scheduler info
 
 INFO: Configured scheduler policy: sequential
 ```
@@ -564,7 +583,6 @@ INFO: Configured scheduler policy: sequential
 
 ```cmd
 (ENV3) C:\>cms job scheduler --policy=smart
-job scheduler --policy=smart
 
 INFO: Scheduler policy changed from sequential to smart
 ```
