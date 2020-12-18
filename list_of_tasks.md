@@ -1,9 +1,7 @@
 # List of tasks completed for Independent Study 
 
-* Semester: ? if semester less than a year old no extension needed ;-)
-* Course number: ?
-* Under which prof has this ben registerd Gregor or Geoffrey?
-* send form you filled out to IU or send info via e-mail
+* Semester: May 2020 
+* Course number: SU20:  DSCI-D699
 
 branch indicated in brackets
 
@@ -38,10 +36,10 @@ Submitted by: Ketan Pimparkar
     
 2. cloudmesh-job
 
-   1. (main) [Worked on the development of cloudmesh-job module.](https://github.com/cloudmesh/cloudmesh-job)
+   1. (main) [./loudmesh/cloudmesh-job Worked on the development of cloudmesh-job module.](https://github.com/cloudmesh/cloudmesh-job)
    
-   2. (main) [Worked on methods such as job run/kill/delete.](https://github.com/cloudmesh/cloudmesh-job/blob/master/cloudmesh/job/command/job.py)
+   2. (main) [./cloudmesh/job/command/job.py Worked on methods such as job run/kill/delete.](https://github.com/cloudmesh/cloudmesh-job/blob/main/cloudmesh/job/command/job.py)
    
-   3. (main) [Documented demo of the cloudmesh job workflow.](https://github.com/cloudmesh/cloudmesh-job/blob/master/Job_Demo_Windows.md)
+   3. (main) [README-windows.md Documented demo of the cloudmesh job workflow.](https://github.com/cloudmesh/cloudmesh-job/blob/main/README-windows.md)
    
-   4. (main) [Created pytests and documented results.](https://github.com/cloudmesh/cloudmesh-job/tree/master/tests)
+   4. (main) [./tests Created pytests and documented results.](https://github.com/cloudmesh/cloudmesh-job/tree/main/tests)
