@@ -1,7 +1,7 @@
 # List of tasks completed for Independent Study 
 
 * Semester: May 2020 
-* Course number: ?
+* Course number: SU20:  DSCI-D699
 
 branch indicated in brackets
 
