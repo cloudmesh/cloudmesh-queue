@@ -22,7 +22,7 @@ Submitted by: Ketan Pimparkar
         
    7. (master) [Benchmarked lstm-predict-n.py on romeo and colab.](https://github.com/cloudmesh/cloudmesh-timeseries/tree/master/notebook/benchmarks)
    
-   8. [Included GRU algorithm for Covid-19 timeseries analysis.](https://github.com/cloudmesh/cloudmesh-timeseries/commit/e94cad5171bb3fafa595e00e2151a528a2cb9703)
+   8. (dev) [Included GRU algorithm for Covid-19 timeseries analysis.](https://github.com/cloudmesh/cloudmesh-timeseries/commit/e94cad5171bb3fafa595e00e2151a528a2cb9703)
    
    9. (dev) [Documented the use of single/multiple GPUs in a python script.](https://github.com/cloudmesh/cloudmesh-timeseries/blob/dev/README-MultiGPU.md)
     
