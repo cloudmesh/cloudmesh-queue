@@ -5,12 +5,12 @@
 [![image](https://img.shields.io/pypi/v/cloudmesh-bar.svg)](https://pypi.org/project/cloudmesh-bar/)
 [![image](https://img.shields.io/github/license/TankerHQ/python-cloudmesh-bar.svg)](https://github.com/TankerHQ/python-cloudmesh-bar/blob/master/LICENSE)
 
-The 'Job' library of Cloudmesh is a job queuing and scheduling framework. This
- library allows users to leverage all the available compute resources to 
- perform tasks which have heavy usage of compute power and execution time.
- A user can configure all available compute resources as 'hosts' in a 
- configuration file along with the list of jobs to be executed. Then, based 
- on the scheduler policy, user can schedule these jobs on configured hosts. 
+The *Cloudmesh Job* library is a job queuing and scheduling framework. This
+library allows users to leverage all the available compute resources to 
+perform tasks which have heavy usage of compute power and execution time.
+A user can configure all available compute resources as 'hosts' in a 
+configuration file along with the list of jobs to be executed. Then, based 
+on the scheduler policy, user can schedule these jobs on configured hosts. 
  
 ## Installation and Documentation
 
