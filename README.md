@@ -5,14 +5,32 @@
 [![image](https://img.shields.io/pypi/v/cloudmesh-bar.svg)](https://pypi.org/project/cloudmesh-bar/)
 [![image](https://img.shields.io/github/license/TankerHQ/python-cloudmesh-bar.svg)](https://github.com/TankerHQ/python-cloudmesh-bar/blob/master/LICENSE)
 
-The *Cloudmesh Job* library is a job queuing and scheduling framework. This
-library allows users to leverage all the available compute resources to 
+The *cloudmesh-job* provides a job queuing and scheduling framework. It 
+includes a library as well as a commandline interface. Both
+allow users to leverage all the available compute resources to 
 perform tasks which have heavy usage of compute power and execution time.
 A user can configure all available compute resources as 'hosts' in a 
 configuration file along with the list of jobs to be executed. Then, based 
 on the scheduler policy, user can schedule these jobs on configured hosts. 
  
-## Installation and Documentation
+
+## Installation
+
+```bash
+$ pip install cloudmesh-installer
+$ cloudmesh-installer install cms
+$ git clone https://github.com/cloudmesh/cloudmesh-job
+$ cd cloudmesh-job
+$ pip install .
+```
+ 
+This library contains a number of functions and APIs that we highlight
+here. They are used for configuration and execution of jobs in available 
+compute resources.
+
+## Alternative Installation and Additional Documentation for CLoudmesh
+
+You can savely ignore this section if you installed cloudmehs-job
 
 Please note that several methods are available which are pointed to in the
 installation documentation.
@@ -27,20 +45,6 @@ installation documentation.
 | Command API | <https://github.com/cloudmesh/cloudmesh-job/blob/master/README.md#api-of-the-command> |
 | Command description | <https://github.com/cloudmesh/cloudmesh-job/blob/master/README.md#command-description> |
 
-## Installation
-
-```bash
-$ git clone https://github.com/cloudmesh/cloudmesh-job
-$ cd cloudmesh-job
-$ pip install .
-```
-
-*Assumptions:*  
-*1. User has completed cloudmesh-common setup in the machine*
- 
-This library contains a number of functions and APIs that we highlight
-here. They are used for configuration and execution of jobs in available 
-compute resources.
 
 ## Configuration
 
