@@ -15,21 +15,27 @@
   * [Enlist jobs with certain pattern in the job name](#Enlist-jobs-with-certain-pattern-in-the-job-name)
   * [Enlist jobs sorted on job status](#Enlist-jobs-sorted-on-job-status)
 * [Submit a job for execution on remote host](#Submit-a-job-for-execution-on-remote-host)
+  * [Execution of `job run` on the local machine](#Execution-of-`job-run`-on-the-local-machine)
   * [Outputs on remote host](#Outputs-on-remote-host)
   * [Python script used for testing](#Python-script-used-for-testing)
 * [Kill a job on remote host](#Kill-a-job-on-remote-host)
-  * [Local machine </th>](#Local-machine-</th>)
+  * [Execution on local machine](#Execution-on-local-machine)
   * [Remote machine](#Remote-machine)
   * [Verify status of the killed job](#Verify-status-of-the-killed-job)
 * [Reset status and rerun a job](#Reset-status-and-rerun-a-job)
 * [Delete a job from configuration file](#Delete-a-job-from-configuration-file)
 * [Remote host management](#Remote-host-management)
-* [Enlist hosts](#Enlist-hosts)
+  * [Configure a new host](#Configure-a-new-host)
+  * [Enlist hosts](#Enlist-hosts)
 * [Job scheduler management](#Job-scheduler-management)
   * [Find out currently configured scheduler](#Find-out-currently-configured-scheduler)
   * [Re-configure the scheduler](#Re-configure-the-scheduler)
 
 
+This document demonstrates all the functionalities made available by the 
+command `cms job`. The document runs through available commands by showing 
+sequence of execution and corresponding outputs on local Windows machine and 
+a remote Linux host. 
 
 ## Notation
 
@@ -37,7 +43,7 @@ For better readability some lines in this documentation have been split over
 multiple lines. Please adjust when issuing the commands.
 
 The continuation character is "^" for Windows command prompt, whereas it is 
-"\" on Linux. The continuation character should be added at the end of the 
+"\\" on Linux. The continuation character should be added at the end of the 
 line to split a command in multiple lines.
 
 ## Instalation on Windows
@@ -195,14 +201,14 @@ Command `cms job add` also allows users to add a new job in the list of
 configured jobs from command line:
 Please note `^` is the continuation character in Windows command prompt.
 ```cmd
-(ENV3) C:\>cms job add --name='sample'      ^
-            --ip=localhost                  ^
-            --executable='python sample.py' ^
-            --arguments='--gpu=7'           ^
-            --directory='./scripts'         ^
-            --input='./data'                ^
-            --output='./output'             ^
-            --status='ready'
+(ENV3) C:\>cms job add --name='sample'                 ^
+                       --ip=localhost                  ^
+                       --executable='python sample.py' ^
+                       --arguments='--gpu=7'           ^
+                       --directory='./scripts'         ^
+                       --input='./data'                ^
+                       --output='./output'             ^
+                       --status='ready'
 
 (ENV3) C:\>cms job list
 +--------+------------+-----------+--------------------------+------------------+-------------+--------+
@@ -281,13 +287,24 @@ This command outputs list of jobs sorted on the 'JobStatus'.
 
 ## Submit a job for execution on remote host
 
+### Execution of `job run` on the local machine
+
+The `cms job run` command submits a job on a configured host.
+All the details of the host and the command are taken from the 
+`JobSet` configured in earlier steps.  
+This step needs `ssh` access from users local machine to the 
+remote host.  
+
 ```cmd
 (ENV3) C:\>cms job run --name=test_juliet
-
 ```
 
 ### Outputs on remote host
 
+Logs and outputs are generated in the remote host as per the 
+code present in the job to be run in the remote. In this example
+contents of `test.log` is shown. The PID of the job is 
+captured in `test_juliet_pid.log` 
 ```cmd
 [ketanp@j-login1 test_juliet]$ pwd
 /N/u/ketanp/output/test_juliet
@@ -361,21 +378,24 @@ logging.debug("End of the script")
 
 ## Kill a job on remote host
 
-### Local machine </th>
+### Execution on local machine 
 
+Execution of a job on remote host can be stopped by using
+`job kill` command. This command connects to to remote host
+and kills the job using the PID stored by `job run` command.
+This step changes the status of the job to `killed`.
 ```cmd
 (ENV3) C:\>cms job run --name=test_juliet
-WARNING: The key 'cloudmesh.profile.user' could not be found in the yaml file
-'~\.cloudmesh\job\spec.yaml'
-
 
 (ENV3) C:\>cms job kill --name=test_juliet
-WARNING: The key 'cloudmesh.profile.user' could not be found in the yaml file
-'~\.cloudmesh\job\spec.yaml'
 ```
 
 ### Remote machine
 
+Following code to monitor execution of job `test.py` on the 
+remote host. We run an infinite loop to verify execution of
+`test.py`. These steps show that execution of the job starts 
+after running `job run` and the job is killed with `job kill`.
 ```bash
 [ketanp@j-login1 test_juliet]$ while [ 1 == 1 ];
 > do
@@ -417,10 +437,9 @@ ketanp   18279  3720  0 04:43 pts/8    00:00:00 grep --color=auto test.py
 
 ### Verify status of the killed job
 
+Verify that the status of the job changes to `killed` with `job list`
 ```cmd
 (ENV3) C:\>cms job list --name='juliet'
-WARNING: The key 'cloudmesh.profile.user' could not be found in the yaml
-         file '~\.cloudmesh\job\spec.yaml'
 +--------+-------------+-----------+--------------------------+----------------+--------------------------------------------------+--------+
 | Number | JobName     | JobStatus | RemoteIp                 | Command        | Arguments                                        | User   |
 +--------+-------------+-----------+--------------------------+----------------+--------------------------------------------------+--------+
@@ -431,10 +450,13 @@ WARNING: The key 'cloudmesh.profile.user' could not be found in the yaml
 
 ## Reset status and rerun a job
 
+The command `job reser` allows us to reset status of a killed job
+and rerun the job on remote host. To achive this, we first confirm 
+that the job is in killed status, then run the command `job reset`
+which changes the status of the job to `ready` and then we can 
+submit this job for remote execution using `job run`.
 ```cmd
 (ENV3) C:\>cms job list --name='juliet'
-WARNING: The key 'cloudmesh.profile.user' could not be found in the yaml
-         file '~\.cloudmesh\job\spec.yaml'
 +--------+-------------+-----------+--------------------------+----------------+--------------------------------------------------+--------+
 | Number | JobName     | JobStatus | RemoteIp                 | Command        | Arguments                                        | User   |
 +--------+-------------+-----------+--------------------------+----------------+--------------------------------------------------+--------+
@@ -444,13 +466,10 @@ WARNING: The key 'cloudmesh.profile.user' could not be found in the yaml
 
 
 (ENV3) C:\>cms job reset --name='test_juliet'
-WARNING: The key 'cloudmesh.profile.user' could not be found in the yaml
-         file '~\.cloudmesh\job\spec.yaml'
 Status reset for job test_juliet.
 
 
 (ENV3) C:\>cms job list --name='juliet'
-WARNING: The key 'cloudmesh.profile.user' could not be found in the yaml file '~\.cloudmesh\job\spec.yaml'
 +--------+-------------+-----------+--------------------------+----------------+--------------------------------------------------+--------+
 | Number | JobName     | JobStatus | RemoteIp                 | Command        | Arguments                                        | User   |
 +--------+-------------+-----------+--------------------------+----------------+--------------------------------------------------+--------+
@@ -460,12 +479,9 @@ WARNING: The key 'cloudmesh.profile.user' could not be found in the yaml file '~
 
 
 (ENV3) C:\>cms job run --name=test_juliet
-WARNING: The key 'cloudmesh.profile.user' could not be found in the yaml
-         file '~\.cloudmesh\job\spec.yaml'
 
 
 (ENV3) C:\>cms job list --name='juliet'
-WARNING: The key 'cloudmesh.profile.user' could not be found in the yaml file '~\.cloudmesh\job\spec.yaml'
 +--------+-------------+-----------+--------------------------+----------------+--------------------------------------------------+--------+
 | Number | JobName     | JobStatus | RemoteIp                 | Command        | Arguments                                        | User   |
 +--------+-------------+-----------+--------------------------+----------------+--------------------------------------------------+--------+
@@ -483,8 +499,6 @@ the configuration file. The delete operation first kills a job if it is in
 - Checking existing list of jobs:
 ```cmd
 (ENV3) C:\>cms job list
-WARNING: The key 'cloudmesh.profile.user' could not be found in the yaml
-         file '~\.cloudmesh\job\spec.yaml'
 +--------+-------------+-----------+--------------------------+------------------+--------------------------------------------------+--------+
 | Number | JobName     | JobStatus | RemoteIp                 | Command          | Arguments                                        | User   |
 +--------+-------------+-----------+--------------------------+------------------+--------------------------------------------------+--------+
@@ -501,12 +515,9 @@ WARNING: The key 'cloudmesh.profile.user' could not be found in the yaml
 
 ```cmd
 (ENV3) C:\>cms job delete --name=sample
-WARNING: The key 'cloudmesh.profile.user' could not be found in the yaml
-         file '~\.cloudmesh\job\spec.yaml'
 
 
 (ENV3) C:\>cms job list
-WARNING: The key 'cloudmesh.profile.user' could not be found in the yaml file '~\.cloudmesh\job\spec.yaml'
 +--------+-------------+-----------+--------------------------+----------------+--------------------------------------------------+--------+
 | Number | JobName     | JobStatus | RemoteIp                 | Command        | Arguments                                        | User   |
 +--------+-------------+-----------+--------------------------+----------------+--------------------------------------------------+--------+
@@ -522,18 +533,19 @@ WARNING: The key 'cloudmesh.profile.user' could not be found in the yaml file '~
 
 ## Remote host management
 
+### Configure a new host 
 Command `cms job hosts` facilitates configuration of remote hosts in the 
 configuration file. 
 
 
 ```cmd
-(ENV3) C:\>cms job hosts add --hostname='juliet'
-                             --ip='juliet.futuresystems.org'
-                             --cpu_count='12'
+(ENV3) C:\>cms job hosts add --hostname='juliet'             ^
+                             --ip='juliet.futuresystems.org' ^
+                             --cpu_count='12'                ^
 job hosts add --hostname='juliet' --ip='juliet.futuresystems.org' --cpu_count='12'
-WARNING: The key 'cloudmesh.profile.user' could not be found in the
-         yaml file '~\.cloudmesh\job\spec.yaml'
+
 ```
+Checking content of the .yaml file manually
 ```yaml
   hosts:
     localhost:
@@ -552,6 +564,9 @@ WARNING: The key 'cloudmesh.profile.user' could not be found in the
 
 ## Enlist hosts
 
+As part of the remote host management process, the command
+`job list hosts` allows us to enlist all hosts which are 
+configured in the `jobset`
 ```bash
 (ENV3) C:\>cms job list hosts
 job list hosts
@@ -571,7 +586,7 @@ is not available for further job submissions. In such scenario, `cms job
 run` searches the next available host based on the scheduler policy and 
 submits the job on that host.
 It is assumed that this next host has all input data needed for the job and 
-also the output locations. Available scheduler policies are:
+also the output locations. Configurable scheduler policies are as below:
 
 * sequential - Use first available host
 * random     - Use random available host
@@ -580,6 +595,7 @@ also the output locations. Available scheduler policies are:
   
 ### Find out currently configured scheduler
 
+Currently configured scheduler policy can be inquired using `job scheduler info`
 ```cmd 
 (ENV3) C:\>cms job scheduler info
 
@@ -588,6 +604,7 @@ INFO: Configured scheduler policy: sequential
 
 ### Re-configure the scheduler
 
+To modify the scheduler policy:
 ```cmd
 (ENV3) C:\>cms job scheduler --policy=smart
 
