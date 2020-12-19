@@ -20,7 +20,7 @@
 * [Kill a job on remote host](#Kill-a-job-on-remote-host)
   * [Local machine </th>](#Local-machine-</th>)
   * [Remote machine](#Remote-machine)
-  * [TODO: SOME OTHER THING THAT WAS NOT IN TABLE](#TODO:-SOME-OTHER-THING-THAT-WAS-NOT-IN-TABLE)
+  * [Verify status of the killed job](#Verify-status-of-the-killed-job)
 * [Reset status and rerun a job](#Reset-status-and-rerun-a-job)
 * [Delete a job from configuration file](#Delete-a-job-from-configuration-file)
 * [Remote host management](#Remote-host-management)
@@ -34,17 +34,25 @@
 ## Notation
 
 For better readability some lines in this documentation have been split over
-multiple lines. Please adjust whne issuing the commands
+multiple lines. Please adjust when issuing the commands.
 
-TODO: In linux we use \ at the end of the line is there something similar in Windows.
+The continuation character is "^" for Windows command prompt, whereas it is 
+"\" on Linux. The continuation character should be added at the end of the 
+line to split a command in multiple lines.
 
 ## Instalation on Windows
 
-Create a venv using python 3.8 or python 3.9 in ~/ENV3
-Activate the ENV3
+- Create a venv using python 3.8 or python 3.9 as `ENV3`
+```cmd
+C:\>python -m venv ENV3
+```
 
-TODO: provide how to activate that in windows as different from linux/mac
+- Activate the ENV3
+```cmd
+C:\>ENV3\Scripts\activate.bat
+```
 
+- Install `cloudmesh-installer` and then `jobs`
 ```
 mkdir cm
 cd cm
@@ -153,12 +161,10 @@ ls_juliet:
 Execution of `cms job add FILENAME` adds this job to the configured list of 
 jobs:
 
-Currently configured jobs:
+Enlist currently configured jobs:
 
 ```cmd
 (ENV3) C:\>cms job list
-WARNING: The key 'cloudmesh.profile.user' could not be found in the yaml
-         file '~\.cloudmesh\job\spec.yaml'
 +--------+------------+-----------+-----------+---------+-----------+-------+
 | Number | JobName    | JobStatus | RemoteIp  | Command | Arguments | User  |
 +--------+------------+-----------+-----------+---------+-----------+-------+
@@ -167,15 +173,12 @@ WARNING: The key 'cloudmesh.profile.user' could not be found in the yaml
 | 3      | pytest_job | ready     | local     | ls      | -lisa     | user  |
 +--------+------------+-----------+-----------+---------+-----------+-------+
 ```
+
 Adding the job from `new.yaml` and checking list of jobs:
 ```cmd
 (ENV3) C:\>cms job add '~/.cloudmesh/job/new.yaml'
-WARNING: The key 'cloudmesh.profile.user' could not be found in the yaml
-         file '~\.cloudmesh\job\spec.yaml'
 
 (ENV3) C:\>cms job list
-WARNING: The key 'cloudmesh.profile.user' could not be found in the yaml
-         file '~\.cloudmesh\job\spec.yaml'
 +--------+------------+-----------+--------------------------+---------+-------------+--------+
 | Number | JobName    | JobStatus | RemoteIp                 | Command | Arguments   | User   |
 +--------+------------+-----------+--------------------------+---------+-------------+--------+
@@ -190,21 +193,18 @@ WARNING: The key 'cloudmesh.profile.user' could not be found in the yaml
 
 Command `cms job add` also allows users to add a new job in the list of 
 configured jobs from command line:
-
+Please note `^` is the continuation character in Windows command prompt.
 ```cmd
-(ENV3) C:\>cms job add --name='sample'
-                       --ip=localhost
-                       --executable='python sample.py'
-                       --arguments='--gpu=7'
-                       --directory='./scripts'
-                       --input='./data'
-                       --output='./output'
-                       --status='ready'
-WARNING: The key 'cloudmesh.profile.user' could not be found in the yaml
-         file '~\.cloudmesh\job\spec.yaml'
+(ENV3) C:\>cms job add --name='sample'      ^
+            --ip=localhost                  ^
+            --executable='python sample.py' ^
+            --arguments='--gpu=7'           ^
+            --directory='./scripts'         ^
+            --input='./data'                ^
+            --output='./output'             ^
+            --status='ready'
 
 (ENV3) C:\>cms job list
-WARNING: The key 'cloudmesh.profile.user' could not be found in the yaml file '~\.cloudmesh\job\spec.yaml'
 +--------+------------+-----------+--------------------------+------------------+-------------+--------+
 | Number | JobName    | JobStatus | RemoteIp                 | Command          | Arguments   | User   |
 +--------+------------+-----------+--------------------------+------------------+-------------+--------+
@@ -221,13 +221,12 @@ WARNING: The key 'cloudmesh.profile.user' could not be found in the yaml file '~
 Command `cms job list` allows users to enlist all the jobs configured in the 
 configuration file. This job also shows some basic details of these jobs such
 as job name, job status, executable, remote host IP and the user.
-There are few variation of this command as follows:
+There are few variations of this command as follows:
 
 ### Enlist all jobs
 
 ```cmd
 (ENV3) C:\>cms job list
-WARNING: The key 'cloudmesh.profile.user' could not be found in the yaml file '~\.cloudmesh\job\spec.yaml'
 +--------+-------------+-----------+--------------------------+------------------+-------------+--------+
 | Number | JobName     | JobStatus | RemoteIp                 | Command          | Arguments   | User   |
 +--------+-------------+-----------+--------------------------+------------------+-------------+--------+
@@ -239,11 +238,10 @@ WARNING: The key 'cloudmesh.profile.user' could not be found in the yaml file '~
 | 6      | pytest_job1 | ready     | localhost                | python sample.py | --gpu=7     | keTan  |
 +--------+-------------+-----------+--------------------------+------------------+-------------+--------+
 ```
-### Enlist jobs with certain status
+### Enlist jobs with particular status
 
 ```cmd
 (ENV3) C:\>cms job list --status='submitted'
-WARNING: The key 'cloudmesh.profile.user' could not be found in the yaml file '~\.cloudmesh\job\spec.yaml'
 +--------+-----------+-----------+--------------------------+---------+-------------+--------+
 | Number | JobName   | JobStatus | RemoteIp                 | Command | Arguments   | User   |
 +--------+-----------+-----------+--------------------------+---------+-------------+--------+
@@ -253,9 +251,9 @@ WARNING: The key 'cloudmesh.profile.user' could not be found in the yaml file '~
 
 ### Enlist jobs with certain pattern in the job name
 
+The shown command searches the word 'pytest' in 'JobName' and enlists matching jobs.
 ```cmd
 (ENV3) C:\>cms job list --name='pytest'
-WARNING: The key 'cloudmesh.profile.user' could not be found in the yaml file '~\.cloudmesh\job\spec.yaml'
 +--------+-------------+-----------+-----------+------------------+-----------+-------+
 | Number | JobName     | JobStatus | RemoteIp  | Command          | Arguments | User  |
 +--------+-------------+-----------+-----------+------------------+-----------+-------+
@@ -266,9 +264,9 @@ WARNING: The key 'cloudmesh.profile.user' could not be found in the yaml file '~
 
 ### Enlist jobs sorted on job status
 
+This command outputs list of jobs sorted on the 'JobStatus'.
 ```cmd
 (ENV3) C:\>cms job status
-WARNING: The key 'cloudmesh.profile.user' could not be found in the yaml file '~\.cloudmesh\job\spec.yaml'
 +--------+-------------+-----------+--------------------------+------------------+-------------+--------+
 | Number | JobName     | JobStatus | RemoteIp                 | Command          | Arguments   | User   |
 +--------+-------------+-----------+--------------------------+------------------+-------------+--------+
@@ -285,8 +283,7 @@ WARNING: The key 'cloudmesh.profile.user' could not be found in the yaml file '~
 
 ```cmd
 (ENV3) C:\>cms job run --name=test_juliet
-WARNING: The key 'cloudmesh.profile.user' could not be found in the yaml
-         file '~\.cloudmesh\job\spec.yaml'
+
 ```
 
 ### Outputs on remote host
@@ -418,7 +415,7 @@ ketanp   18279  3720  0 04:43 pts/8    00:00:00 grep --color=auto test.py
 =======================================
 ```
 
-### TODO: SOME OTHER THING THAT WAS NOT IN TABLE
+### Verify status of the killed job
 
 ```cmd
 (ENV3) C:\>cms job list --name='juliet'
