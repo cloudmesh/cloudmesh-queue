@@ -1,4 +1,4 @@
-# Demo of `cms job` in Windows command prompt
+# Demo of `cms job` in Windows, Linux, and macOS
 
 # Table of Contents
 
@@ -52,18 +52,35 @@ The continuation character is "^" for Windows command prompt, whereas it is
 "\\" on Linux. The continuation character should be added at the end of the 
 line to split a command in multiple lines.
 
-## Instalation on Windows
+This demonstration is done using Windows command prompt. Using `gitbash` is
+advised if a Linux like terminal is preferred by users.
 
-- Create a venv using python 3.8 or python 3.9 as `ENV3`
+We use the prompt `$` in the documentation. This may be looking a bit different on your terminal dependent which one you use. We have the following differences
+
+* Windows CMD.EXE: Instead of $ you will see `C:\>` amd once you activated `ENV3` it will look like `(ENV3) C:\>`
+* zsh: typically you will see a %
+* bash: typically you will see a $
+
+On Windows you can also use gitbash which gives you teh equivalent of a bash shell in Windows. We recommend using it, but you still can use CMD.EXE or even powershell.
+
+Due to the universality we will simplify our documentation and only use `$` as prompt indicator.
+
+## Instalation and activation on Windows
+
+Create a venv using python 3.8 or python 3.9 as `ENV3`
+
 ```cmd
 C:\>python -m venv ENV3
 
-- Activate the ENV3
+Whenever you start a new terminal, you need to activate the the ENV3
 ```cmd
 C:\>ENV3\Scripts\activate.bat
 ```
 
-- Install `cloudmesh-installer` and then `jobs`
+From now on we will use `(ENV3) $` indicating `(ENV3) C:\>`
+
+You need to install after the first activation the software as follows
+
 ```
 mkdir cm
 cd cm
