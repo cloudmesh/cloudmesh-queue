@@ -19,7 +19,7 @@ on the scheduler policy, user can schedule these jobs on configured hosts.
 
 - [Cloudmesh Job](#cloudmesh-job)
 - [Table of Contents](#table-of-contents)
-  - [Prerequisits](#prerequisits)
+  - [Prerequisites](#prerequisites)
   - [Installation](#installation)
   - [Configuration](#configuration)
   - [Available methods](#available-methods)
@@ -34,7 +34,7 @@ on the scheduler policy, user can schedule these jobs on configured hosts.
 
 
 
-## Prerequisits
+## Prerequisites
 
 * Cloudmesh-job uses `ssh` access to the remote compute machine. ssh clients are avalaible on all major platforms including macOS, Linux, Windows.
 * It is assumed that you use public keys to authenticate to remote machines. We assume you use ssh-add and/or keychain to avoid issuing passwords when you use the cloudmehs-job
@@ -53,6 +53,9 @@ $ cd cloudmesh-job
 
 
 ## Configuration
+
+On Windows machines, using `gitbash` to run these commands is advised if a 
+Linux like terminal is preferred by users.
 
 The current jobset filename is stored in the cloudmesh variables under the 
 variable `jobset`. It can be queried with
