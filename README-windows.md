@@ -68,13 +68,13 @@ Due to the universality we will simplify our documentation and only use `$` as p
 
 ## Installation a venv on Linux, macOS, gitbash on WIndows
 
-```bash
+```console
 $ python3 -m venv ~/ENV3
 ```
 
 Whenever you start a new terminal, you need to activate the the ENV3
 
-```bash
+```console
 $ source ~/ENV3/bin/activate
 ```
 
@@ -82,8 +82,9 @@ $ source ~/ENV3/bin/activate
 
 Create a venv using python 3.8 or python 3.9 as `ENV3`
 
-```bash
+```console
 C:\>python -m venv ENV3
+```
 
 Whenever you start a new terminal, you need to activate the the ENV3
 
@@ -443,7 +444,7 @@ remote host. We run an infinite loop to verify execution of
 `test.py`. These steps show that execution of the job starts 
 after running `job run` and the job is killed with `job kill`.
 
-```bash
+```console
 [ketanp@j-login1 test_juliet]$ while [ 1 == 1 ];
 > do
 > ps -ef | grep 'test.py'
