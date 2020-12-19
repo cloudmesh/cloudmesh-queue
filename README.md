@@ -50,9 +50,11 @@ An additinal example is documented in
 We assume you have a venv such as ~/ENV in which you have python 3.8 or python 3.9
 
 ```bash
-$ pip install cloudmesh-installer
-$ cloudmesh-installer install job
-$ cd cloudmesh-job
+(ENV) $ mkdir cm
+(ENV) $ cd cm
+(ENV) $ pip install cloudmesh-installer
+(ENV) $ cloudmesh-installer install job
+(ENV) $ cd cloudmesh-job
 ```
 
 

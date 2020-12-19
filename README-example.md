@@ -61,7 +61,7 @@ We use the prompt `$` in the documentation. This may be looking a bit different 
 * zsh: typically you will see a %
 * bash: typically you will see a $
 
-On Windows you can also use gitbash which gives you teh equivalent of a bash shell in Windows. We recommend using it, but you still can use CMD.EXE or even powershell.
+On Windows you can also use gitbash which gives you the equivalent of a bash shell in Windows. We recommend using it, but you still can use CMD.EXE or even powershell.
 
 Due to the universality we will simplify our documentation and only use `$` as prompt indicator.
 
@@ -77,6 +77,14 @@ Whenever you start a new terminal, you need to activate the the ENV3
 ```console
 $ source ~/ENV3/bin/activate
 ```
+
+On Windows, the virtual environment can be activated by executing `ENV3\Scripts\activate.bat`
+Alernatively, a new batch file can be created with following code to open a new command 
+prompt and activate the virtual environment automatically:
+```cmd
+cmd.exe /K ENV3\Scripts\activate.bat
+```
+This step is equivalent to including `source ~/ENV3/bin/activate` in `.bashrc` on a Linux machine.
 
 ## Installation a venv on Windows CMD.EXE
 
