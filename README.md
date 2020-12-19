@@ -27,6 +27,7 @@ on the scheduler policy, user can schedule these jobs on configured hosts.
     - [Scheduler](#scheduler)
     - [Jobs](#jobs)
   - [Manual Page](#manual-page)
+  - [Demonstration of the `cms job` command](#Demonstration-of-the-cms-job-command)
   - [Alternative Installation and Additional Documentation for Cloudmesh-job](#alternative-installation-and-additional-documentation-for-cloudmesh-job)
 
 <!--TOC-->
@@ -370,6 +371,12 @@ and also set them that way variables["jobset"] = VALUE.
 ```
 <!-- MANUAL -->
 
+## Demonstration of the `cms job` command
+
+Complete workflow and usage of all available commands is explained in the following 
+document:
+
+[README-example.md](https://github.com/cloudmesh/cloudmesh-job/blob/main/README-example.md)
 
 ## Alternative Installation and Additional Documentation for Cloudmesh-job
 
@@ -387,3 +394,4 @@ installation documentation.
 | Available methods | <https://github.com/cloudmesh/cloudmesh-job/blob/master/README.md#available-methods> |
 | Command API | <https://github.com/cloudmesh/cloudmesh-job/blob/master/README.md#api-of-the-command> |
 | Command description | <https://github.com/cloudmesh/cloudmesh-job/blob/master/README.md#command-description> |
+| Command examples | <https://github.com/cloudmesh/cloudmesh-job/blob/main/README-example.md> |
