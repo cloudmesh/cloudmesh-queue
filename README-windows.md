@@ -68,11 +68,13 @@ Due to the universality we will simplify our documentation and only use `$` as p
 
 ## Installation a venv on Linux, macOS, gitbash on WIndows
 
-```cmd
-C:\>python3 -m venv ~/ENV3
+```console
+python3 -m venv ~/ENV3
+```
 
 Whenever you start a new terminal, you need to activate the the ENV3
-```cmd
+
+```console
 source ~/ENV3/bin/activate
 ```
 
