@@ -15,9 +15,22 @@ on the scheduler policy, user can schedule these jobs on configured hosts.
 
 # Table of Contents
 
-* [Prerequisits](#Prerequisits)
-* [Installation](#Installation)
-* [Configuration](#Configuration)
+<!--TOC-->
+
+- [Cloudmesh Job](#cloudmesh-job)
+- [Table of Contents](#table-of-contents)
+  - [Prerequisits](#prerequisits)
+  - [Installation](#installation)
+  - [Configuration](#configuration)
+  - [Available methods](#available-methods)
+    - [Hosts](#hosts)
+    - [Scheduler](#scheduler)
+    - [Jobs](#jobs)
+  - [Manual Page](#manual-page)
+  - [Alternative Installation and Additional Documentation for Cloudmesh-job](#alternative-installation-and-additional-documentation-for-cloudmesh-job)
+
+<!--TOC-->
+
 
 
 

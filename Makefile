@@ -14,6 +14,11 @@ all: install
 install:
 	pip install -e .
 
+toc:
+	pip install md_toc -U
+	md_toc -p github README.md
+	md_toc -p github README-windows.md
+
 source:
 	cd ../cloudmesh.cmd5; make source
 	$(call banner, "Install cloudmesh-{package}")
