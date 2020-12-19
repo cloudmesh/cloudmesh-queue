@@ -52,6 +52,9 @@ The continuation character is "^" for Windows command prompt, whereas it is
 "\\" on Linux. The continuation character should be added at the end of the 
 line to split a command in multiple lines.
 
+This demonstration is done using Windows command prompt. Using `gitbash` is
+advised is a Linux like terminal is preferred by users.
+
 ## Instalation on Windows
 
 - Create a venv using python 3.8 or python 3.9 as `ENV3`
