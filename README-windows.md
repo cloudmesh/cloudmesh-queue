@@ -92,7 +92,7 @@ Whenever you start a new terminal, you need to activate the the ENV3
 C:\>ENV3\Scripts\activate.bat
 ```
 
-From now on we will use `[ENV3]$` indicating `(ENV3) C:\>`
+From now on we will use `(ENV3) $` indicating `(ENV3) C:\>`
 
 ## Installation of cloudmesh-job
 
@@ -100,10 +100,10 @@ After you installed and activated your venv
 You need to install after the first activation the software as follows
 
 ```console
-[ENV3]$ mkdir cm
-[ENV3]$ cd cm
-[ENV3]$ pip install cloudmesh-installer
-[ENV3]$ cloudmesh-installer install jobs
+(ENV3) $ mkdir cm
+(ENV3) $ cd cm
+(ENV3) $ pip install cloudmesh-installer
+(ENV3) $ cloudmesh-installer install jobs
 ```
 
 ## Setting up location of config file
@@ -112,17 +112,17 @@ Use `cms job set` to configure location of the configuration file with name
 `jobset`. In this example file `spec.yaml` is used as the configuration file.
 
 ```console
-[ENV3]$ cms job set '~/.cloudmesh/job/spec.yaml'
+(ENV3) $ cms job set '~/.cloudmesh/job/spec.yaml'
 Jobset defined as spec located at ~\.cloudmesh\job\spec.yaml
 
-[ENV3]$ cms set jobset
+(ENV3) $ cms set jobset
 jobset='~\.cloudmesh\job\spec.yaml'
 ```
 
 ## Verification of config file location in `cms job` 
 
 ```console
-[ENV3]$ cms job info
+(ENV3) $ cms job info
 Jobs are defined in: ~\.cloudmesh\job\spec.yaml
 ```
 
@@ -131,7 +131,7 @@ Jobs are defined in: ~\.cloudmesh\job\spec.yaml
 Command `cms job template` can be used to create a sample configuration file:
 
 ```
-[ENV3]$ cms job template --name=job[1-2]
+(ENV3) $ cms job template --name=job[1-2]
 Jobs are defined in: ~\.cloudmesh\job\spec.yaml
 ```
 
@@ -210,7 +210,7 @@ jobs:
 Enlist currently configured jobs:
 
 ```console
-[ENV3]$ cms job list
+(ENV3) $ cms job list
 +--------+------------+-----------+-----------+---------+-----------+-------+
 | Number | JobName    | JobStatus | RemoteIp  | Command | Arguments | User  |
 +--------+------------+-----------+-----------+---------+-----------+-------+
@@ -223,9 +223,9 @@ Enlist currently configured jobs:
 Adding the job from `new.yaml` and checking list of jobs:
 
 ```console
-[ENV3]$ cms job add '~/.cloudmesh/job/new.yaml'
+(ENV3) $ cms job add '~/.cloudmesh/job/new.yaml'
 
-[ENV3]$ cms job list
+(ENV3) $ cms job list
 +--------+------------+-----------+--------------------------+---------+-------------+--------+
 | Number | JobName    | JobStatus | RemoteIp                 | Command | Arguments   | User   |
 +--------+------------+-----------+--------------------------+---------+-------------+--------+
@@ -243,7 +243,7 @@ configured jobs from command line:
 Please note `\` is the continuation character in Windows command prompt.
 
 ```console
-[ENV3]$ cms job add --name='sample'                 \
+(ENV3) $ cms job add --name='sample'                 \
                        --ip=localhost                  \
                        --executable='python sample.py' \
                        --arguments='--gpu=7'           \
@@ -252,7 +252,7 @@ Please note `\` is the continuation character in Windows command prompt.
                        --output='./output'             \
                        --status='ready'
 
-[ENV3]$ cms job list
+(ENV3) $ cms job list
 +--------+------------+-----------+--------------------------+------------------+-------------+--------+
 | Number | JobName    | JobStatus | RemoteIp                 | Command          | Arguments   | User   |
 +--------+------------+-----------+--------------------------+------------------+-------------+--------+
@@ -274,7 +274,7 @@ There are few variations of this command as follows:
 ### Enlist all jobs
 
 ```console
-[ENV3]$ cms job list
+(ENV3) $ cms job list
 +--------+-------------+-----------+--------------------------+------------------+-------------+--------+
 | Number | JobName     | JobStatus | RemoteIp                 | Command          | Arguments   | User   |
 +--------+-------------+-----------+--------------------------+------------------+-------------+--------+
@@ -290,7 +290,7 @@ There are few variations of this command as follows:
 ### Enlist jobs with particular status
 
 ```console
-[ENV3]$ cms job list --status='submitted'
+(ENV3) $ cms job list --status='submitted'
 +--------+-----------+-----------+--------------------------+---------+-------------+--------+
 | Number | JobName   | JobStatus | RemoteIp                 | Command | Arguments   | User   |
 +--------+-----------+-----------+--------------------------+---------+-------------+--------+
@@ -303,7 +303,7 @@ There are few variations of this command as follows:
 The shown command searches the word 'pytest' in 'JobName' and enlists matching jobs.
 
 ```console
-[ENV3]$ cms job list --name='pytest'
+(ENV3) $ cms job list --name='pytest'
 +--------+-------------+-----------+-----------+------------------+-----------+-------+
 | Number | JobName     | JobStatus | RemoteIp  | Command          | Arguments | User  |
 +--------+-------------+-----------+-----------+------------------+-----------+-------+
@@ -317,7 +317,7 @@ The shown command searches the word 'pytest' in 'JobName' and enlists matching j
 This command outputs list of jobs sorted on the 'JobStatus'.
 
 ```console
-[ENV3]$ cms job status
+(ENV3) $ cms job status
 +--------+-------------+-----------+--------------------------+------------------+-------------+--------+
 | Number | JobName     | JobStatus | RemoteIp                 | Command          | Arguments   | User   |
 +--------+-------------+-----------+--------------------------+------------------+-------------+--------+
@@ -341,7 +341,7 @@ This step needs `ssh` access from users local machine to the
 remote host.  
 
 ```console
-[ENV3]$ cms job run --name=test_juliet
+(ENV3) $ cms job run --name=test_juliet
 ```
 
 ### Outputs on remote host
@@ -432,9 +432,9 @@ and kills the job using the PID stored by `job run` command.
 This step changes the status of the job to `killed`.
 
 ```console
-[ENV3]$ cms job run --name=test_juliet
+(ENV3) $ cms job run --name=test_juliet
 
-[ENV3]$ cms job kill --name=test_juliet
+(ENV3) $ cms job kill --name=test_juliet
 ```
 
 ### Remote machine
@@ -488,7 +488,7 @@ ketanp   18279  3720  0 04:43 pts/8    00:00:00 grep --color=auto test.py
 Verify that the status of the job changes to `killed` with `job list`
 
 ```console
-[ENV3]$ cms job list --name='juliet'
+(ENV3) $ cms job list --name='juliet'
 +--------+-------------+-----------+--------------------------+----------------+--------------------------------------------------+--------+
 | Number | JobName     | JobStatus | RemoteIp                 | Command        | Arguments                                        | User   |
 +--------+-------------+-----------+--------------------------+----------------+--------------------------------------------------+--------+
@@ -506,7 +506,7 @@ which changes the status of the job to `ready` and then we can
 submit this job for remote execution using `job run`.
 
 ```console
-[ENV3]$ cms job list --name='juliet'
+(ENV3) $ cms job list --name='juliet'
 +--------+-------------+-----------+--------------------------+----------------+--------------------------------------------------+--------+
 | Number | JobName     | JobStatus | RemoteIp                 | Command        | Arguments                                        | User   |
 +--------+-------------+-----------+--------------------------+----------------+--------------------------------------------------+--------+
@@ -515,11 +515,11 @@ submit this job for remote execution using `job run`.
 +--------+-------------+-----------+--------------------------+----------------+--------------------------------------------------+--------+
 
 
-[ENV3]$ cms job reset --name='test_juliet'
+(ENV3) $ cms job reset --name='test_juliet'
 Status reset for job test_juliet.
 
 
-[ENV3]$ cms job list --name='juliet'
+(ENV3) $ cms job list --name='juliet'
 +--------+-------------+-----------+--------------------------+----------------+--------------------------------------------------+--------+
 | Number | JobName     | JobStatus | RemoteIp                 | Command        | Arguments                                        | User   |
 +--------+-------------+-----------+--------------------------+----------------+--------------------------------------------------+--------+
@@ -528,10 +528,10 @@ Status reset for job test_juliet.
 +--------+-------------+-----------+--------------------------+----------------+--------------------------------------------------+--------+
 
 
-[ENV3]$ cms job run --name=test_juliet
+(ENV3) $ cms job run --name=test_juliet
 
 
-[ENV3]$ cms job list --name='juliet'
+(ENV3) $ cms job list --name='juliet'
 +--------+-------------+-----------+--------------------------+----------------+--------------------------------------------------+--------+
 | Number | JobName     | JobStatus | RemoteIp                 | Command        | Arguments                                        | User   |
 +--------+-------------+-----------+--------------------------+----------------+--------------------------------------------------+--------+
@@ -549,7 +549,7 @@ the configuration file. The delete operation first kills a job if it is in
 - Checking existing list of jobs:
 
 ```console
-[ENV3]$ cms job list
+(ENV3) $ cms job list
 +--------+-------------+-----------+--------------------------+------------------+--------------------------------------------------+--------+
 | Number | JobName     | JobStatus | RemoteIp                 | Command          | Arguments                                        | User   |
 +--------+-------------+-----------+--------------------------+------------------+--------------------------------------------------+--------+
@@ -565,10 +565,10 @@ the configuration file. The delete operation first kills a job if it is in
 - Deleting `sample` job and checking the list again
 
 ```console
-[ENV3]$ cms job delete --name=sample
+(ENV3) $ cms job delete --name=sample
 
 
-[ENV3]$ cms job list
+(ENV3) $ cms job list
 +--------+-------------+-----------+--------------------------+----------------+--------------------------------------------------+--------+
 | Number | JobName     | JobStatus | RemoteIp                 | Command        | Arguments                                        | User   |
 +--------+-------------+-----------+--------------------------+----------------+--------------------------------------------------+--------+
@@ -591,7 +591,7 @@ configuration file.
 
 
 ```console
-[ENV3]$ cms job hosts add --hostname='juliet' \
+(ENV3) $ cms job hosts add --hostname='juliet' \
                              --ip='juliet.futuresystems.org' \
                              --cpu_count='12'
 ```
@@ -619,7 +619,7 @@ As part of the remote host management process, the command
 configured in the `jobset`
 
 ```console
-[ENV3]$ cms job list hosts
+(ENV3) $ cms job list hosts
 job list hosts
 +-----------------+--------------------------+-----------+--------+-------------+
 | name            | ip                       | cpu_count | status | job_counter |
@@ -649,7 +649,7 @@ also the output locations. Configurable scheduler policies are as below:
 Currently configured scheduler policy can be inquired using `job scheduler info`
 
 ```console
-[ENV3]$ cms job scheduler info
+(ENV3) $ cms job scheduler info
 
 INFO: Configured scheduler policy: sequential
 ```
@@ -659,7 +659,7 @@ INFO: Configured scheduler policy: sequential
 To modify the scheduler policy:
 
 ```console
-[ENV3]$ cms job scheduler --policy=smart
+(ENV3) $ cms job scheduler --policy=smart
 
 INFO: Scheduler policy changed from sequential to smart
 ```
