@@ -53,7 +53,7 @@ The continuation character is "^" for Windows command prompt, whereas it is
 line to split a command in multiple lines.
 
 This demonstration is done using Windows command prompt. Using `gitbash` is
-advised is a Linux like terminal is preferred by users.
+advised if a Linux like terminal is preferred by users.
 
 ## Instalation on Windows
 
