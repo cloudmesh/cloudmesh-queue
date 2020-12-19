@@ -57,7 +57,6 @@ line to split a command in multiple lines.
 - Create a venv using python 3.8 or python 3.9 as `ENV3`
 ```cmd
 C:\>python -m venv ENV3
-```
 
 - Activate the ENV3
 ```cmd
