@@ -4,10 +4,10 @@
 
 <!--TOC-->
 
-- [Demo of `cms job` in Windows command prompt](#demo-of-cms-job-in-windows-command-prompt)
+- [Demo of `cms job` in Windows, Linux, and macOS](#demo-of-cms-job-in-windows-linux-and-macos)
 - [Table of Contents](#table-of-contents)
   - [Notation](#notation)
-  - [Instalation on Windows](#instalation-on-windows)
+  - [Instalation and activation on Windows](#instalation-and-activation-on-windows)
   - [Setting up location of config file](#setting-up-location-of-config-file)
   - [Verification of config file location in `cms job`](#verification-of-config-file-location-in-cms-job)
   - [Creating a template of configuration file](#creating-a-template-of-configuration-file)
@@ -65,7 +65,18 @@ On Windows you can also use gitbash which gives you teh equivalent of a bash she
 
 Due to the universality we will simplify our documentation and only use `$` as prompt indicator.
 
-## Instalation and activation on Windows
+
+## Installation a venv on Linux, macOS, gitbash on WIndows
+
+```cmd
+C:\>python3 -m venv ~/ENV3
+
+Whenever you start a new terminal, you need to activate the the ENV3
+```cmd
+source ~/ENV3/bin/activate
+```
+
+## Installation a venv on Windows CMD.EXE
 
 Create a venv using python 3.8 or python 3.9 as `ENV3`
 
@@ -79,9 +90,12 @@ C:\>ENV3\Scripts\activate.bat
 
 From now on we will use `(ENV3) $` indicating `(ENV3) C:\>`
 
+## Installation of cloudmesh-job
+
+After you installed and activated your venv
 You need to install after the first activation the software as follows
 
-```
+```console
 (ENV3) $ mkdir cm
 (ENV3) $ cd cm
 (ENV3) $ pip install cloudmesh-installer
@@ -93,7 +107,7 @@ You need to install after the first activation the software as follows
 Use `cms job set` to configure location of the configuration file with name 
 `jobset`. In this example file `spec.yaml` is used as the configuration file.
 
-```cmd
+```console
 (ENV3) $ cms job set '~/.cloudmesh/job/spec.yaml'
 Jobset defined as spec located at ~\.cloudmesh\job\spec.yaml
 
