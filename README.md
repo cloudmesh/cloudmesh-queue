@@ -211,6 +211,7 @@ cms job delete --name=ls_j
 
 Tha abbreviated manual page of the command is
 
+<!-- MANUAL -->
 ```bash
 Usage:
 job set FILE
@@ -367,6 +368,8 @@ We may not even do cms job set VALUE due to this simpler existing way
 of interfacing we can query the variables with variables = Variables()
 and also set them that way variables["jobset"] = VALUE.
 ```
+<!-- MANUAL -->
+
 
 ## Alternative Installation and Additional Documentation for Cloudmesh-job
 
