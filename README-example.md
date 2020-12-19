@@ -1,4 +1,4 @@
-# Demo of `cms job` in Windows, Linux, and macOS
+# Example of `cms job` in Windows, Linux, and macOS
 
 # Table of Contents
 
