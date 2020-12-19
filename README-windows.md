@@ -74,7 +74,7 @@ $ python3 -m venv ~/ENV3
 
 Whenever you start a new terminal, you need to activate the the ENV3
 
-```console
+```bash
 $ source ~/ENV3/bin/activate
 ```
 
@@ -82,7 +82,7 @@ $ source ~/ENV3/bin/activate
 
 Create a venv using python 3.8 or python 3.9 as `ENV3`
 
-```cmd
+```bash
 C:\>python -m venv ENV3
 
 Whenever you start a new terminal, you need to activate the the ENV3
