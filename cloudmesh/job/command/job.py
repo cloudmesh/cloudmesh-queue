@@ -61,21 +61,21 @@ class JobCommand(PluginCommand):
               FILE   a file name
 
           Options:
-              name=NAME               Name(s) of jobs.        Ex: 'job[0-5]'  [default: None]
-              ip=IP                   IP of the host.         Ex: 127.0.0.1   [default: None]
-              executable=EXECUTABLE   The command to be run.  Ex. 'ls'        [default: None]
-              directory=DIRECTORY     Location to run job.    Ex. './'        [default: './']
-              input=INPUT             Location of input data. Ex. './data'    [default: './data']
-              output=OUTPUT           Location of outputs.    Ex. './output'  [default: './output/job_name']
-              status=STATUS           Status of the job.      Ex. 'ready'     [default: 'ready']
-              gpu=GPU                 Which GPU to use.       Ex. 7           [default: None]
-              user=USER               User on remote host     Ex. 'uname'     [default: {System user}]
-              arguments=ARGUMENTS     Args for the executable.Ex. '-lisa'     [default: None]
-              shell=SHELL             Shell to run job.       Ex. 'bash'      [default: 'bash']
-              hostname=hostname       Host name.              Ex. 'juliet'    [default: None]
-              cpu_count=N             CPU count of the host.  Ex. '12'        [default: None]
-              job_counter=COUNTER     Number of submitted jobsEx. '2'         [default: None]
-              policy=POLICYNAME       Scheduler policy.       Ex. 'smart'     [default: 'sequential']
+              name=NAME               Name(s) of jobs.         Ex: 'job[0-5]'  [default: None]
+              ip=IP                   IP of the host.          Ex: 127.0.0.1   [default: None]
+              executable=EXECUTABLE   The command to be run.   Ex. 'ls'        [default: None]
+              directory=DIRECTORY     Location to run job.     Ex. './'        [default: './']
+              input=INPUT             Location of input data.  Ex. './data'    [default: './data']
+              output=OUTPUT           Location of outputs.     Ex. './output'  [default: './output/job_name']
+              status=STATUS           Status of the job.       Ex. 'ready'     [default: 'ready']
+              gpu=GPU                 Which GPU to use.        Ex. 7           [default: None]
+              user=USER               User on remote host      Ex. 'uname'     [default: {System user}]
+              arguments=ARGUMENTS     Args for the executable. Ex. '-lisa'     [default: None]
+              shell=SHELL             Shell to run job.        Ex. 'bash'      [default: 'bash']
+              hostname=hostname       Host name.               Ex. 'juliet'    [default: None]
+              cpu_count=N             CPU count of the host.   Ex. '12'        [default: None]
+              job_counter=COUNTER     Number of submitted jobs Ex. '2'         [default: None]
+              policy=POLICYNAME       Scheduler policy.        Ex. 'smart'     [default: 'sequential']
 
           Description:
 
@@ -170,12 +170,20 @@ class JobCommand(PluginCommand):
                shell: bash # executes the job in the provided shell
                       $(SHELL) will use the default user shell
 
-          The current jobset filename is stored in the cloudmesh variables under
-          the variable "jobset". It can be queried with cms set jobset. It
-          can be set with cms set jobset=VALUE.
-          We may not even do cms job set VALUE due to this simpler existing way
-          of interfacing we can query the variables with variables = Variables()
-          and also set them that way variables["jobset"] = VALUE.
+              The current jobset filename is stored in the cloudmesh variables
+              under the variable "jobset". It can be queried with cms set
+              jobset. It can be set with
+
+                cms set jobset=VALUE
+
+              We may not even do cms job set VALUE due to this simpler existing
+              way of interfacing we can query the variables with
+
+                  variables = Variables()
+
+              and also set them that way
+
+                variables["jobset"] = VALUE.
 
           Usage examples:
             cms job info
