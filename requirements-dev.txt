@@ -1,4 +1,4 @@
-nose
+md-toc
 pytest
 coverage
 flake8
