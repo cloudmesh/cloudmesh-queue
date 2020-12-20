@@ -223,6 +223,7 @@ The abbreviated manual page of the command is
 
 
 
+
 <!-- MANUAL -->
 ```bash
 Usage:
@@ -230,16 +231,16 @@ Usage:
   job template [--name=NAME]
   job add FILE
   job add --name=NAME
-          --ip=IP
-          --executable=EXECUTABLE
-          [--directory=DIRECTORY]
-          [--input=INPUT]
-          [--output=OUTPUT]
-          [--status=STATUS]
+          [--ip=<IP>]
+          [--executable=<EXECUTABLE>]
+          [--directory=<DIRECTORY>]
+          [--input=<INPUT>]
+          [--output=<OUTPUT>]
+          [--status=<STATUS>]
           [--gpu=GPU]
           [--user=USER]
-          [--arguments=ARGUMENTS]
-          [--shell=SHELL]
+          [--arguments=<ARGUMENTS>]
+          [--shell=<SHELL>]
   job status
   job list --status=STATUS
   job list --name=NAME
@@ -250,7 +251,7 @@ Usage:
   job help
   job run [--name=NAME]
   job info
-  job hosts add --hostname=hostname --ip=IP --cpu_count=N
+  job hosts add --hostname=hostname --ip=IP  --cpu_count=N
                [--status=STATUS] [--job_counter=COUNTER]
   job list hosts
   job scheduler --policy=POLICYNAME
@@ -265,21 +266,21 @@ Arguments:
 
 Default value of options is indicated in square brackets.
 Options:
-    name=NAME              Job name(s)       Example: 'job[0-5]'
-    ip=IP                  Host IP           [default: '127.0.0.1']
-    executable=EXECUTABLE  Job name          [default: 'uname']
-    arguments=ARGUMENTS    Args for the job  [defaul:  '-a']
-    directory=DIRECTORY    Path to run job   [default: '.']
-    input=INPUT            Input data path   [default: './data']
-    output=OUTPUT          Output path       [default: './output']
-    status=STATUS          Job status        [default: 'ready']   
-    user=USER              Remote host user  [default: '$USER']
-    shell=SHELL            Shell to run job  [default: 'bash']
-    hostname=hostname      Host name         Example. 'juliet'
-    gpu=GPU                GPU to use        Example. 7
-    cpu_count=N            Host CPU count    Example. '12'
-    job_counter=COUNTER    Job count         Example. '2'
-    policy=POLICYNAME      Scheduler policy  [default: 'sequential'
+  --name=NAME               Job name(s)       Example: 'job[0-5]'
+  --ip=<IP>                 Host IP           [default: 127.0.0.1]
+  --executable=<EXECUTABLE> Job name          [default: uname]
+  --arguments=<ARGUMENTS>   Args for the job  [default:  -a]
+  --directory=<DIRECTORY>   Path to run job   [default: .]
+  --input=<INPUT>           Input data path   [default: ./data]
+  --output=<OUTPUT>         Output path       [default: ./output]
+  --status=<STATUS>         Job status        [default: ready]
+  --user=USER               Remote host user  Example. $USER
+  --shell=<SHELL>           Shell to run job  [default: bash]
+  --hostname=hostname       Host name         Example. 'juliet'
+  --gpu=GPU                 GPU to use        Example. 7
+  --cpu_count=N             Host CPU count    Example. '12'
+  --job_counter=COUNTER     Job count         Example. '2'
+  --policy=<POLICYNAME>     Scheduler policy  [default: sequential]
 
 Description:
 
@@ -397,7 +398,7 @@ Usage examples:
       Creates the jobs b0 and b1 as templates in the jobset.
 
   cms job add --name=z[0-1] --ip=123,345 --executable='ls'
-              --input='..\data' --output='a,b'
+             .--input='..\data' --output='a,b'
       Creates entries in jobset for jobs z0 and z1 with provided
       arguments.
 
@@ -441,8 +442,10 @@ Usage examples:
       Deletes a job from the jobset. If job is in 'submitted'
       status then it is killed first and then deleted from jobset.
 
+
 ```
 <!-- MANUAL -->
+
 
 
 
@@ -482,6 +485,7 @@ installation documentation.
 | Command API | <https://github.com/cloudmesh/cloudmesh-job/blob/master/README.md#api-of-the-command> |
 | Command description | <https://github.com/cloudmesh/cloudmesh-job/blob/master/README.md#command-description> |
 | Command examples | <https://github.com/cloudmesh/cloudmesh-job/blob/main/README-example.md> |
+
 
 
 
