@@ -61,21 +61,21 @@ class JobCommand(PluginCommand):
               FILE   a file name
 
           Options:
-              name=NAME               Name(s) of jobs.         Ex: 'job[0-5]'  [default: None]
-              ip=IP                   IP of the host.          Ex: 127.0.0.1   [default: None]
-              executable=EXECUTABLE   The command to be run.   Ex. 'ls'        [default: None]
-              directory=DIRECTORY     Location to run job.     Ex. './'        [default: './']
-              input=INPUT             Location of input data.  Ex. './data'    [default: './data']
-              output=OUTPUT           Location of outputs.     Ex. './output'  [default: './output/job_name']
-              status=STATUS           Status of the job.       Ex. 'ready'     [default: 'ready']
-              gpu=GPU                 Which GPU to use.        Ex. 7           [default: None]
-              user=USER               User on remote host      Ex. 'uname'     [default: {System user}]
-              arguments=ARGUMENTS     Args for the executable. Ex. '-lisa'     [default: None]
-              shell=SHELL             Shell to run job.        Ex. 'bash'      [default: 'bash']
-              hostname=hostname       Host name.               Ex. 'juliet'    [default: None]
-              cpu_count=N             CPU count of the host.   Ex. '12'        [default: None]
-              job_counter=COUNTER     Number of submitted jobs Ex. '2'         [default: None]
-              policy=POLICYNAME       Scheduler policy.        Ex. 'smart'     [default: 'sequential']
+              name=NAME             Job name(s).      Ex: 'job[0-5]'[None]
+              ip=IP                 Host IP.          Ex: 127.0.0.1 [None]
+              executable=EXECUTABLE Job name.         Ex. 'ls'      [None]
+              directory=DIRECTORY   Path to run job.  Ex. './'      ['./']
+              input=INPUT           Input data path.  Ex. './data'  ['./data']
+              output=OUTPUT         Output path.      Ex. './output'['./output/job_name']
+              status=STATUS         Job status.       Ex. 'ready'   ['ready']
+              gpu=GPU               GPU to use.       Ex. 7         [None]
+              user=USER             Remote host user. Ex. 'uname'   [{System user}]
+              arguments=ARGUMENTS   Args for the job. Ex. '-lisa'   [None]
+              shell=SHELL           Shell to run job. Ex. 'bash'    ['bash']
+              hostname=hostname     Host name.        Ex. 'juliet'  [None]
+              cpu_count=N           Host CPU count.   Ex. '12'      [None]
+              job_counter=COUNTER   Job count.        Ex. '2'       [None]
+              policy=POLICYNAME     Scheduler policy. Ex. 'smart'   ['sequential']
 
           Description:
 
@@ -107,9 +107,6 @@ class JobCommand(PluginCommand):
               job kill --name=NAME
                 kills the given jobs base on a name pattern such as
                 name[01-04] which would kill all jobs with the given names
-
-              job status [--name=NAME] [--status=STATUS]
-                sets the status of all jobs to the status
 
               job reset [--name=NAME]
                 resets the job to be rerun

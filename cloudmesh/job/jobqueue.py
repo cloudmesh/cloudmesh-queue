@@ -351,7 +351,7 @@ class JobQueue:
 
             if k in names:
 
-                ip = v['submitted_to_ip']
+                ip = v.get('submitted_to_ip')
 
                 if ip is not None:
 
