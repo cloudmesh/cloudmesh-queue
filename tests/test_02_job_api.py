@@ -1,7 +1,12 @@
 ###############################################################
-# pytest -v --capture=no tests/test_02_job_api.py | tee tests/output/test_02_job_api_results.txt
-# pytest -v  tests/test_02_job_api.py | tee tests/output/test_02_job_api_results.txt
-# pytest -v --capture=no  tests/test_02_job_api.py::TestJob::<METHODNAME> | tee tests/output/test_02_job_api_results.txt
+# cms set host='juliet.futuresystems.org'
+# cms set user=$USER
+# pytest -v --capture=no tests/test_02_job_api.py \
+# | tee tests/output/test_02_job_api_results.txt
+# pytest -v  tests/test_02_job_api.py \
+# | tee tests/output/test_02_job_api_results.txt
+# pytest -v --capture=no  tests/test_02_job_api.py::TestJob::<METHODNAME> \
+# | tee tests/output/test_02_job_api_results.txt
 ###############################################################
 import pytest
 from cloudmesh.common.Shell import Shell
@@ -20,7 +25,6 @@ import oyaml as yaml
 import re
 import time
 
-
 Benchmark.debug()
 
 variables = Variables()
@@ -32,6 +36,7 @@ jobqueue = JobQueue(configured_jobset)
 remote_host_ip = 'juliet.futuresystems.org'
 remote_host_user = 'ketanp'
 remote_host_name = 'juliet'
+
 
 @pytest.mark.incremental
 class TestJob:

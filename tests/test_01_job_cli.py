@@ -1,7 +1,13 @@
 ###############################################################
-# pytest -v --capture=no tests/test_01_job_cli.py | tee tests/output/test_01_job_cli_results.txt
-# pytest -v  tests/test_01_job_cli.py | tee tests/output/test_01_job_cli_results.txt
-# pytest -v --capture=no  tests/test_01_job_cli.py::TestJob::<METHODNAME> | tee tests/output/test_01_job_cli_results.txt
+# cms set host='juliet.futuresystems.org'
+# cms set user=$USER
+# pytest -v --capture=no tests/test_01_job_cli.py \
+# | tee tests/output/test_01_job_cli_results.txt
+#
+# pytest -v  tests/test_01_job_cli.py \
+# | tee tests/output/test_01_job_cli_results.txt
+# pytest -v --capture=no  tests/test_01_job_cli.py::TestJob::<METHODNAME>
+# | tee tests/output/test_01_job_cli_results.txt
 ###############################################################
 import pytest
 from cloudmesh.common.Shell import Shell
@@ -16,6 +22,7 @@ from cloudmesh.common.util import path_expand
 import oyaml as yaml
 import re
 import time
+import getpass
 
 Benchmark.debug()
 
@@ -23,8 +30,8 @@ variables = Variables()
 variables["jobset"] = path_expand("./a.yaml")
 
 configured_jobset = variables["jobset"]
-remote_host_ip = 'juliet.futuresystems.org'
-remote_host_user = 'ketanp'
+remote_host_ip = variables['host'] or 'juliet.futuresystems.org'
+remote_host_user = variables['user'] or getpass.getuser()
 
 
 @pytest.mark.incremental
@@ -107,11 +114,11 @@ class TestJob:
         HEADING()
 
         Benchmark.Start()
-        result = Shell.execute('cms job add --name=\'pytest_job1\' ' \
-                               f'--ip={remote_host_ip} ' \
-                               '--executable=\'ls\' ' \
-                               '--arguments=\'-lisa\' ' \
-                               f'--user=\'{remote_host_user}\' ',
+        result = Shell.execute("cms job add --name='pytest_job1' " 
+                               f"--ip={remote_host_ip} " 
+                               "--executable='ls' " 
+                               "--arguments='-lisa' " 
+                               f"--user='{remote_host_user}' ",
                                shell=True)
         Benchmark.Stop()
         VERBOSE(result)
