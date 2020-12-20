@@ -60,6 +60,7 @@ class JobCommand(PluginCommand):
           Arguments:
               FILE   a file name
 
+          Default value of options is indicated in square brackets.
           Options:
               name=NAME             Job name(s).      Ex: 'job[0-5]'[None]
               ip=IP                 Host IP.          Ex: 127.0.0.1 [None]
