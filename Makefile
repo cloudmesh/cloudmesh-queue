@@ -19,7 +19,7 @@ readme:
 	md_toc -p github README.md
 	md_toc -p github README-example.md
 	python bin/manual-update.py > README-new.md
-	rsync README-new.md README.md
+	rsync  --checksum README-new.md README.md
 	rm -f README-new.md
 
 

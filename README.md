@@ -219,6 +219,7 @@ The abbreviated manual page of the command is
 
 
 
+
 <!-- MANUAL -->
 ```bash
 Usage:
@@ -443,6 +444,7 @@ Usage examples:
 
 
 
+
 ## Tests
 
 We provide two simple pytets that you can customize by setting the host and the
@@ -474,6 +476,7 @@ installation documentation.
 | Command API | <https://github.com/cloudmesh/cloudmesh-job/blob/master/README.md#api-of-the-command> |
 | Command description | <https://github.com/cloudmesh/cloudmesh-job/blob/master/README.md#command-description> |
 | Command examples | <https://github.com/cloudmesh/cloudmesh-job/blob/main/README-example.md> |
+
 
 
 
