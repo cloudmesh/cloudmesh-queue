@@ -62,21 +62,21 @@ class JobCommand(PluginCommand):
 
           Default value of options is indicated in square brackets.
           Options:
-              name=NAME             Job name(s).      Ex: 'job[0-5]'[None]
-              ip=IP                 Host IP.          Ex: 127.0.0.1 [None]
-              executable=EXECUTABLE Job name.         Ex. 'ls'      [None]
-              directory=DIRECTORY   Path to run job.  Ex. './'      ['./']
-              input=INPUT           Input data path.  Ex. './data'  ['./data']
-              output=OUTPUT         Output path.      Ex. './output'['./output/job_name']
-              status=STATUS         Job status.       Ex. 'ready'   ['ready']
-              gpu=GPU               GPU to use.       Ex. 7         [None]
-              user=USER             Remote host user. Ex. 'uname'   [{System user}]
-              arguments=ARGUMENTS   Args for the job. Ex. '-lisa'   [None]
-              shell=SHELL           Shell to run job. Ex. 'bash'    ['bash']
-              hostname=hostname     Host name.        Ex. 'juliet'  [None]
-              cpu_count=N           Host CPU count.   Ex. '12'      [None]
-              job_counter=COUNTER   Job count.        Ex. '2'       [None]
-              policy=POLICYNAME     Scheduler policy. Ex. 'smart'   ['sequential']
+              name=NAME              Job name(s)       Example: 'job[0-5]'
+              ip=IP                  Host IP           [default: '127.0.0.1']
+              executable=EXECUTABLE  Job name          [default: 'uname']
+              arguments=ARGUMENTS    Args for the job  [defaul:  '-a']
+              directory=DIRECTORY    Path to run job   [default: '.']
+              input=INPUT            Input data path   [default: './data']
+              output=OUTPUT          Output path       [default: './output']
+              status=STATUS          Job status        [default: 'ready']   
+              user=USER              Remote host user  [default: '$USER']
+              shell=SHELL            Shell to run job  [default: 'bash']
+              hostname=hostname      Host name         Example. 'juliet'
+              gpu=GPU                GPU to use        Example. 7
+              cpu_count=N            Host CPU count    Example. '12'
+              job_counter=COUNTER    Job count         Example. '2'
+              policy=POLICYNAME      Scheduler policy  [default: 'sequential'
 
           Description:
 
@@ -266,7 +266,7 @@ class JobCommand(PluginCommand):
 
         # VERBOSE(arguments)
 
-        names = Parameter.expand(arguments["--name"])
+        names = Parameter.expand(arguments.name)
 
         file = arguments["FILE"]
 
@@ -335,17 +335,13 @@ class JobCommand(PluginCommand):
             jobqueue = JobQueue(variables["jobset"])
 
             # fixed arguments for all jobs
-            arguments.executable = arguments.executable or 'ls'
-            arguments.status = arguments.status or 'ready'
-            arguments.shell = arguments.shell or 'bash'
-            arguments.directory = arguments.directory or '.'
 
             # Variable arguments
             arguments.names = names
             arguments.ip = arguments.ip or "localhost"
             arguments.input = arguments.input or "./data"
             arguments.output = arguments.output or \
-                               "./output/" + arguments['--name']
+                               "./output/" + arguments.name
             arguments.gpu = arguments.gpu or " "
             arguments.arguments = arguments.arguments or " "
 
