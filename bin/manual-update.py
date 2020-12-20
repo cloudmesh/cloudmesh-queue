@@ -14,13 +14,19 @@ readme = readfile("README.md")
 
 parts = readme.split("<!-- MANUAL -->")
 
-print (parts[0])
-print ("<!-- MANUAL -->")
-print ("```bash")
-print (textwrap.dedent("\n".join(man.splitlines()[7:])))
-print ("```")
-print ("<!-- MANUAL -->")
-print (parts[1])
+
+
+content = []
+
+content.append(parts[0])
+content.append("<!-- MANUAL -->")
+content.append("```bash")
+content.append(textwrap.dedent("\n".join(man.splitlines()[7:])))
+content.append("```")
+content.append("<!-- MANUAL -->")
+content.append(parts[2])
+
+print ("\n".join(content))
 
 
 

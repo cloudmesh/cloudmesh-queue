@@ -19,6 +19,7 @@ on the scheduler policy, user can schedule these jobs on configured hosts.
 
 - [Cloudmesh Job](#cloudmesh-job)
 - [Table of Contents](#table-of-contents)
+  - [Example](#example)
   - [Prerequisites](#prerequisites)
   - [Installation](#installation)
   - [Configuration](#configuration)
@@ -27,14 +28,13 @@ on the scheduler policy, user can schedule these jobs on configured hosts.
     - [Scheduler](#scheduler)
     - [Jobs](#jobs)
   - [Manual Page](#manual-page)
-  - [Demonstration of the `cms job` command](#Demonstration-of-the-cms-job-command)
   - [Alternative Installation and Additional Documentation for Cloudmesh-job](#alternative-installation-and-additional-documentation-for-cloudmesh-job)
 
 <!--TOC-->
 
 ## Example
 
-An additinal example is documented in
+An additional example is documented in
 
 [Example](README-example.md)
 
@@ -73,7 +73,7 @@ It can be set with
 
 ```cms set jobset=VALUE```
 
-An exmple is
+An example is
 
 ```bash
 $ cms set jobset
@@ -85,7 +85,7 @@ The content of the jobset can be created using
 
 ```cms job template```
 
-This template configuration will than have the following content:
+This template configuration will then have the following content:
 
 ```yaml
 cloudmesh:
@@ -126,9 +126,10 @@ jobs:
  
 ### Hosts
 
-To configer available compute resources as 'hosts' in the configuration
-file you can use the following command, that will generate a hosts file
-in the `jobs` directory. To list the hosts we have a convenient list command.
+To configure available compute resources as 'hosts' in the configuration
+file you can use the following command, that will add this new host in the
+jobset configuration file.  
+To list the hosts we have a convenient list command.
 
 ```bash
 cms job hosts add --hostname=name --ip=ip --cpu_count=n
@@ -140,17 +141,16 @@ cms job list hosts
 
 ### Scheduler
 
-One can configure and To inquire  a scheduler policy
-taht is used by the `cms
-job run` command to schedule and execute jobs.  
-The following scheduler policies are available:
+One can configure and inquire scheduler a policy
+that is used by the `cms job run` command to schedule and 
+execute jobs. The following scheduler policies are available:
 
 * sequential - Use first available host
 * random     - Use random available host
 * smart      - Use a host with highest availability
 * frugal     - Use a host with least availability
 
-To set it and inquire information about is use the commands
+To confugure or inquire a scheduler, use the following commands:
 
 ```bash
 cms job scheduler --policy=random
@@ -162,7 +162,7 @@ cms job scheduler info
 
 ### Jobs
 
-To schedule, modify and inquire the jobs please use the following commands:
+To schedule, modify and inquire the jobs, please use the following commands:
 
 ```bash
 cms job info
@@ -210,7 +210,7 @@ cms job delete --name=ls_j
 
 ## Manual Page
 
-Tha abbreviated manual page of the command is
+The abbreviated manual page of the command is
 
 <!-- MANUAL -->
 ```bash
@@ -371,12 +371,6 @@ and also set them that way variables["jobset"] = VALUE.
 ```
 <!-- MANUAL -->
 
-## Demonstration of the `cms job` command
-
-Complete workflow and usage of all available commands is explained in the following 
-document:
-
-[README-example.md](https://github.com/cloudmesh/cloudmesh-job/blob/main/README-example.md)
 
 ## Alternative Installation and Additional Documentation for Cloudmesh-job
 

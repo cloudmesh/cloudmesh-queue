@@ -4,10 +4,12 @@
 
 <!--TOC-->
 
-- [Demo of `cms job` in Windows, Linux, and macOS](#demo-of-cms-job-in-windows-linux-and-macos)
+- [Example of `cms job` in Windows, Linux, and macOS](#example-of-cms-job-in-windows-linux-and-macos)
 - [Table of Contents](#table-of-contents)
   - [Notation](#notation)
-  - [Instalation and activation on Windows](#instalation-and-activation-on-windows)
+  - [Installation a venv on Linux, macOS, gitbash on WIndows](#installation-a-venv-on-linux-macos-gitbash-on-windows)
+  - [Installation a venv on Windows CMD.EXE](#installation-a-venv-on-windows-cmdexe)
+  - [Installation of cloudmesh-job](#installation-of-cloudmesh-job)
   - [Setting up location of config file](#setting-up-location-of-config-file)
   - [Verification of config file location in `cms job`](#verification-of-config-file-location-in-cms-job)
   - [Creating a template of configuration file](#creating-a-template-of-configuration-file)
