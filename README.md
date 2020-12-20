@@ -19,6 +19,7 @@ on the scheduler policy, user can schedule these jobs on configured hosts.
 
 - [Cloudmesh Job](#cloudmesh-job)
 - [Table of Contents](#table-of-contents)
+  - [Example](#example)
   - [Prerequisites](#prerequisites)
   - [Installation](#installation)
   - [Configuration](#configuration)
@@ -27,7 +28,7 @@ on the scheduler policy, user can schedule these jobs on configured hosts.
     - [Scheduler](#scheduler)
     - [Jobs](#jobs)
   - [Manual Page](#manual-page)
-  - [Demonstration of the `cms job` command](#Demonstration-of-the-cms-job-command)
+  - [Demonstration of the `cms job` command](#demonstration-of-the-cms-job-command)
   - [Alternative Installation and Additional Documentation for Cloudmesh-job](#alternative-installation-and-additional-documentation-for-cloudmesh-job)
 
 <!--TOC-->

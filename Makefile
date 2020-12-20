@@ -14,10 +14,12 @@ all: install
 install:
 	pip install -e .
 
-toc:
+readme:
 	pip install md_toc -U
 	md_toc -p github README.md
 	md_toc -p github README-example.md
+	python bin/manual-update.py > README-new.md
+	mv README-new.md README.md
 
 source:
 	cd ../cloudmesh.cmd5; make source
