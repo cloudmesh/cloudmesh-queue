@@ -24,6 +24,7 @@ from cloudmesh.common.dotdict import dotdict
 import oyaml as yaml
 import re
 import time
+import getpass
 
 Benchmark.debug()
 
@@ -33,9 +34,12 @@ variables["jobset"] = path_expand("./a.yaml")
 configured_jobset = variables["jobset"]
 jobqueue = JobQueue(configured_jobset)
 
-remote_host_ip = 'juliet.futuresystems.org'
-remote_host_user = 'ketanp'
-remote_host_name = 'juliet'
+
+configured_jobset = variables["jobset"]
+remote_host_ip = variables['host'] or 'juliet.futuresystems.org'
+remote_host_name = variables['hostname'] or 'juliet'
+
+remote_host_user = variables['user'] or getpass.getuser()
 
 
 @pytest.mark.incremental
