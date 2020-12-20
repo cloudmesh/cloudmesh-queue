@@ -179,7 +179,7 @@ cms job add --name=z[0-1] --ip=123,345 --executable='ls'
     Creates entries in jobset for jobs z0 and z1 with provided
     arguments.
 
-cms job add '~\.cloudmesh\another.yaml'
+cms job add '~/.cloudmesh/another.yaml'
     Adds jobs from FILE to jobset
 
 cms job list
