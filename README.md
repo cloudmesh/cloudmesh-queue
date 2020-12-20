@@ -175,11 +175,11 @@ cms job template a.yaml --name="b[0-1]"; less a.yaml
     Creates the jobs b0 and b1 as templates in the jobset.
 
 cms job add --name=z[0-1] --ip=123,345 --executable='ls'
---input='../data' --output='a,b'
+            --input='../data' --output='a,b'
     Creates entries in jobset for jobs z0 and z1 with provided
     arguments.
 
-cms job add '~/.cloudmeshnother.yaml'
+cms job add '~\.cloudmesh\another.yaml'
     Adds jobs from FILE to jobset
 
 cms job list
@@ -211,6 +211,7 @@ cms job delete --name=ls_j
 ## Manual Page
 
 The abbreviated manual page of the command is
+
 
 
 
@@ -388,11 +389,11 @@ Usage examples:
       Creates the jobs b0 and b1 as templates in the jobset.
 
   cms job add --name=z[0-1] --ip=123,345 --executable='ls'
-  --input='..\data' --output='a,b'
+              --input='..\data' --output='a,b'
       Creates entries in jobset for jobs z0 and z1 with provided
       arguments.
 
-  cms job add '~\.cloudmeshnother.yaml'
+  cms job add '~/.cloudmesh/another.yaml'
       Adds jobs from FILE to jobset
 
   cms job list
@@ -439,6 +440,7 @@ Usage examples:
 
 
 
+
 ## Alternative Installation and Additional Documentation for Cloudmesh-job
 
 You can safely ignore this section if you installed cloudmehs-job with the previous method.
@@ -456,5 +458,6 @@ installation documentation.
 | Command API | <https://github.com/cloudmesh/cloudmesh-job/blob/master/README.md#api-of-the-command> |
 | Command description | <https://github.com/cloudmesh/cloudmesh-job/blob/master/README.md#command-description> |
 | Command examples | <https://github.com/cloudmesh/cloudmesh-job/blob/main/README-example.md> |
+
 
 

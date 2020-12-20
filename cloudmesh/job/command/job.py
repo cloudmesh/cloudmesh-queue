@@ -194,11 +194,11 @@ class JobCommand(PluginCommand):
                 Creates the jobs b0 and b1 as templates in the jobset.
 
             cms job add --name=z[0-1] --ip=123,345 --executable='ls'
-            --input='..\data' --output='a,b'
+                        --input='..\data' --output='a,b'
                 Creates entries in jobset for jobs z0 and z1 with provided
                 arguments.
 
-            cms job add '~\.cloudmesh\another.yaml'
+            cms job add '~/.cloudmesh/another.yaml'
                 Adds jobs from FILE to jobset
 
             cms job list
