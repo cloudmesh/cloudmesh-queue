@@ -465,8 +465,11 @@ $ cms set host='juliet.futuresystems.org'
 $ cms set user=$USER
 
 $ pytest -v --capture=no tests/test_01_job_cli.py
-$  pytest -v --capture=no tests/test_02_job_api.py
+$ pytest -v --capture=no tests/test_02_job_api.py
 ```
+- Supporting links 
+  - [Pytests](https://github.com/cloudmesh/cloudmesh-job/tree/main/tests)
+  - [Pytest results](https://github.com/cloudmesh/cloudmesh-job/tree/main/tests/output)
 
 ## Alternative Installation and Additional Documentation for Cloudmesh-job
 
