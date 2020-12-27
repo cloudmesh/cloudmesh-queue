@@ -3,9 +3,9 @@
 # cms set user=$USER
 # cms set gpu=0
 #
-# pytest -v --capture=no tests/test_01_job_cli.py
-# pytest -v  tests/test_01_job_cli.py
-# pytest -v --capture=no  tests/test_01_job_cli.py::TestJob::<METHODNAME>
+# pytest -v --capture=no tests/test_03_job_gpu.py
+# pytest -v  tests/test_03_job_gpu.py
+# pytest -v --capture=no  tests/test_03_job_gpu.py::TestJob::<METHODNAME>
 ###############################################################
 import pytest
 from cloudmesh.common.Shell import Shell
@@ -29,7 +29,7 @@ import tensorflow as tf
 import logging
 import io
 from contextlib import redirect_stdout
-
+from __future__ import print_function
 
 Benchmark.debug()
 
