@@ -100,12 +100,14 @@ cloudmesh:
         cpu_count: '2'
         status: free
         job_counter: '2'
+        max_jobs_allowed: '1'
       juliet:
         name: juliet
         ip: juliet.futuresystems.org
         cpu_count: '12'
         status: free
         job_counter: '0'
+        max_jobs_allowed: '4'
     scheduler:
       policy: smart
     jobs:
@@ -134,7 +136,7 @@ jobset configuration file.
 To list the hosts we have a convenient list command.
 
 ```bash
-cms job hosts add --hostname=name --ip=ip --cpu_count=n
+cms job hosts add --hostname=name --ip=ip --cpu_count=n --max_jobs_allowed=x
     Adds a host in jobset yaml file.
 
 cms job list hosts
@@ -225,6 +227,7 @@ The abbreviated manual page of the command is
 
 
 
+
 <!-- MANUAL -->
 ```bash
 Usage:
@@ -254,6 +257,7 @@ Usage:
   job info
   job hosts add --hostname=hostname --ip=IP  --cpu_count=N
                [--status=STATUS] [--job_counter=COUNTER]
+               [--max_jobs_allowed=<JOBS>]
   job list hosts
   job scheduler --policy=POLICYNAME
   job scheduler info
@@ -282,6 +286,7 @@ Options:
   --cpu_count=N             Host CPU count    Example. '12'
   --job_counter=COUNTER     Job count         Example. '2'
   --policy=<POLICYNAME>     Scheduler policy  [default: sequential]
+  --max_jobs_allowed=<JOBS> Max jobs allowed  [default: 1]
 
 Description:
 
@@ -326,6 +331,7 @@ Description:
       run a specific job
 
     job hosts add --hostname=name --ip=ip --cpu_count=n
+                 .--max_jobs_allowed=x
       Adds a host in jobset yaml file.
 
     job list hosts
@@ -422,6 +428,7 @@ Usage examples:
       Resets the status of the job to 'ready'.
 
   cms job hosts add --hostname=name --ip=ip --cpu_count=n
+                   .--max_jobs_allowed=x
       Adds a host in jobset yaml file.
 
   cms job list hosts
@@ -446,6 +453,7 @@ Usage examples:
 
 ```
 <!-- MANUAL -->
+
 
 
 
@@ -489,6 +497,7 @@ installation documentation.
 | Command API | <https://github.com/cloudmesh/cloudmesh-job/blob/master/README.md#api-of-the-command> |
 | Command description | <https://github.com/cloudmesh/cloudmesh-job/blob/master/README.md#command-description> |
 | Command examples | <https://github.com/cloudmesh/cloudmesh-job/blob/main/README-example.md> |
+
 
 
 
