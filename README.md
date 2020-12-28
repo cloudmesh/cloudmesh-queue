@@ -92,35 +92,36 @@ This template configuration will then have the following content:
 cloudmesh:
   default:
     user: username
-  hosts:
-    localhost:
-      name: localhost
-      ip: localhost
-      cpu_count: '2'
-      status: free
-      job_counter: '2'
-    juliet:
-      name: juliet
-      ip: juliet.futuresystems.org
-      cpu_count: '12'
-      status: free
-      job_counter: '0'
-  scheduler:
-    policy: smart
-jobs:
-  ls_j:
-    name: ls_j
-    directory: .
-    ip: juliet.futuresystems.org
-    input: ./data
-    output: ./output/ls_j
-    status: ready
-    gpu: ' '
-    user: username
-    arguments: ' '
-    executable: 'python test.py'
-    shell: bash
-    submitted_to_ip: juliet.futuresystems.org
+  jobset:
+    hosts:
+      localhost:
+        name: localhost
+        ip: localhost
+        cpu_count: '2'
+        status: free
+        job_counter: '2'
+      juliet:
+        name: juliet
+        ip: juliet.futuresystems.org
+        cpu_count: '12'
+        status: free
+        job_counter: '0'
+    scheduler:
+      policy: smart
+    jobs:
+      ls_j:
+        name: ls_j
+        directory: .
+        ip: juliet.futuresystems.org
+        input: ./data
+        output: ./output/ls_j
+        status: ready
+        gpu: ' '
+        user: username
+        arguments: ' '
+        executable: 'python test.py'
+        shell: bash
+        submitted_to_ip: juliet.futuresystems.org
 ```  
 
 ## Available methods
