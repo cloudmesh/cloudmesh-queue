@@ -43,3 +43,7 @@ Submitted by: Ketan Pimparkar
    3. (main) [README-windows.md Documented demo of the cloudmesh job workflow.](https://github.com/cloudmesh/cloudmesh-job/blob/main/README-windows.md)
    
    4. (main) [./tests Created pytests and documented results.](https://github.com/cloudmesh/cloudmesh-job/tree/main/tests)
+   
+   5. (main) [pytest to validate execution of a job on GPU is created.](https://github.com/cloudmesh/cloudmesh-job/blob/main/tests/test_03_job_gpu.py)
+   
+   6. (main) [Parameter 'max_jobs_allowed' is added at host configuration level](https://github.com/cloudmesh/cloudmesh-job/commit/2f9c2507e35bed0136d3807b51436a82370850b6)
