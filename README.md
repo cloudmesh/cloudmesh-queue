@@ -213,19 +213,8 @@ cms job delete --name=ls_j
 
 The abbreviated manual page of the command is
 
-
-
-
-
-
-
-
-
-
-
-<!-- MANUAL -->
-```bash
-Usage:
+<!--MANUAL-->
+```
   job set FILE
   job template [--name=NAME]
   job add FILE
@@ -442,12 +431,7 @@ Usage examples:
       status then it is killed first and then deleted from jobset.
 
 ```
-<!-- MANUAL -->
-
-
-
-
-
+<!--MANUAL-->
 
 
 
@@ -482,6 +466,7 @@ installation documentation.
 | Command API | <https://github.com/cloudmesh/cloudmesh-job/blob/master/README.md#api-of-the-command> |
 | Command description | <https://github.com/cloudmesh/cloudmesh-job/blob/master/README.md#command-description> |
 | Command examples | <https://github.com/cloudmesh/cloudmesh-job/blob/main/README-example.md> |
+
 
 
 
