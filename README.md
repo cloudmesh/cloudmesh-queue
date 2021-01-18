@@ -92,35 +92,38 @@ This template configuration will then have the following content:
 cloudmesh:
   default:
     user: username
-  hosts:
-    localhost:
-      name: localhost
-      ip: localhost
-      cpu_count: '2'
-      status: free
-      job_counter: '2'
-    juliet:
-      name: juliet
-      ip: juliet.futuresystems.org
-      cpu_count: '12'
-      status: free
-      job_counter: '0'
-  scheduler:
-    policy: smart
-jobs:
-  ls_j:
-    name: ls_j
-    directory: .
-    ip: juliet.futuresystems.org
-    input: ./data
-    output: ./output/ls_j
-    status: ready
-    gpu: ' '
-    user: username
-    arguments: ' '
-    executable: 'python test.py'
-    shell: bash
-    submitted_to_ip: juliet.futuresystems.org
+  jobset:
+    hosts:
+      localhost:
+        name: localhost
+        ip: localhost
+        cpu_count: '2'
+        status: free
+        job_counter: '2'
+        max_jobs_allowed: '1'
+      juliet:
+        name: juliet
+        ip: juliet.futuresystems.org
+        cpu_count: '12'
+        status: free
+        job_counter: '0'
+        max_jobs_allowed: '4'
+    scheduler:
+      policy: smart
+    jobs:
+      ls_j:
+        name: ls_j
+        directory: .
+        ip: juliet.futuresystems.org
+        input: ./data
+        output: ./output/ls_j
+        status: ready
+        gpu: ' '
+        user: username
+        arguments: ' '
+        executable: 'python test.py'
+        shell: bash
+        submitted_to_ip: juliet.futuresystems.org
 ```  
 
 ## Available methods
@@ -133,7 +136,7 @@ jobset configuration file.
 To list the hosts we have a convenient list command.
 
 ```bash
-cms job hosts add --hostname=name --ip=ip --cpu_count=n
+cms job hosts add --hostname=name --ip=ip --cpu_count=n --max_jobs_allowed=x
     Adds a host in jobset yaml file.
 
 cms job list hosts
@@ -219,16 +222,16 @@ The abbreviated manual page of the command is
   job template [--name=NAME]
   job add FILE
   job add --name=NAME
-          --ip=IP
-          --executable=EXECUTABLE
-          [--directory=DIRECTORY]
-          [--input=INPUT]
-          [--output=OUTPUT]
-          [--status=STATUS]
+          [--ip=<IP>]
+          [--executable=<EXECUTABLE>]
+          [--directory=<DIRECTORY>]
+          [--input=<INPUT>]
+          [--output=<OUTPUT>]
+          [--status=<STATUS>]
           [--gpu=GPU]
           [--user=USER]
-          [--arguments=ARGUMENTS]
-          [--shell=SHELL]
+          [--arguments=<ARGUMENTS>]
+          [--shell=<SHELL>]
   job status
   job list --status=STATUS
   job list --name=NAME
@@ -239,8 +242,9 @@ The abbreviated manual page of the command is
   job help
   job run [--name=NAME]
   job info
-  job hosts add --hostname=hostname --ip=IP --cpu_count=N
+  job hosts add --hostname=hostname --ip=IP  --cpu_count=N
                [--status=STATUS] [--job_counter=COUNTER]
+               [--max_jobs_allowed=<JOBS>]
   job list hosts
   job scheduler --policy=POLICYNAME
   job scheduler info
@@ -254,21 +258,22 @@ Arguments:
 
 Default value of options is indicated in square brackets.
 Options:
-    name=NAME              Job name(s)       Example: 'job[0-5]'
-    ip=IP                  Host IP           [default: '127.0.0.1']
-    executable=EXECUTABLE  Job name          [default: 'uname']
-    arguments=ARGUMENTS    Args for the job  [defaul:  '-a']
-    directory=DIRECTORY    Path to run job   [default: '.']
-    input=INPUT            Input data path   [default: './data']
-    output=OUTPUT          Output path       [default: './output']
-    status=STATUS          Job status        [default: 'ready']   
-    user=USER              Remote host user  [default: '$USER']
-    shell=SHELL            Shell to run job  [default: 'bash']
-    hostname=hostname      Host name         Example. 'juliet'
-    gpu=GPU                GPU to use        Example. 7
-    cpu_count=N            Host CPU count    Example. '12'
-    job_counter=COUNTER    Job count         Example. '2'
-    policy=POLICYNAME      Scheduler policy  [default: 'sequential'
+  --name=NAME               Job name(s)       Example: 'job[0-5]'
+  --ip=<IP>                 Host IP           [default: 127.0.0.1]
+  --executable=<EXECUTABLE> Job name          [default: uname]
+  --arguments=<ARGUMENTS>   Args for the job  [default:  -a]
+  --directory=<DIRECTORY>   Path to run job   [default: .]
+  --input=<INPUT>           Input data path   [default: ./data]
+  --output=<OUTPUT>         Output path       [default: ./output]
+  --status=<STATUS>         Job status        [default: ready]
+  --user=USER               Remote host user  Example. $USER
+  --shell=<SHELL>           Shell to run job  [default: bash]
+  --hostname=hostname       Host name         Example. 'juliet'
+  --gpu=GPU                 GPU to use        Example. 7
+  --cpu_count=N             Host CPU count    Example. '12'
+  --job_counter=COUNTER     Job count         Example. '2'
+  --policy=<POLICYNAME>     Scheduler policy  [default: sequential]
+  --max_jobs_allowed=<JOBS> Max jobs allowed  [default: 1]
 
 Description:
 
@@ -313,6 +318,7 @@ Description:
       run a specific job
 
     job hosts add --hostname=name --ip=ip --cpu_count=n
+                 .--max_jobs_allowed=x
       Adds a host in jobset yaml file.
 
     job list hosts
@@ -386,7 +392,7 @@ Usage examples:
       Creates the jobs b0 and b1 as templates in the jobset.
 
   cms job add --name=z[0-1] --ip=123,345 --executable='ls'
-              --input='..\data' --output='a,b'
+             .--input='..\data' --output='a,b'
       Creates entries in jobset for jobs z0 and z1 with provided
       arguments.
 
@@ -409,6 +415,7 @@ Usage examples:
       Resets the status of the job to 'ready'.
 
   cms job hosts add --hostname=name --ip=ip --cpu_count=n
+                   .--max_jobs_allowed=x
       Adds a host in jobset yaml file.
 
   cms job list hosts
@@ -434,7 +441,6 @@ Usage examples:
 <!--MANUAL-->
 
 
-
 ## Tests
 
 We provide two simple pytets that you can customize by setting the host and the
@@ -446,8 +452,11 @@ $ cms set host='juliet.futuresystems.org'
 $ cms set user=$USER
 
 $ pytest -v --capture=no tests/test_01_job_cli.py
-$  pytest -v --capture=no tests/test_02_job_api.py
+$ pytest -v --capture=no tests/test_02_job_api.py
 ```
+- Supporting links 
+  - [Pytests](https://github.com/cloudmesh/cloudmesh-job/tree/main/tests)
+  - [Pytest results](https://github.com/cloudmesh/cloudmesh-job/tree/main/tests/output)
 
 ## Alternative Installation and Additional Documentation for Cloudmesh-job
 
@@ -466,10 +475,6 @@ installation documentation.
 | Command API | <https://github.com/cloudmesh/cloudmesh-job/blob/master/README.md#api-of-the-command> |
 | Command description | <https://github.com/cloudmesh/cloudmesh-job/blob/master/README.md#command-description> |
 | Command examples | <https://github.com/cloudmesh/cloudmesh-job/blob/main/README-example.md> |
-
-
-
-
 
 
 

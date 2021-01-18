@@ -27,16 +27,16 @@ class JobCommand(PluginCommand):
             job template [--name=NAME]
             job add FILE
             job add --name=NAME
-                    --ip=IP
-                    --executable=EXECUTABLE
-                    [--directory=DIRECTORY]
-                    [--input=INPUT]
-                    [--output=OUTPUT]
-                    [--status=STATUS]
+                    [--ip=<IP>]
+                    [--executable=<EXECUTABLE>]
+                    [--directory=<DIRECTORY>]
+                    [--input=<INPUT>]
+                    [--output=<OUTPUT>]
+                    [--status=<STATUS>]
                     [--gpu=GPU]
                     [--user=USER]
-                    [--arguments=ARGUMENTS]
-                    [--shell=SHELL]
+                    [--arguments=<ARGUMENTS>]
+                    [--shell=<SHELL>]
             job status
             job list --status=STATUS
             job list --name=NAME
@@ -47,8 +47,9 @@ class JobCommand(PluginCommand):
             job help
             job run [--name=NAME]
             job info
-            job hosts add --hostname=hostname --ip=IP --cpu_count=N
+            job hosts add --hostname=hostname --ip=IP  --cpu_count=N
                          [--status=STATUS] [--job_counter=COUNTER]
+                         [--max_jobs_allowed=<JOBS>]
             job list hosts
             job scheduler --policy=POLICYNAME
             job scheduler info
@@ -62,21 +63,22 @@ class JobCommand(PluginCommand):
 
           Default value of options is indicated in square brackets.
           Options:
-              name=NAME              Job name(s)       Example: 'job[0-5]'
-              ip=IP                  Host IP           [default: '127.0.0.1']
-              executable=EXECUTABLE  Job name          [default: 'uname']
-              arguments=ARGUMENTS    Args for the job  [defaul:  '-a']
-              directory=DIRECTORY    Path to run job   [default: '.']
-              input=INPUT            Input data path   [default: './data']
-              output=OUTPUT          Output path       [default: './output']
-              status=STATUS          Job status        [default: 'ready']   
-              user=USER              Remote host user  [default: '$USER']
-              shell=SHELL            Shell to run job  [default: 'bash']
-              hostname=hostname      Host name         Example. 'juliet'
-              gpu=GPU                GPU to use        Example. 7
-              cpu_count=N            Host CPU count    Example. '12'
-              job_counter=COUNTER    Job count         Example. '2'
-              policy=POLICYNAME      Scheduler policy  [default: 'sequential'
+            --name=NAME               Job name(s)       Example: 'job[0-5]'
+            --ip=<IP>                 Host IP           [default: 127.0.0.1]
+            --executable=<EXECUTABLE> Job name          [default: uname]
+            --arguments=<ARGUMENTS>   Args for the job  [default:  -a]
+            --directory=<DIRECTORY>   Path to run job   [default: .]
+            --input=<INPUT>           Input data path   [default: ./data]
+            --output=<OUTPUT>         Output path       [default: ./output]
+            --status=<STATUS>         Job status        [default: ready]
+            --user=USER               Remote host user  Example. $USER
+            --shell=<SHELL>           Shell to run job  [default: bash]
+            --hostname=hostname       Host name         Example. 'juliet'
+            --gpu=GPU                 GPU to use        Example. 7
+            --cpu_count=N             Host CPU count    Example. '12'
+            --job_counter=COUNTER     Job count         Example. '2'
+            --policy=<POLICYNAME>     Scheduler policy  [default: sequential]
+            --max_jobs_allowed=<JOBS> Max jobs allowed  [default: 1]
 
           Description:
 
@@ -121,6 +123,7 @@ class JobCommand(PluginCommand):
                 run a specific job
 
               job hosts add --hostname=name --ip=ip --cpu_count=n
+                           .--max_jobs_allowed=x
                 Adds a host in jobset yaml file.
 
               job list hosts
@@ -194,7 +197,7 @@ class JobCommand(PluginCommand):
                 Creates the jobs b0 and b1 as templates in the jobset.
 
             cms job add --name=z[0-1] --ip=123,345 --executable='ls'
-                        --input='..\data' --output='a,b'
+                       .--input='..\data' --output='a,b'
                 Creates entries in jobset for jobs z0 and z1 with provided
                 arguments.
 
@@ -217,6 +220,7 @@ class JobCommand(PluginCommand):
                 Resets the status of the job to 'ready'.
 
             cms job hosts add --hostname=name --ip=ip --cpu_count=n
+                             .--max_jobs_allowed=x
                 Adds a host in jobset yaml file.
 
             cms job list hosts
@@ -243,21 +247,23 @@ class JobCommand(PluginCommand):
         # do the import here to avoid long loading times for other commands
         from cloudmesh.job.jobqueue import JobQueue
 
-        map_parameters(arguments,
-                       "name",
-                       "arguments",
-                       "gpu",
-                       "executable",
-                       "input",
-                       "ip",
-                       "output",
-                       "shell",
-                       "directory",
-                       "user",
-                       "hostname",
-                       "cpu_count",
-                       "policy"
-                       )
+        map_parameters(
+            arguments,
+            "name",
+            "arguments",
+            "gpu",
+            "executable",
+            "input",
+            "ip",
+            "output",
+            "shell",
+            "directory",
+            "user",
+            "hostname",
+            "cpu_count",
+            "policy",
+            "max_jobs_allowed",
+        )
         # status has to be obtained with arguments["--status"]
         # we simply set it to state so its still easy to read
         arguments["state"] = arguments["--status"]
@@ -300,8 +306,10 @@ class JobCommand(PluginCommand):
             # job set FILE
 
             if not file.endswith(".yaml"):
-                Console.error("the specification file must be a yaml file "
-                              "and end with .yaml")
+                Console.error(
+                    "the specification file must be a yaml file "
+                    "and end with .yaml"
+                )
                 return ""
 
             variables["jobset"] = file
@@ -309,11 +317,9 @@ class JobCommand(PluginCommand):
             # _function s/b renamed as it is no longer private
             name, directory, basename = JobQueue.location(file)
 
-            Console.ok(f"Jobset defined as {name} located at"
-                       f"{file}")
+            Console.ok(f"Jobset defined as {name} located at" f"{file}")
 
-        elif arguments.add and arguments.FILE is None \
-                and not arguments.hosts:
+        elif arguments.add and arguments.FILE is None and not arguments.hosts:
             """
             job add --name=NAME
                     --ip=IP
@@ -330,7 +336,8 @@ class JobCommand(PluginCommand):
 
             jobset = variables["jobset"] or default_location
             _name, _directory, _basename = JobQueue.location(
-                variables["jobset"])
+                variables["jobset"]
+            )
 
             jobqueue = JobQueue(variables["jobset"])
 
@@ -340,17 +347,17 @@ class JobCommand(PluginCommand):
             arguments.names = names
             arguments.ip = arguments.ip or "localhost"
             arguments.input = arguments.input or "./data"
-            arguments.output = arguments.output or \
-                               "./output/" + arguments.name
+            arguments.output = arguments.output or "./output/" + arguments.name
             arguments.gpu = arguments.gpu or " "
             arguments.arguments = arguments.arguments or " "
 
-            var_args = ['ip', 'input', 'output', 'gpu', 'arguments']
+            var_args = ["ip", "input", "output", "gpu", "arguments"]
 
             for arg in var_args:
-                arguments[f'{arg}_list'] = jobqueue.expand_args('names', arg,
-                                                                arguments)
-                if arguments[f'{arg}_list'] == "":
+                arguments[f"{arg}_list"] = jobqueue.expand_args(
+                    "names", arg, arguments
+                )
+                if arguments[f"{arg}_list"] == "":
                     return ""
 
             # for debugging
@@ -362,7 +369,7 @@ class JobCommand(PluginCommand):
         elif arguments.add and arguments.FILE:
             """
             job add FILE
-            
+
             FILE is supposed to contain job list only in following format
               abcd:
                 name: abcd
@@ -382,8 +389,10 @@ class JobCommand(PluginCommand):
             _name, _directory, _basename = JobQueue.location(file)
 
             if variables["jobset"] is None:
-                Console.error("Jobset not defined. Please use `cms job set "
-                              "FILE` to define the jobset.")
+                Console.error(
+                    "Jobset not defined. Please use `cms job set "
+                    "FILE` to define the jobset."
+                )
                 return ""
 
             if not file.is_file():
@@ -391,13 +400,15 @@ class JobCommand(PluginCommand):
                 return ""
 
             if not _basename.endswith(".yaml"):
-                Console.error("the specification file must be a yaml file "
-                              "and end with .yaml")
+                Console.error(
+                    "the specification file must be a yaml file "
+                    "and end with .yaml"
+                )
                 return ""
 
             jobqueue = JobQueue(variables["jobset"])
 
-            with open(file, 'r') as fi:
+            with open(file, "r") as fi:
                 spec = yaml.load(fi, Loader=yaml.FullLoader)
 
             jobqueue.add(spec)
@@ -406,26 +417,24 @@ class JobCommand(PluginCommand):
 
             # job status
             jobqueue = JobQueue(variables["jobset"])
-            jobqueue.enlist_jobs(sort_var='JobStatus')
+            jobqueue.enlist_jobs(sort_var="JobStatus")
 
-        elif arguments.list and arguments["--status"] and \
-                not arguments.hosts:
-
+        elif arguments.list and arguments["--status"] and not arguments.hosts:
             # job list --status=STATUS
             jobqueue = JobQueue(variables["jobset"])
-            jobqueue.enlist_jobs(filter_name='status',
-                                 filter_value=arguments["--status"])
+            jobqueue.enlist_jobs(
+                filter_name="status", filter_value=arguments["--status"]
+            )
 
         elif arguments.list and arguments["--name"] and not arguments.hosts:
             # job list --name=NAME
-
             jobqueue = JobQueue(variables["jobset"])
-            jobqueue.enlist_jobs(filter_name='name',
-                                 filter_value=arguments["--name"])
+            jobqueue.enlist_jobs(
+                filter_name="name", filter_value=arguments["--name"]
+            )
 
         elif arguments.list and not arguments.hosts:
             # job list
-
             jobqueue = JobQueue(variables["jobset"])
             jobqueue.enlist_jobs()
 
@@ -442,18 +451,22 @@ class JobCommand(PluginCommand):
             spec = Configuration(jobqueue.filename)
 
             if names is None:
-                names = spec['cloudmesh.jobset.jobs'].keys()
+                names = spec["cloudmesh.jobset.jobs"].keys()
 
             for name in names:
-                if not spec['cloudmesh.jobset.jobs'].get(name):
-                    Console.error(f"Job {name} not found in jobset "
-                                  f"{jobqueue.filename}.")
+                if not spec["cloudmesh.jobset.jobs"].get(name):
+                    Console.error(
+                        f"Job {name} not found in jobset "
+                        f"{jobqueue.filename}."
+                    )
                     continue
-                if spec[f'cloudmesh.jobset.jobs.{name}.status'] == 'submitted':
-                    Console.error(f"Job {name} is already submitted for "
-                                "execution. Please kill the job before reset.")
+                if spec[f"cloudmesh.jobset.jobs.{name}.status"] == "submitted":
+                    Console.error(
+                        f"Job {name} is already submitted for "
+                        "execution. Please kill the job before reset."
+                    )
                 else:
-                    spec[f'cloudmesh.jobset.jobs.{name}.status'] = 'ready'
+                    spec[f"cloudmesh.jobset.jobs.{name}.status"] = "ready"
                     Console.ok(f"Status reset for job {name}.")
 
         elif arguments.run:
@@ -481,7 +494,6 @@ class JobCommand(PluginCommand):
 
         elif arguments.hosts and arguments.list:
             # job list hosts
-
             jobqueue = JobQueue(variables["jobset"])
             jobqueue.enlist_hosts()
 

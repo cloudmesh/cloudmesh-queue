@@ -22,13 +22,14 @@ class JobQueue:
 
     def __init__(self, filename=None):
         variables = Variables()
-        self.filename = filename or \
-                        variables["jobset"] or \
-                        path_expand("~/.cloudmesh/job/spec.yaml")
-        self.name, \
-        self.directory, \
-        self.basename = \
-            JobQueue.location(self.filename)
+        self.filename = (
+            filename
+            or variables["jobset"]
+            or path_expand("~/.cloudmesh/job/spec.yaml")
+        )
+        self.name, self.directory, self.basename = JobQueue.location(
+            self.filename
+        )
         if self.directory != "":
             Shell.mkdir(self.directory)
 
@@ -54,12 +55,12 @@ class JobQueue:
         :return: User name
         """
         user = None
-        if sys.platform == 'win32':
-            user = os.environ.get('USERNAME')
-            hostname = os.environ.get('COMPUTERNAME')
+        if sys.platform == "win32":
+            user = os.environ.get("USERNAME")
+            hostname = os.environ.get("COMPUTERNAME")
         else:
-            user = os.environ.get('USER')
-            hostname = os.environ.get('HOSTNAME')
+            user = os.environ.get("USER")
+            hostname = os.environ.get("HOSTNAME")
         return user
 
     @staticmethod
@@ -71,10 +72,10 @@ class JobQueue:
         :return: hostname and max cpu_count
         """
         hostname = None
-        if sys.platform == 'win32':
-            hostname = os.environ.get('COMPUTERNAME')
+        if sys.platform == "win32":
+            hostname = os.environ.get("COMPUTERNAME")
         else:
-            hostname = os.environ.get('HOSTNAME')
+            hostname = os.environ.get("HOSTNAME")
         cpu_count = multiprocessing.cpu_count()
 
         return hostname, cpu_count
@@ -101,7 +102,8 @@ class JobQueue:
                 arguments:  -lisa
                 executable: ls
                 shell: bash
-              """).strip()
+              """
+        ).strip()
 
         specification = yaml.safe_load(specification)
 
@@ -134,19 +136,21 @@ class JobQueue:
                     cpu_count: {JobQueue._sysinfo()[1]}
                     status: free
                     job_counter: 0
+                    max_jobs_allowed: 1
                 scheduler:
                   policy: sequential
-            """).strip()
+            """
+        ).strip()
 
         template = yaml.safe_load(template)
-        template['cloudmesh']['jobset'].update({'jobs': specification})
+        template["cloudmesh"]["jobset"].update({"jobs": specification})
 
         # VERBOSE(template)
 
         # Creating the jobset yaml file. This will replace the file if it
         # already exists.
         # TODO: This should take backup of existing yaml file
-        with open(jobset, 'w') as fo:
+        with open(jobset, "w") as fo:
             yaml.safe_dump(template, fo)
 
     def add(self, specification):
@@ -163,7 +167,7 @@ class JobQueue:
 
         spec = Configuration(self.filename)
 
-        spec['cloudmesh.jobset.jobs'].update(specification)
+        spec["cloudmesh.jobset.jobs"].update(specification)
         # VERBOSE(spec['jobs'])
 
         spec.save(self.filename)
@@ -178,17 +182,17 @@ class JobQueue:
         """
         user = JobQueue._user()
         _spec = {
-            'name': arguments.get('names')[idx],
-            'directory': arguments.get('directory') or '.',
-            'ip': arguments.get('ip_list')[idx] or 'localhost',
-            'input': arguments.get('input_list')[idx] or './data',
-            'output': arguments.get('output_list')[idx] or './output',
-            'status': arguments.get('status') or 'ready',
-            'gpu': arguments.get('gpu_list')[idx] or "",
-            'user': arguments.get('user') or user,
-            'arguments': arguments.get('arguments_list')[idx] or "",
-            'executable': arguments.get('executable'),
-            'shell': arguments.get('shell') or 'bash'
+            "name": arguments.get("names")[idx],
+            "directory": arguments.get("directory") or ".",
+            "ip": arguments.get("ip_list")[idx] or "localhost",
+            "input": arguments.get("input_list")[idx] or "./data",
+            "output": arguments.get("output_list")[idx] or "./output",
+            "status": arguments.get("status") or "ready",
+            "gpu": arguments.get("gpu_list")[idx] or "",
+            "user": arguments.get("user") or user,
+            "arguments": arguments.get("arguments_list")[idx] or "",
+            "executable": arguments.get("executable"),
+            "shell": arguments.get("shell") or "bash",
         }
         return _spec
 
@@ -205,9 +209,10 @@ class JobQueue:
         jobset = path_expand(jobset)
 
         dict_out = dict()
-        for idx in range(len(specification['names'])):
-            dict_out[specification['names'][idx]] = JobQueue.define(
-                specification, idx)
+        for idx in range(len(specification["names"])):
+            dict_out[specification["names"][idx]] = JobQueue.define(
+                specification, idx
+            )
         # VERBOSE(dict_out)
 
         self.add(dict_out)
@@ -222,18 +227,19 @@ class JobQueue:
         :return: array of expanded arg2
         """
 
-        arguments['arg2_expanded'] = Parameter.expand(arguments[arg2])
+        arguments["arg2_expanded"] = Parameter.expand(arguments[arg2])
 
-        if len(arguments[arg1]) == 1 and len(arguments['arg2_expanded']) == 1:
+        if len(arguments[arg1]) == 1 and len(arguments["arg2_expanded"]) == 1:
             pass
-        elif len(arguments[arg1]) > 1 and len(arguments['arg2_expanded']) == 1:
-            arguments['arg2_expanded'] = [arguments[arg2]] * len(arguments[
-                                                                     arg1])
-        elif len(arguments[arg1]) != len(arguments['arg2_expanded']):
+        elif len(arguments[arg1]) > 1 and len(arguments["arg2_expanded"]) == 1:
+            arguments["arg2_expanded"] = [arguments[arg2]] * len(
+                arguments[arg1]
+            )
+        elif len(arguments[arg1]) != len(arguments["arg2_expanded"]):
             Console.error(f"Number of {arg2} must match number of {arg1}")
             return ""
 
-        return arguments['arg2_expanded']
+        return arguments["arg2_expanded"]
 
     def addhost(self, arguments):
         """
@@ -244,15 +250,22 @@ class JobQueue:
         config = Configuration(self.filename)
 
         tag = arguments.hostname
-        config[f'cloudmesh.jobset.hosts.{tag}.name'] = arguments.hostname or \
-            'localhost'
-        config[f'cloudmesh.jobset.hosts.{tag}.ip'] = arguments.ip or 'localhost'
-        config[f'cloudmesh.jobset.hosts.{tag}.cpu_count'] = \
-            arguments.cpu_count or '0'
-        config[f'cloudmesh.jobset.hosts.{tag}.status'] = arguments.status or \
-            'free'
-        config[f'cloudmesh.jobset.hosts.{tag}.job_counter'] = \
-            arguments.job_counter or '0'
+        config[f"cloudmesh.jobset.hosts.{tag}.name"] = (
+            arguments.hostname or "localhost"
+        )
+        config[f"cloudmesh.jobset.hosts.{tag}.ip"] = arguments.ip or "localhost"
+        config[f"cloudmesh.jobset.hosts.{tag}.cpu_count"] = (
+            arguments.cpu_count or "0"
+        )
+        config[f"cloudmesh.jobset.hosts.{tag}.status"] = (
+            arguments.status or "free"
+        )
+        config[f"cloudmesh.jobset.hosts.{tag}.job_counter"] = (
+            arguments.job_counter or "0"
+        )
+        config[f"cloudmesh.jobset.hosts.{tag}.max_jobs_allowed"] = (
+            arguments.max_jobs_allowed or "1"
+        )
 
         Console.ok(f"Host {arguments.hostname } added to jobset.")
 
@@ -262,8 +275,15 @@ class JobQueue:
         :return: list of hosts
         """
         config = Configuration(self.filename)
-        order = ['name', 'ip', 'cpu_count', 'status', 'job_counter']
-        print(Printer.write(config['cloudmesh.jobset.hosts'], order=order))
+        order = [
+            "name",
+            "ip",
+            "cpu_count",
+            "status",
+            "job_counter",
+            "max_jobs_allowed",
+        ]
+        print(Printer.write(config["cloudmesh.jobset.hosts"], order=order))
 
     @staticmethod
     def _get_hostname(ip, spec):
@@ -273,8 +293,8 @@ class JobQueue:
         :param spec: jobset dictionary
         :return: hostname
         """
-        for k, v in spec['cloudmesh.jobset.hosts'].items():
-            if v['ip'] == ip:
+        for k, v in spec["cloudmesh.jobset.hosts"].items():
+            if v["ip"] == ip:
                 return k
 
     @staticmethod
@@ -292,8 +312,10 @@ class JobQueue:
         available_ip = p.get_ip()
 
         if ip != available_ip:
-            Console.info(f"Host {ip} is unavailable, hence submitted the job "
-                         f"on available host {available_ip}")
+            Console.info(
+                f"Host {ip} is unavailable, hence submitted the job "
+                f"on available host {available_ip}"
+            )
         return available_ip
 
     def run_job(self, names=None):
@@ -305,35 +327,41 @@ class JobQueue:
         spec = Configuration(self.filename)
 
         if names is None:
-            names = spec['cloudmesh.jobset.jobs'].keys()
+            names = spec["cloudmesh.jobset.jobs"].keys()
 
-        for k, v in spec['cloudmesh.jobset.jobs'].items():
+        for k, v in spec["cloudmesh.jobset.jobs"].items():
 
             if k in names:
 
-                ip = JobQueue.get_available_ip(v['ip'], spec)
+                ip = JobQueue.get_available_ip(v["ip"], spec)
 
                 if ip is not None:
 
-                    command = f"ssh {v['user']}@{ip} "       \
-                              f"\"cd {v['directory']};"      \
-                              f"sh -c 'echo \$\$ > {v['output']}/{k}_pid.log;" \
-                              f"exec {v['executable']} {v['arguments']}'\""
+                    command = (
+                        f"ssh {v['user']}@{ip} "
+                        f"\"cd {v['directory']};"
+                        f"sh -c 'echo \$\$ > {v['output']}/{k}_pid.log;"
+                        f"exec {v['executable']} {v['arguments']}'\""
+                    )
                     # VERBOSE(command)
 
                     Shell.terminal(command, title=f"Running {k}")
                     time.sleep(5)
 
-                    spec[f'cloudmesh.jobset.jobs.{k}.status'] = 'submitted'
-                    spec[f'cloudmesh.jobset.jobs.{k}.submitted_to_ip'] = ip
+                    spec[f"cloudmesh.jobset.jobs.{k}.status"] = "submitted"
+                    spec[f"cloudmesh.jobset.jobs.{k}.submitted_to_ip"] = ip
                     hname = JobQueue._get_hostname(ip, spec)
-                    ctr = int(spec[f'cloudmesh.jobset.hosts.{hname}.job_counter'
-                                   ])
-                    spec[f'cloudmesh.jobset.hosts.{hname}.job_counter'] = \
-                        str(ctr + 1)
+                    ctr = int(
+                        spec[f"cloudmesh.jobset.hosts.{hname}.job_counter"]
+                    )
+                    spec[f"cloudmesh.jobset.hosts.{hname}.job_counter"] = str(
+                        ctr + 1
+                    )
                 else:
-                    Console.error(f"Job {k} could not be submitted due to "
-                                  f"missing host with ip {ip}")
+                    Console.error(
+                        f"Job {k} could not be submitted due to "
+                        f"missing host with ip {ip}"
+                    )
                     return ""
 
     def kill_job(self, names=None):
@@ -345,35 +373,41 @@ class JobQueue:
         spec = Configuration(self.filename)
 
         if names is None:
-            names = spec['cloudmesh.jobset.jobs'].keys()
+            names = spec["cloudmesh.jobset.jobs"].keys()
 
-        for k, v in spec['cloudmesh.jobset.jobs'].items():
+        for k, v in spec["cloudmesh.jobset.jobs"].items():
 
             if k in names:
 
-                ip = v.get('submitted_to_ip')
+                ip = v.get("submitted_to_ip")
 
                 if ip is not None:
 
-                    command = f"ssh {v['user']}@{ip} " \
-                              f"\"cd {v['output']};" \
-                              f"kill -9 \$(cat {k}_pid.log)\""
+                    command = (
+                        f"ssh {v['user']}@{ip} "
+                        f"\"cd {v['output']};"
+                        f'kill -9 \$(cat {k}_pid.log)"'
+                    )
 
                     # VERBOSE(command)
 
                     Shell.terminal(command, title=f"Running {k}")
                     # time.sleep(5)
 
-                    spec[f'cloudmesh.jobset.jobs.{k}.status'] = 'killed'
+                    spec[f"cloudmesh.jobset.jobs.{k}.status"] = "killed"
                     hname = JobQueue._get_hostname(ip, spec)
-                    ctr = int(spec[f'cloudmesh.jobset.hosts.{hname}.job_counter'
-                                   ])
-                    spec[f'cloudmesh.jobset.hosts.{hname}.job_counter'] = \
-                        str(ctr - 1)
+                    ctr = int(
+                        spec[f"cloudmesh.jobset.hosts.{hname}.job_counter"]
+                    )
+                    spec[f"cloudmesh.jobset.hosts.{hname}.job_counter"] = str(
+                        ctr - 1
+                    )
 
                 else:
-                    Console.error(f"Job {k} could not be killed due to "
-                                  f"missing host with ip {ip}")
+                    Console.error(
+                        f"Job {k} could not be killed due to "
+                        f"missing host with ip {ip}"
+                    )
                     return ""
 
     def delete_job(self, names=None):
@@ -386,22 +420,24 @@ class JobQueue:
         spec = Configuration(self.filename)
 
         if names is None:
-            names = spec['cloudmesh.jobset.jobs'].keys()
+            names = spec["cloudmesh.jobset.jobs"].keys()
 
         for name in names:
 
             try:
-                if spec[f'cloudmesh.jobset.jobs.{name}.status'] == 'submitted':
+                if spec[f"cloudmesh.jobset.jobs.{name}.status"] == "submitted":
                     self.kill_job([name])
 
-                del spec['cloudmesh.jobset.jobs'][name]
+                del spec["cloudmesh.jobset.jobs"][name]
 
                 spec.save(self.filename)
 
             except KeyError:
                 Console.error(f"Job '{name}' not found in jobset. ")
             except Exception as e:
-                Console.error(f"Job {name} could not be deleted. Please check.")
+                Console.error(
+                    f"Job {name} could not be deleted. Please check. Error-", e
+                )
 
     def get_policy(self):
         """
@@ -409,25 +445,28 @@ class JobQueue:
         :return: policy name
         """
         config = Configuration(self.filename)
-        return config['cloudmesh.jobset.scheduler.policy']
+        return config["cloudmesh.jobset.scheduler.policy"]
 
     def update_policy(self, policy):
         """
         Updates the scheduler policy name
         :return: None
         """
-        valid_policies = ['sequential', 'smart', 'frugal', 'random']
+        valid_policies = ["sequential", "smart", "frugal", "random"]
 
         if policy in valid_policies:
             config = Configuration(self.filename)
-            old_policy = config['cloudmesh.jobset.scheduler.policy']
-            config['cloudmesh.jobset.scheduler.policy'] = policy
+            old_policy = config["cloudmesh.jobset.scheduler.policy"]
+            config["cloudmesh.jobset.scheduler.policy"] = policy
 
-            Console.info(f"Scheduler policy changed from {old_policy} to "
-                         f"{policy}")
+            Console.info(
+                f"Scheduler policy changed from {old_policy} to " f"{policy}"
+            )
         else:
-            Console.error(f"Scheduler policy {policy} is not configured."
-                          f"Available options are {','.join(valid_policies)}.")
+            Console.error(
+                f"Scheduler policy {policy} is not configured."
+                f"Available options are {','.join(valid_policies)}."
+            )
             return ""
 
     def enlist_jobs(self, filter_name=None, filter_value=None, sort_var=None):
@@ -447,54 +486,61 @@ class JobQueue:
             sort_var = True
 
         i = 0
-        for k, v in spec['cloudmesh.jobset.jobs'].items():
+        for k, v in spec["cloudmesh.jobset.jobs"].items():
             if filter_name is None:
                 i += 1
                 if v.get("status") is None:
-                    v["status"] = 'Unavailable'
+                    v["status"] = "Unavailable"
                 op_dict[k] = {
-                    'Number': i,
-                    'JobName': v.get("name"),
-                    'JobStatus': v.get("status"),
-                    'RemoteIp': v.get("ip"),
-                    'Command': v.get("executable"),
-                    'Arguments': v.get("arguments"),
-                    'User': v.get('user')
+                    "Number": i,
+                    "JobName": v.get("name"),
+                    "JobStatus": v.get("status"),
+                    "RemoteIp": v.get("ip"),
+                    "Command": v.get("executable"),
+                    "Arguments": v.get("arguments"),
+                    "User": v.get("user"),
                 }
             else:
-                if filter_name == 'name':
+                if filter_name == "name":
                     # job name can have partial match. Hence separate logic:
                     if filter_value in v[filter_name]:
                         i += 1
                         if v.get("status") is None:
-                            v["status"] = 'Unavailable'
+                            v["status"] = "Unavailable"
                         op_dict[k] = {
-                            'Number': i,
-                            'JobName': v.get("name"),
-                            'JobStatus': v.get("status"),
-                            'RemoteIp': v.get("ip"),
-                            'Command': v.get("executable"),
-                            'Arguments': v.get("arguments"),
-                            'User': v.get('user')
+                            "Number": i,
+                            "JobName": v.get("name"),
+                            "JobStatus": v.get("status"),
+                            "RemoteIp": v.get("ip"),
+                            "Command": v.get("executable"),
+                            "Arguments": v.get("arguments"),
+                            "User": v.get("user"),
                         }
                 else:
                     # Exact match on filter_name with filter_value
                     if v[filter_name] == filter_value:
                         i += 1
                         if v.get("status") is None:
-                            v["status"] = 'Unavailable'
+                            v["status"] = "Unavailable"
                         op_dict[k] = {
-                            'Number': i,
-                            'JobName': v.get("name"),
-                            'JobStatus': v.get("status"),
-                            'RemoteIp': v.get("ip"),
-                            'Command': v.get("executable"),
-                            'Arguments': v.get("arguments"),
-                            'User': v.get('user')
+                            "Number": i,
+                            "JobName": v.get("name"),
+                            "JobStatus": v.get("status"),
+                            "RemoteIp": v.get("ip"),
+                            "Command": v.get("executable"),
+                            "Arguments": v.get("arguments"),
+                            "User": v.get("user"),
                         }
 
-        order = ['Number', 'JobName', 'JobStatus', 'RemoteIp', 'Command',
-                 'Arguments', 'User']
+        order = [
+            "Number",
+            "JobName",
+            "JobStatus",
+            "RemoteIp",
+            "Command",
+            "Arguments",
+            "User",
+        ]
 
         out = Printer.write(op_dict, order=order, sort_keys=sort_var)
         print(out)
@@ -505,6 +551,7 @@ class Policy:
     """
     Class returns available host IP based on the scheduler policy
     """
+
     def __init__(self, ip, spec):
         """
         Instantiate the class and fetch scheduler.policy, available IPs
@@ -514,14 +561,15 @@ class Policy:
         self.ip = ip
         self.spec = spec
 
-        self.host_data = self.spec['cloudmesh.jobset.hosts']
-        self.policy = self.spec['cloudmesh.jobset.scheduler.policy']
+        self.host_data = self.spec["cloudmesh.jobset.hosts"]
+        self.policy = self.spec["cloudmesh.jobset.scheduler.policy"]
         self.availability = dict()
 
         for k, v in self.host_data.items():
-            available = int(v['cpu_count']) - int(v['job_counter'])
+            # available = int(v["cpu_count"]) - int(v["job_counter"])
+            available = int(v["max_jobs_allowed"]) - int(v["job_counter"])
             if available > 0:
-                self.availability[v['ip']] = available
+                self.availability[v["ip"]] = available
 
         # VERBOSE(self.availability)
 
@@ -541,20 +589,28 @@ class Policy:
         if self.availability.get(self.ip):
             return self.ip
         else:
-            if self.policy == 'sequential':
+            if self.policy == "sequential":
                 return list(self.availability.keys())[0]
-            elif self.policy == 'random':
+            elif self.policy == "random":
                 return random.choice(list(self.availability))
-            elif self.policy == 'smart':
-                d = sorted(self.availability, key=lambda x:self.availability[x],
-                           reverse=True)
+            elif self.policy == "smart":
+                d = sorted(
+                    self.availability,
+                    key=lambda x: self.availability[x],
+                    reverse=True,
+                )
                 return d[0]
-            elif self.policy == 'frugal':
-                d = sorted(self.availability, key=lambda x:self.availability[x],
-                           reverse=False)
+            elif self.policy == "frugal":
+                d = sorted(
+                    self.availability,
+                    key=lambda x: self.availability[x],
+                    reverse=False,
+                )
                 return d[0]
             else:
-                Console.error(f"Scheduler policy {self.policy} is not "
-                              f"configured. Available options are sequential, "
-                              f"random, smart, frugal.")
+                Console.error(
+                    f"Scheduler policy {self.policy} is not "
+                    f"configured. Available options are sequential, "
+                    f"random, smart, frugal."
+                )
                 return None
