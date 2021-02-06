@@ -4,10 +4,10 @@ import os
 from submitqueue import SubmitQueue
 
 field_tests = [
-        #    ["CHD", "CSMOKING", "CANCER", "svi_minority", "Estbeds"],
-        #    [],
-        #    ['Population'],
-        #    ['Insurance'],
+            #    ["CHD", "CSMOKING", "CANCER", "svi_minority", "Estbeds"],
+            #    [],
+            #    ['Population'],
+            #    ['Insurance'],
             ['Nbeds'],
             # ['Nbeds_per1000'],
             # ['Nhosp'],

@@ -1,18 +1,19 @@
+import multiprocessing
+import os
+import random
+import sys
+import time
 from pathlib import Path
-import os, time, sys, multiprocessing, random
+from textwrap import dedent
+
 import oyaml as yaml
+from cloudmesh.common.Printer import Printer
 from cloudmesh.common.Shell import Shell
-from cloudmesh.configuration.Config import Config
-from cloudmesh.configuration.Configuration import Configuration
 from cloudmesh.common.console import Console
-import subprocess
+from cloudmesh.common.parameter import Parameter
 from cloudmesh.common.util import path_expand
 from cloudmesh.common.variables import Variables
-from cloudmesh.common.Shell import Shell
-from textwrap import dedent
-from cloudmesh.common.parameter import Parameter
-from cloudmesh.common.debug import VERBOSE
-from cloudmesh.common.Printer import Printer
+from cloudmesh.configuration.Configuration import Configuration
 
 
 class JobQueue:
