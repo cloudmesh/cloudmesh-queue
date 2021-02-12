@@ -16,7 +16,7 @@ install:
 
 readme:
 	cms man readme -p --toc
-	cms man readme -p --tag="MANUAL" job
+	cms man readme -p --tag="MANUAL" --command=job
 
 source:
 	cd ../cloudmesh.cmd5; make source
