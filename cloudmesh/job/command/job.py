@@ -12,6 +12,7 @@ from cloudmesh.common.Printer import Printer
 from cloudmesh.configuration.Config import Config
 from cloudmesh.configuration.Configuration import Configuration
 import oyaml as yaml
+from cloudmesh.common.util import yn_choice
 
 
 class JobCommand(PluginCommand):
@@ -53,6 +54,13 @@ class JobCommand(PluginCommand):
             job list hosts
             job scheduler --policy=POLICYNAME
             job scheduler info
+            job --service start
+            job --service info
+            job --service ps
+            job --service list
+            job --service run
+            job --service view
+
 
           This command is a job queuing and scheduling framework. It allows
           users to leverage all the available compute resources to perform
@@ -242,6 +250,30 @@ class JobCommand(PluginCommand):
                 Deletes a job from the jobset. If job is in 'submitted'
                 status then it is killed first and then deleted from jobset.
 
+          SERVICE INTERFACE
+
+            cms job --service start [--port=port]
+                starts the rest service
+
+            cms job --service info
+                provides the API interface in a browser
+
+            cms job --service ps
+                lists the running services
+
+            cms job --service list
+                lists the queued jobs
+
+            cms job --service queue start
+                starts the queue.
+
+            cms job --service queue stop
+                starts the queue.
+
+            cms job --service view
+
+
+
         """
 
         # do the import here to avoid long loading times for other commands
@@ -263,6 +295,7 @@ class JobCommand(PluginCommand):
             "cpu_count",
             "policy",
             "max_jobs_allowed",
+            "service"
         )
         # status has to be obtained with arguments["--status"]
         # we simply set it to state so its still easy to read
@@ -280,7 +313,58 @@ class JobCommand(PluginCommand):
         jobqueue = JobQueue()
         default_location = jobqueue.filename
 
-        if arguments.info and not arguments.scheduler:
+        #
+        # --service
+        #
+        if arguments.service:
+
+            if arguments.start and arguments.queue:
+
+                raise NotImplementedError
+                # the service must be started first
+                if yn_choice("start the job queue"):
+                    pass
+
+            if arguments.stop and arguments.queue:
+
+                raise NotImplementedError
+                if yn_choice("stop the job queue"):
+                    pass
+
+            elif arguments.start:
+
+                from cloudmesh.job.service.Manager import Manager
+
+                service = Manager.start()
+
+            elif arguments.info:
+
+                from cloudmesh.job.service.Manager import Manager
+
+                port = arguments.port or "8080"
+                service = Manager.docs(port=port)
+
+            elif arguments.ps:
+
+                raise NotImplementedError
+
+            elif arguments.list:
+
+                raise  NotImplementedError
+
+            elif arguments.run:
+
+                raise  NotImplementedError
+
+            elif arguments.view:
+
+                raise NotImplementedError
+
+        #
+        # NON SERVICE COMMANDS
+        #
+
+        elif arguments.info and not arguments.scheduler:
             # cms job info
 
             jobset = variables["jobset"] or default_location
@@ -511,5 +595,6 @@ class JobCommand(PluginCommand):
             jobqueue = JobQueue(variables["jobset"])
             print()
             jobqueue.update_policy(arguments.policy)
+
 
         return ""
