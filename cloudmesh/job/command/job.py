@@ -1,5 +1,6 @@
 import os
 from pathlib import Path
+from pprint import pprint
 
 from cloudmesh.common.console import Console
 from cloudmesh.common.debug import VERBOSE
@@ -70,7 +71,7 @@ class JobCommand(PluginCommand):
             --directory=<DIRECTORY>   Path to run job   [default: .]
             --input=<INPUT>           Input data path   [default: ./data]
             --output=<OUTPUT>         Output path       [default: ./output]
-            --status=<STATUS>         Job status        [default: ready]
+            --status=<STATUS>         Job status        [default: ]
             --user=USER               Remote host user  Example. $USER
             --shell=<SHELL>           Shell to run job  [default: bash]
             --hostname=hostname       Host name         Example. 'juliet'

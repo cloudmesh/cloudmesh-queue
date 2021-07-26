@@ -14,7 +14,7 @@ from cloudmesh.common.parameter import Parameter
 from cloudmesh.common.util import path_expand
 from cloudmesh.common.variables import Variables
 from cloudmesh.configuration.Configuration import Configuration
-
+from cloudmesh.common.debug import VERBOSE
 
 class JobQueue:
     """
@@ -344,7 +344,7 @@ class JobQueue:
                         f"sh -c 'echo \$\$ > {v['output']}/{k}_pid.log;"
                         f"exec {v['executable']} {v['arguments']}'\""
                     )
-                    # VERBOSE(command)
+                    VERBOSE(command)
 
                     Shell.terminal(command, title=f"Running {k}")
                     time.sleep(5)
@@ -542,7 +542,6 @@ class JobQueue:
             "Arguments",
             "User",
         ]
-
         out = Printer.write(op_dict, order=order, sort_keys=sort_var)
         print(out)
         return out
