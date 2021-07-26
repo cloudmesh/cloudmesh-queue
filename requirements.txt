@@ -1,1 +1,3 @@
-# not yet
+cloudmesh-cmd5
+fastapi[all]
+uvicorn[standard]
