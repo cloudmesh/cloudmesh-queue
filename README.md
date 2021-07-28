@@ -29,6 +29,7 @@ on the scheduler policy, user can schedule these jobs on configured hosts.
     - [Jobs](#jobs)
   - [Manual Page](#manual-page)
   - [Tests](#tests)
+  - [API of `cms job` command](#api-of-cms-job-command)
   - [Alternative Installation and Additional Documentation for Cloudmesh-job](#alternative-installation-and-additional-documentation-for-cloudmesh-job)
 
 <!--TOC-->
@@ -458,6 +459,21 @@ $ pytest -v --capture=no tests/test_02_job_api.py
   - [Pytests](https://github.com/cloudmesh/cloudmesh-job/tree/main/tests)
   - [Pytest results](https://github.com/cloudmesh/cloudmesh-job/tree/main/tests/output)
 
+## API of `cms job` command
+An API is created using FastAPI. This API allows users to interact with the 
+cloudmesh-job module via a user-friendly interface. 
+To launch the API from command line, use following command:
+```bash
+(ENV3) $ cms job --service info
+```
+This launches the cloudmesh-job API in a browser. The UI is based on OpenAPI:
+[cloudmesh-job API](https://github.com/cloudmesh/cloudmesh-job/blob/main/tests/sample_scripts/sample_outputs/API_doc.png)
+
+Documentation of the API is available as below:
+[cloudmesh-job API documentation](https://github.com/cloudmesh/cloudmesh-job/blob/main/tests/sample_scripts/sample_outputs/API_redoc.png)
+
+
+
 ## Alternative Installation and Additional Documentation for Cloudmesh-job
 
 You can safely ignore this section if you installed cloudmehs-job with the previous method.
@@ -465,16 +481,16 @@ You can safely ignore this section if you installed cloudmehs-job with the previ
 Please note that several other methods are available which are pointed to in the
 installation documentation.
 
-|  | Links |
-|---------------|-------|
-| Documentation | <https://github.com/cloudmesh/cloudmesh-job/blob/master/README.md> |
-| Code | <https://github.com/cloudmesh/cloudmesh-job/tree/master/cloudmesh> |
-| Installation Instructions | <https://github.com/cloudmesh/cloudmesh-job/blob/master/README.md#installation> |
-| Configuration | <https://github.com/cloudmesh/cloudmesh-job/blob/master/README.md#configuration> |
-| Available methods | <https://github.com/cloudmesh/cloudmesh-job/blob/master/README.md#available-methods> |
-| Command API | <https://github.com/cloudmesh/cloudmesh-job/blob/master/README.md#api-of-the-command> |
-| Command description | <https://github.com/cloudmesh/cloudmesh-job/blob/master/README.md#command-description> |
-| Command examples | <https://github.com/cloudmesh/cloudmesh-job/blob/main/README-example.md> |
+|                           | Links                                                                                  |
+| ------------------------- | -------------------------------------------------------------------------------------- |
+| Documentation             | <https://github.com/cloudmesh/cloudmesh-job/blob/master/README.md>                     |
+| Code                      | <https://github.com/cloudmesh/cloudmesh-job/tree/master/cloudmesh>                     |
+| Installation Instructions | <https://github.com/cloudmesh/cloudmesh-job/blob/master/README.md#installation>        |
+| Configuration             | <https://github.com/cloudmesh/cloudmesh-job/blob/master/README.md#configuration>       |
+| Available methods         | <https://github.com/cloudmesh/cloudmesh-job/blob/master/README.md#available-methods>   |
+| Command API               | <https://github.com/cloudmesh/cloudmesh-job/blob/master/README.md#api-of-the-command>  |
+| Command description       | <https://github.com/cloudmesh/cloudmesh-job/blob/master/README.md#command-description> |
+| Command examples          | <https://github.com/cloudmesh/cloudmesh-job/blob/main/README-example.md>               |
 
 
 
