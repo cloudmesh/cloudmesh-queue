@@ -43,3 +43,11 @@ class Manager():
 
         Shell.browser(url)
 
+    @staticmethod
+    def kill(port=8000, job_name=None):
+        if job_name is not None:
+            url = f"http://127.0.0.1:{port}/run/?job_name={job_name}"
+        else:
+            url = f"http://127.0.0.1:{port}/run"
+
+        Shell.browser(url)

@@ -54,3 +54,13 @@ async def run(job_name=None):
     out = jobqueue.run_job(job_name)
 
     return out 
+
+
+@app.get("/kill")
+async def kill(job_name=None):
+    variables = Variables()
+    jobqueue = JobQueue(variables["jobset"])
+
+    out = jobqueue.kill_job(job_name)
+
+    return out 

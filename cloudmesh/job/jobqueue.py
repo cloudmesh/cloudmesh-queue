@@ -410,6 +410,7 @@ class JobQueue:
         :return: job is killed on the host
         """
         spec = Configuration(self.filename)
+        killed = {}
 
         if names is None:
             names = spec["cloudmesh.jobset.jobs"].keys()
@@ -417,37 +418,49 @@ class JobQueue:
         for k, v in spec["cloudmesh.jobset.jobs"].items():
 
             if k in names:
+                
+                if v["status"] == "submitted":
+                
+                    ip = v.get("submitted_to_ip")
 
-                ip = v.get("submitted_to_ip")
+                    if ip is not None:
 
-                if ip is not None:
+                        command = (
+                            f"ssh {v['user']}@{ip} "
+                            f"\"cd {v['output']};"
+                            f'kill -9 \$(cat {k}_pid.log)"'
+                        )
 
-                    command = (
-                        f"ssh {v['user']}@{ip} "
-                        f"\"cd {v['output']};"
-                        f'kill -9 \$(cat {k}_pid.log)"'
-                    )
+                        # VERBOSE(command)
 
-                    # VERBOSE(command)
+                        Shell.terminal(command, title=f"Running {k}")
+                        # time.sleep(5)
 
-                    Shell.terminal(command, title=f"Running {k}")
-                    # time.sleep(5)
+                        spec[f"cloudmesh.jobset.jobs.{k}.status"] = "killed"
+                        hname = JobQueue._get_hostname(ip, spec)
+                        ctr = int(
+                            spec[f"cloudmesh.jobset.hosts.{hname}.job_counter"]
+                        )
+                        spec[f"cloudmesh.jobset.hosts.{hname}.job_counter"] = str(
+                            ctr - 1
+                        )
 
-                    spec[f"cloudmesh.jobset.jobs.{k}.status"] = "killed"
-                    hname = JobQueue._get_hostname(ip, spec)
-                    ctr = int(
-                        spec[f"cloudmesh.jobset.hosts.{hname}.job_counter"]
-                    )
-                    spec[f"cloudmesh.jobset.hosts.{hname}.job_counter"] = str(
-                        ctr - 1
-                    )
-
-                else:
-                    Console.error(
-                        f"Job {k} could not be killed due to "
-                        f"missing host with ip {ip}"
-                    )
-                    return ""
+                        killed[k] = {
+                            "name": v['name'],
+                            "user": v['user'],
+                            "ip": v['ip'],
+                            "status": 'killed',
+                            "executable": v['executable'],
+                            "arguments": v['arguments'],
+                        }
+                    else:
+                        Console.error(
+                            f"Job {k} could not be killed due to "
+                            f"missing host with ip {ip}"
+                        )
+                        return ""
+        
+        return killed
 
     def delete_job(self, names=None):
         """

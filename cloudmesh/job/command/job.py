@@ -278,6 +278,8 @@ class JobCommand(PluginCommand):
             cms job --service run [--name=NAME]
                 Submits single or all configured jobs for execution
 
+            cms job --service kill [--name=NAME]
+                Submits single or all configured jobs for execution
 
         """
 
@@ -376,6 +378,13 @@ class JobCommand(PluginCommand):
                 service = Manager.enlist(port=port,  
                                          job_name=arguments["--name"])
 
+            elif arguments.kill:
+
+                from cloudmesh.job.service.Manager import Manager
+
+                port = arguments.port or "8000"
+                service = Manager.enlist(port=port,  
+                                         job_name=arguments["--name"])
 
             elif arguments.view:
 
