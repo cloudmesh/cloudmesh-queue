@@ -24,6 +24,7 @@
     - [Execution of `job run` on the local machine](#execution-of-job-run-on-the-local-machine)
     - [Outputs on remote host](#outputs-on-remote-host)
     - [Python script used for testing](#python-script-used-for-testing)
+    - [Configuration for various job types](#configuration-for-various-job-types)
   - [Kill a job on remote host](#kill-a-job-on-remote-host)
     - [Execution on local machine](#execution-on-local-machine)
     - [Remote machine](#remote-machine)
@@ -431,6 +432,20 @@ logging.debug("complete")
 
 logging.debug("End of the script")
 ```
+
+### Configuration for various job types
+
+This section demonstrates sample configurations for execution of a shell script,
+a python script and a jupyter notebook. 
+The .yaml file containing detailed configuration:   
+[sepc_new.yaml](https://github.com/cloudmesh/cloudmesh-job/blob/main/tests/sample_scripts/spec_new.yaml)
+
+| Type     | Sample script                                                                                      | Config                                                                                                            | Sample output                                                                                                                                                             |
+| -------- | -------------------------------------------------------------------------------------------------- | ----------------------------------------------------------------------------------------------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| Shell    | [test.sh](https://github.com/cloudmesh/cloudmesh-job/blob/main/tests/sample_scripts/test.sh)       | ``` arguments: -o ~/ENV4/output -i ~/ENV4 -g 4 ;executable: ./test.sh```                                          | [test_shell_output_07282021_013917.txt](https://github.com/cloudmesh/cloudmesh-job/blob/main/tests/sample_scripts/sample_outputs/test_shell_output_07282021_013917.txt)   |
+| Python   | [test.py](https://github.com/cloudmesh/cloudmesh-job/blob/main/tests/sample_scripts/test.py)       | ```arguments: --output=./output --input=~/ENV4 --gpu=5 ; executable: "python3 test.py"```                         | [test_python_script_07282021_013923.txt](https://github.com/cloudmesh/cloudmesh-job/blob/main/tests/sample_scripts/sample_outputs/test_python_script_07282021_013923.txt) |
+| Notebook | [test.ipynb](https://github.com/cloudmesh/cloudmesh-job/blob/main/tests/sample_scripts/test.ipynb) | ```arguments: --log-output -p gpu 10 -p out_dir ~/ENV4/output test.ipynb test_out.ipynb; executable: papermill``` | [test_notebook.txt](https://github.com/cloudmesh/cloudmesh-job/blob/main/tests/sample_scripts/sample_outputs/test_notebook.txt)                                           |
+
 
 ## Kill a job on remote host
 

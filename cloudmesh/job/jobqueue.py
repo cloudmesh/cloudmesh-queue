@@ -150,7 +150,6 @@ class JobQueue:
 
         # Creating the jobset yaml file. This will replace the file if it
         # already exists.
-        # TODO: This should take backup of existing yaml file
         with open(jobset, "w") as fo:
             yaml.safe_dump(template, fo)
 
@@ -338,26 +337,33 @@ class JobQueue:
 
                 if ip is not None:
 
-                    command = (
-                        f"ssh {v['user']}@{ip} "
-                        f"\"cd {v['directory']};"
-                        f"sh -c 'echo \$\$ > {v['output']}/{k}_pid.log;"
-                        f"exec {v['executable']} {v['arguments']}'\""
-                    )
-                    VERBOSE(command)
+                    if v["status"] == "ready":
+                        command = (
+                            f"ssh {v['user']}@{ip} "
+                            f"\"cd {v['directory']};"
+                            f"sh -c 'echo \$\$ > {v['output']}/{k}_pid.log;"
+                            f"exec {v['executable']} {v['arguments']}'\""
+                        )
+                        # VERBOSE(command)
 
-                    Shell.terminal(command, title=f"Running {k}")
-                    time.sleep(5)
+                        Console.info(f"INFO: Submitting {k} to {v['ip']}:")
+                        Shell.terminal(command, title=f"Running {k}")
+                        time.sleep(5)
 
-                    spec[f"cloudmesh.jobset.jobs.{k}.status"] = "submitted"
-                    spec[f"cloudmesh.jobset.jobs.{k}.submitted_to_ip"] = ip
-                    hname = JobQueue._get_hostname(ip, spec)
-                    ctr = int(
-                        spec[f"cloudmesh.jobset.hosts.{hname}.job_counter"]
-                    )
-                    spec[f"cloudmesh.jobset.hosts.{hname}.job_counter"] = str(
-                        ctr + 1
-                    )
+                        spec[f"cloudmesh.jobset.jobs.{k}.status"] = "submitted"
+                        spec[f"cloudmesh.jobset.jobs.{k}.submitted_to_ip"] = ip
+                        hname = JobQueue._get_hostname(ip, spec)
+                        ctr = int(
+                            spec[f"cloudmesh.jobset.hosts.{hname}.job_counter"]
+                        )
+                        spec[f"cloudmesh.jobset.hosts.{hname}.job_counter"] = str(
+                            ctr + 1
+                        )
+                    else:
+                        Console.info(
+                            f"Job skipped: The job {k} is not ready." 
+                            f"Current status is {v['status']}."
+                            )
                 else:
                     Console.error(
                         f"Job {k} could not be submitted due to "

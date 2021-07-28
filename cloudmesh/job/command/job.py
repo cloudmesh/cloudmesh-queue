@@ -298,6 +298,7 @@ class JobCommand(PluginCommand):
             "max_jobs_allowed",
             "service"
         )
+
         # status has to be obtained with arguments["--status"]
         # we simply set it to state so its still easy to read
         arguments["state"] = arguments["--status"]
@@ -556,7 +557,6 @@ class JobCommand(PluginCommand):
 
         elif arguments.run:
             # job run --name=NAME
-
             jobqueue = JobQueue(variables["jobset"])
             jobqueue.run_job(names)
 
