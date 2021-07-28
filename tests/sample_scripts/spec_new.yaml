@@ -1,0 +1,59 @@
+cloudmesh:
+  default:
+    user: username
+  jobset:
+    hosts:
+      localhost:
+        name: localhost
+        ip: localhost
+        cpu_count: '2'
+        status: free
+        job_counter: '15'
+        max_jobs_allowed: '1'
+      juliet:
+        name: juliet
+        ip: juliet.futuresystems.org
+        cpu_count: '12'
+        status: free
+        job_counter: '0'
+        max_jobs_allowed: '12'
+    scheduler:
+      policy: smart
+    jobs:
+      shell_j:
+        name: shell_j
+        directory: ENV4
+        ip: juliet.futuresystems.org
+        input: ~/ENV4
+        output: ~/ENV4/output
+        status: ready
+        gpu: ' '
+        user: ketanp
+        arguments: "-o=~/ENV4/output -i=~/ENV4 -g=4"
+        executable: test.sh
+        shell: bash
+      python_j:
+        name: python_j
+        directory: ENV4
+        ip: juliet.futuresystems.org
+        input: ~/ENV4
+        output: ~/ENV4/output
+        status: ready
+        gpu: ' '
+        user: ketanp
+        arguments: "--output=~/ENV4/output --input=~/ENV4 --gpu=5"
+        executable: \"python test.py\"
+        shell: bash
+      notebook_j:
+        name: notebook_j
+        directory: ENV4
+        ip: juliet.futuresystems.org
+        input: ~/ENV4
+        output: ~/ENV4/output
+        status: ready
+        gpu: ' '
+        user: ketanp
+        arguments: --log-output -p gpu 10 test.ipynb test_out.ipynb
+        executable: papermill
+        shell: bash
+        host: null
