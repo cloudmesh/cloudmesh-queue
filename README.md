@@ -461,7 +461,13 @@ $ pytest -v --capture=no tests/test_02_job_api.py
 
 ## API of `cms job` command
 An API is created using FastAPI. This API allows users to interact with the 
-cloudmesh-job module via a user-friendly interface. 
+cloudmesh-job module via a user-friendly interface.
+
+Use following command to start the FastAPI server on localhost:
+```bash
+(ENV3) $ cms job --service start
+```
+
 To launch the API from command line, use following command:
 ```bash
 (ENV3) $ cms job --service info
