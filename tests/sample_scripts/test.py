@@ -24,9 +24,11 @@ out_dir = arguments.get('--output')
 in_dir = arguments.get('--input')
 gpu = arguments.get('--gpu')
 
-logging.basicConfig(filename='{out_dir}/test_{dt}.log'.format(out_dir=out_dir, dt=datetime.now().strftime("%m%d%Y_%H%M%S")),
+logging.basicConfig(filename='{out_dir}/test_python_script_{dt}.log'.format(out_dir=out_dir, dt=datetime.now().strftime("%m%d%Y_%H%M%S")),
                     level=logging.DEBUG,
                     format='%(asctime)s|%(filename)s|%(levelname)s|%(message)s')
+
+logging.info("Started the python script at {}".format(datetime.now()))
 
 logging.debug("Preparing debug logs.")
 
@@ -44,5 +46,3 @@ logging.debug("complete")
 logging.debug("Processing another sleep 2")
 time.sleep(2)
 logging.debug("complete")
-
-logging.debug("End of the script")

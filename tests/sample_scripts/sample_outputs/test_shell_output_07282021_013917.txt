@@ -1,0 +1,10 @@
+
+Started the shell script at Wed Jul 28 01:39:17 EDT 2021.
+output will be at:  /N/u/ketanp/ENV4/output/test_shell_output_07282021_013917.txt
+input is taken from:  /N/u/ketanp/ENV4
+gpu to use is:  4
+sleep for 2 sec
+Wed Jul 28 01:39:19 EDT 2021
+sleep for 2 sec
+Wed Jul 28 01:39:21 EDT 2021
+END
