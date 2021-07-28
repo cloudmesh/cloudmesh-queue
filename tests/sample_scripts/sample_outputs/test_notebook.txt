@@ -1,0 +1,10 @@
+2021-07-28 01:39:30,614|<ipython-input-5-c27c21ed9ba7>|DEBUG|Started the notebook execution at 2021-07-28 01:39:30.614957
+2021-07-28 01:39:30,615|<ipython-input-5-c27c21ed9ba7>|DEBUG|Preparing debug logs.
+2021-07-28 01:39:30,615|<ipython-input-5-c27c21ed9ba7>|DEBUG|Arguments passed:
+2021-07-28 01:39:30,615|<ipython-input-5-c27c21ed9ba7>|DEBUG|{'out_dir': '/N/u/ketanp/ENV4/output', 'in_dir': '.', 'gpu': 10}
+2021-07-28 01:39:30,615|<ipython-input-5-c27c21ed9ba7>|DEBUG|Starting the py script.
+2021-07-28 01:39:30,615|<ipython-input-5-c27c21ed9ba7>|DEBUG|Processing sleep 2
+2021-07-28 01:39:32,617|<ipython-input-5-c27c21ed9ba7>|DEBUG|complete
+2021-07-28 01:39:32,617|<ipython-input-5-c27c21ed9ba7>|DEBUG|Processing another sleep 2
+2021-07-28 01:39:34,620|<ipython-input-5-c27c21ed9ba7>|DEBUG|complete
+2021-07-28 01:39:34,622|<ipython-input-5-c27c21ed9ba7>|DEBUG|End of the script

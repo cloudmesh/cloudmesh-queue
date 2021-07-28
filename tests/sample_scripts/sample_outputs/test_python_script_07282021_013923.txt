@@ -1,0 +1,12 @@
+2021-07-28 01:39:23,069|test.py|INFO|Started the python script at 2021-07-28 01:39:23.069625
+2021-07-28 01:39:23,069|test.py|DEBUG|Preparing debug logs.
+2021-07-28 01:39:23,069|test.py|DEBUG|Arguments passed:
+2021-07-28 01:39:23,069|test.py|DEBUG|{'--gpu': '5',
+ '--input': '~/ENV4',
+ '--output': './output'}
+2021-07-28 01:39:23,069|test.py|DEBUG|Starting the py script.
+2021-07-28 01:39:23,069|test.py|DEBUG|Processing sleep 2
+2021-07-28 01:39:25,072|test.py|DEBUG|complete
+2021-07-28 01:39:25,072|test.py|DEBUG|Processing another sleep 2
+2021-07-28 01:39:27,074|test.py|DEBUG|complete
+2021-07-28 01:39:27,074|test.py|DEBUG|End of the script
