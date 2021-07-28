@@ -473,10 +473,10 @@ To launch the API from command line, use following command:
 (ENV3) $ cms job --service info
 ```
 This launches the cloudmesh-job API in a browser. The UI is based on OpenAPI:
-[cloudmesh-job API](https://github.com/cloudmesh/cloudmesh-job/blob/main/tests/sample_scripts/sample_outputs/API_doc.png)
+![cloudmesh-job API](https://github.com/cloudmesh/cloudmesh-job/blob/main/tests/sample_scripts/sample_outputs/API_doc.png)
 
 Documentation of the API is available as below:
-[cloudmesh-job API documentation](https://github.com/cloudmesh/cloudmesh-job/blob/main/tests/sample_scripts/sample_outputs/API_redoc.png)
+![cloudmesh-job API documentation](https://github.com/cloudmesh/cloudmesh-job/blob/main/tests/sample_scripts/sample_outputs/API_redoc.png)
 
 
 
