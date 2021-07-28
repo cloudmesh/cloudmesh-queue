@@ -29,7 +29,7 @@ on the scheduler policy, user can schedule these jobs on configured hosts.
     - [Jobs](#jobs)
   - [Manual Page](#manual-page)
   - [Tests](#tests)
-  - [API of `cms job` command](#api-of-cms-job-command)
+  - [REST API of `cms job` command](#rest-api-of-cms-job-command)
   - [Alternative Installation and Additional Documentation for Cloudmesh-job](#alternative-installation-and-additional-documentation-for-cloudmesh-job)
 
 <!--TOC-->
@@ -459,8 +459,8 @@ $ pytest -v --capture=no tests/test_02_job_api.py
   - [Pytests](https://github.com/cloudmesh/cloudmesh-job/tree/main/tests)
   - [Pytest results](https://github.com/cloudmesh/cloudmesh-job/tree/main/tests/output)
 
-## API of `cms job` command
-An API is created using FastAPI. This API allows users to interact with the 
+## REST API of `cms job` command
+A REST API is created using FastAPI. This REST API allows users to interact with the 
 cloudmesh-job module via a user-friendly interface.
 
 Use following command to start the FastAPI server on localhost:
@@ -468,7 +468,7 @@ Use following command to start the FastAPI server on localhost:
 (ENV3) $ cms job --service start
 ```
 
-To launch the API from command line, use following command:
+To launch the REST API from command line, use following command:
 ```bash
 (ENV3) $ cms job --service info
 ```
