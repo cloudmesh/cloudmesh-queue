@@ -325,6 +325,7 @@ class JobQueue:
         :return: job is submitted to the host
         """
         spec = Configuration(self.filename)
+        submitted = {}
 
         if names is None:
             names = spec["cloudmesh.jobset.jobs"].keys()
@@ -359,17 +360,48 @@ class JobQueue:
                         spec[f"cloudmesh.jobset.hosts.{hname}.job_counter"] = str(
                             ctr + 1
                         )
+
+                        submitted[k] = {
+                            "name": v['name'],
+                            "user": v['user'],
+                            "ip": v['ip'],
+                            "submitted_to_ip": ip,
+                            "status": 'submitted',
+                            "executable": v['executable'],
+                            "arguments": v['arguments'],
+                            "execution_root": v['directory'],
+                            "pid_location": f"{v['output']}/{k}_pid.log",
+                        }
                     else:
                         Console.info(
                             f"Job skipped: The job {k} is not ready." 
                             f"Current status is {v['status']}."
                             )
+                        submitted[k] = {
+                            "name": v['name'],
+                            "user": v['user'],
+                            "ip": v['ip'],
+                            "status": 'skipped',
+                            "previous_status":v['status'],
+                            "executable": v['executable'],
+                            "arguments": v['arguments'],
+                        }
                 else:
                     Console.error(
                         f"Job {k} could not be submitted due to "
                         f"missing host with ip {ip}"
                     )
-                    return ""
+                    submitted[k] = {
+                            "name": v['name'],
+                            "user": v['user'],
+                            "ip": v['ip'],
+                            "status": 'error in submission',
+                            "executable": v['executable'],
+                            "arguments": v['arguments'],
+                        }
+                    return submitted
+        
+        return submitted
 
     def kill_job(self, names=None):
         """
@@ -550,7 +582,7 @@ class JobQueue:
         ]
         out = Printer.write(op_dict, order=order, sort_keys=sort_var)
         print(out)
-        return out
+        return op_dict
 
 
 class Policy:

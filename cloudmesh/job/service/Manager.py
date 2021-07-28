@@ -10,6 +10,36 @@ class Manager():
         os.system("uvicorn cloudmesh.job.service.server:app --reload")
 
     @staticmethod
-    def docs(port=8080):
+    def docs(port=8000):
         url = f"http://127.0.0.1:{port}/docs"
-        Shell.browser()
+        Shell.browser(url)
+
+    @staticmethod
+    def enlist(port=8000, status=None, job_name=None):
+        if status is not None:
+            url = f"http://127.0.0.1:{port}/enlist/?status={status}"
+        elif job_name is not None:
+            url = f"http://127.0.0.1:{port}/enlist/?job_name={job_name}"
+        else:
+            url = f"http://127.0.0.1:{port}/enlist"
+
+        Shell.browser(url)
+
+    @staticmethod
+    def ps(port=8000, status=None, job_name=None):
+        if status is not None:
+            url = f"http://127.0.0.1:{port}/enlist/?status={status}"
+        else:
+            url = f"http://127.0.0.1:{port}/enlist"
+
+        Shell.browser(url)
+
+    @staticmethod
+    def run(port=8000, job_name=None):
+        if job_name is not None:
+            url = f"http://127.0.0.1:{port}/run/?job_name={job_name}"
+        else:
+            url = f"http://127.0.0.1:{port}/run"
+
+        Shell.browser(url)
+

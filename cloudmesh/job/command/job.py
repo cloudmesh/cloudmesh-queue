@@ -262,7 +262,9 @@ class JobCommand(PluginCommand):
             cms job --service ps
                 lists the running services
 
-            cms job --service list
+            cms job --service list [--port=port] 
+                                   [--status=<STATUS>]
+                                   [--name=NAME]
                 lists the queued jobs
 
             cms job --service queue start
@@ -273,6 +275,8 @@ class JobCommand(PluginCommand):
 
             cms job --service view
 
+            cms job --service run [--name=NAME]
+                Submits single or all configured jobs for execution
 
 
         """
@@ -343,20 +347,35 @@ class JobCommand(PluginCommand):
 
                 from cloudmesh.job.service.Manager import Manager
 
-                port = arguments.port or "8080"
+                port = arguments.port or "8000"
                 service = Manager.docs(port=port)
 
             elif arguments.ps:
 
-                raise NotImplementedError
+                from cloudmesh.job.service.Manager import Manager
+
+                port = arguments.port or "8000"
+                service = Manager.ps(port=port, 
+                                         status='submitted', 
+                                         job_name=None)
 
             elif arguments.list:
+                
+                from cloudmesh.job.service.Manager import Manager
 
-                raise  NotImplementedError
+                port = arguments.port or "8000"
+                service = Manager.enlist(port=port, 
+                                         status=arguments["--status"], 
+                                         job_name=arguments["--name"])
 
             elif arguments.run:
 
-                raise  NotImplementedError
+                from cloudmesh.job.service.Manager import Manager
+
+                port = arguments.port or "8000"
+                service = Manager.enlist(port=port,  
+                                         job_name=arguments["--name"])
+
 
             elif arguments.view:
 
