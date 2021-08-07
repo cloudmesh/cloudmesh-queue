@@ -15,22 +15,22 @@ class Manager():
         Shell.browser(url)
 
     @staticmethod
-    def enlist(port=8000, status=None, job_name=None):
+    def show(port=8000, status=None, job_name=None):
         if status is not None:
-            url = f"http://127.0.0.1:{port}/enlist/?status={status}"
+            url = f"http://127.0.0.1:{port}/print/?status={status}"
         elif job_name is not None:
-            url = f"http://127.0.0.1:{port}/enlist/?job_name={job_name}"
+            url = f"http://127.0.0.1:{port}/print/?job_name={job_name}"
         else:
-            url = f"http://127.0.0.1:{port}/enlist"
+            url = f"http://127.0.0.1:{port}/print"
 
         Shell.browser(url)
 
     @staticmethod
     def ps(port=8000, status=None, job_name=None):
         if status is not None:
-            url = f"http://127.0.0.1:{port}/enlist/?status={status}"
+            url = f"http://127.0.0.1:{port}/print/?status={status}"
         else:
-            url = f"http://127.0.0.1:{port}/enlist"
+            url = f"http://127.0.0.1:{port}/print"
 
         Shell.browser(url)
 

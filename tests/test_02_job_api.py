@@ -139,7 +139,7 @@ class TestJob:
         HEADING()
 
         Benchmark.Start()
-        result = jobqueue.enlist_jobs()
+        result = jobqueue.print_jobs()
         Benchmark.Stop()
 
         job_count_1 = len(re.findall(r"\|\s\d+\s+\|", str(result),

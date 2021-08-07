@@ -2,6 +2,7 @@ import os
 from pathlib import Path
 from pprint import pprint
 
+from cloudmesh.common.util import banner
 from cloudmesh.common.console import Console
 from cloudmesh.common.debug import VERBOSE
 from cloudmesh.common.parameter import Parameter
@@ -136,7 +137,7 @@ class JobCommand(PluginCommand):
                 Adds a host in jobset yaml file.
 
               job list hosts
-                Enlists all the hosts configured in jobset
+                prints all the hosts configured in jobset
 
               job scheduler --policy=random
                 Assigns policy name to the scheduler policy
@@ -214,16 +215,16 @@ class JobCommand(PluginCommand):
                 Adds jobs from FILE to jobset
 
             cms job list
-                Enlist all jobs
+                Print all jobs
 
             cms job list --name='perform'
-                Enlist all jobs with the phrase 'perform' in job name
+                Print all jobs with the phrase 'perform' in job name
 
             cms job list --status='ready'
-                Enlist all jobs in status 'ready'
+                Print all jobs in status 'ready'
 
             cms job status
-                Enlists all jobs ordered by their status
+                Prints all jobs ordered by their status
 
             cms job reset --name=NAME
                 Resets the status of the job to 'ready'.
@@ -233,7 +234,7 @@ class JobCommand(PluginCommand):
                 Adds a host in jobset yaml file.
 
             cms job list hosts
-                Enlists all the hosts configured in jobset
+                Prints all the hosts configured in jobset
 
             cms job scheduler --policy=random
                 Assigns policy name to the scheduler policy
@@ -366,7 +367,7 @@ class JobCommand(PluginCommand):
                 from cloudmesh.job.service.Manager import Manager
 
                 port = arguments.port or "8000"
-                service = Manager.enlist(port=port, 
+                service = Manager.show(port=port,
                                          status=arguments["--status"], 
                                          job_name=arguments["--name"])
 
@@ -375,7 +376,7 @@ class JobCommand(PluginCommand):
                 from cloudmesh.job.service.Manager import Manager
 
                 port = arguments.port or "8000"
-                service = Manager.enlist(port=port,  
+                service = Manager.show(port=port,
                                          job_name=arguments["--name"])
 
             elif arguments.kill:
@@ -383,7 +384,7 @@ class JobCommand(PluginCommand):
                 from cloudmesh.job.service.Manager import Manager
 
                 port = arguments.port or "8000"
-                service = Manager.enlist(port=port,  
+                service = Manager.show(port=port,
                                          job_name=arguments["--name"])
 
             elif arguments.view:
@@ -404,6 +405,13 @@ class JobCommand(PluginCommand):
                 Console.error("File does not exist")
             else:
                 os.system (f"cat {jobset}")
+                banner("Hosts")
+                jobqueue.print_hosts()
+
+                banner("Jobs")
+                jobqueue.print_jobs()
+                print()
+
             return ""
 
         elif arguments.template:
@@ -434,7 +442,7 @@ class JobCommand(PluginCommand):
             variables["jobset"] = file
 
             # _function s/b renamed as it is no longer private
-            print(file)
+            cpus(file)
             queue = JobQueue()
             name, directory, basename = queue.location(file)
 
@@ -540,26 +548,26 @@ class JobCommand(PluginCommand):
 
             # job status
             jobqueue = JobQueue(variables["jobset"])
-            jobqueue.enlist_jobs(sort_var="JobStatus")
+            jobqueue.print_jobs(sort_var="JobStatus")
 
         elif arguments.list and arguments["--status"] and not arguments.hosts:
             # job list --status=STATUS
             jobqueue = JobQueue(variables["jobset"])
-            jobqueue.enlist_jobs(
+            jobqueue.print_jobs(
                 filter_name="status", filter_value=arguments["--status"]
             )
 
         elif arguments.list and arguments["--name"] and not arguments.hosts:
             # job list --name=NAME
             jobqueue = JobQueue(variables["jobset"])
-            jobqueue.enlist_jobs(
+            jobqueue.print_jobs(
                 filter_name="name", filter_value=arguments["--name"]
             )
 
         elif arguments.list and not arguments.hosts:
             # job list
             jobqueue = JobQueue(variables["jobset"])
-            jobqueue.enlist_jobs()
+            jobqueue.print_jobs()
 
         elif arguments.kill:
             # job kill --name=NAME
@@ -617,7 +625,7 @@ class JobCommand(PluginCommand):
         elif arguments.hosts and arguments.list:
             # job list hosts
             jobqueue = JobQueue(variables["jobset"])
-            jobqueue.enlist_hosts()
+            jobqueue.print_hosts()
 
         elif arguments.scheduler and arguments.info:
             # job scheduler info

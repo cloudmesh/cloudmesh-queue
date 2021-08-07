@@ -18,18 +18,18 @@ app = FastAPI(
 async def root():
     return {"message": "Cloudmesh Job Server"}
 
-@app.get("/enlist")
-async def enlist(status=None, job_name=None):
+@app.get("/print")
+async def print(status=None, job_name=None):
     variables = Variables()
     jobqueue = JobQueue(variables["jobset"])
     if status == None and job_name == None:
-        out = jobqueue.enlist_jobs()
+        out = jobqueue.print_jobs()
     elif status is not None:
-        out = jobqueue.enlist_jobs(
+        out = jobqueue.print_jobs(
                 filter_name="status", filter_value=status
             )
     elif job_name is not None:
-        out = jobqueue.enlist_jobs(
+        out = jobqueue.print_jobs(
                 filter_name="name", filter_value=job_name
             )
 
@@ -40,7 +40,7 @@ async def ps():
     variables = Variables()
     jobqueue = JobQueue(variables["jobset"])
 
-    out = jobqueue.enlist_jobs(
+    out = jobqueue.print_jobs(
                 filter_name="status", filter_value="submitted"
             )
 

@@ -260,7 +260,8 @@ class JobQueue:
 
         Console.ok(f"Host {arguments.hostname } added to jobset.")
 
-    def enlist_hosts(self):
+
+    def print_hosts(self):
         """
         Enlists all hosts configured in jobset
         :return: list of hosts
@@ -268,12 +269,14 @@ class JobQueue:
         config = Configuration(self.filename)
         order = [
             "name",
+            "user",
             "ip",
-            "cpus",
-            "gpus",
             "status",
             "job_counter",
             "max_jobs_allowed",
+            "gpus",
+            "cores",
+            "threads"
         ]
         print(Printer.write(config["cloudmesh.jobset.hosts"], order=order))
 
@@ -513,7 +516,7 @@ class JobQueue:
             )
             return ""
 
-    def enlist_jobs(self, filter_name=None, filter_value=None, sort_var=None):
+    def print_jobs(self, filter_name=None, filter_value=None, sort_var=None):
         """
         Enlists all jobs from the jobset. Applies filter based on the
         filter_value and filter_name. Sorting of output is done on sort_var,
@@ -523,71 +526,51 @@ class JobQueue:
         :param sort_var: Element name to sort the output on
         :return: Prints a table with job list
         """
+
         spec = Configuration(self.filename)
-        op_dict = dict()
 
-        if sort_var is None:
-            sort_var = True
+        op_dict = spec["cloudmesh.jobset.jobs"]
+        result = op_dict
 
-        i = 0
         for k, v in spec["cloudmesh.jobset.jobs"].items():
-            if filter_name is None:
-                i += 1
-                if v.get("status") is None:
-                    v["status"] = "Unavailable"
-                op_dict[k] = {
-                    "Number": i,
-                    "JobName": v.get("name"),
-                    "JobStatus": v.get("status"),
-                    "RemoteIp": v.get("ip"),
-                    "Command": v.get("executable"),
-                    "Arguments": v.get("arguments"),
-                    "User": v.get("user"),
-                }
-            else:
-                if filter_name == "name":
-                    # job name can have partial match. Hence separate logic:
-                    if filter_value in v[filter_name]:
-                        i += 1
-                        if v.get("status") is None:
-                            v["status"] = "Unavailable"
-                        op_dict[k] = {
-                            "Number": i,
-                            "JobName": v.get("name"),
-                            "JobStatus": v.get("status"),
-                            "RemoteIp": v.get("ip"),
-                            "Command": v.get("executable"),
-                            "Arguments": v.get("arguments"),
-                            "User": v.get("user"),
-                        }
-                else:
-                    # Exact match on filter_name with filter_value
-                    if v[filter_name] == filter_value:
-                        i += 1
-                        if v.get("status") is None:
-                            v["status"] = "Unavailable"
-                        op_dict[k] = {
-                            "Number": i,
-                            "JobName": v.get("name"),
-                            "JobStatus": v.get("status"),
-                            "RemoteIp": v.get("ip"),
-                            "Command": v.get("executable"),
-                            "Arguments": v.get("arguments"),
-                            "User": v.get("user"),
-                        }
+            if v.get("status") is None:
+                v["status"] = "Unavailable"
+
+        if filter_name is None:
+            pass
+        else:
+            for k, entry in spec["cloudmesh.jobset.jobs"].items():
+                if entry[filter_value] == filter_value:
+                    result.append(entry)
 
         order = [
-            "Number",
-            "JobName",
-            "JobStatus",
-            "RemoteIp",
-            "Command",
-            "Arguments",
-            "User",
+            "name",
+            "directory",
+            "ip",
+            "input",
+            "output",
+            "status",
+            "gpu",
+            "arguments",
+            "executable",
+            "shell",
+            "user"
         ]
-        out = Printer.write(op_dict, order=order, sort_keys=sort_var)
-        print(out)
-        return op_dict
+        header = [
+            "Name",
+            "Directory",
+            "IP",
+            "Input",
+            "Output",
+            "Status",
+            "GPU",
+            "Arguments",
+            "Executable",
+            "Shell",
+            "User"
+        ]
+        out = Printer.write(result, order=order, sort_keys=sort_var)
+        return out
 
 
 class Policy:
