@@ -122,6 +122,9 @@ class JobQueue:
                     status: free
                     job_counter: 0
                     max_jobs_allowed: 1
+                    cores: 1
+                    threads: 1
+                    gpus: None
                 scheduler:
                   policy: sequential
             """
