@@ -117,6 +117,7 @@ class JobQueue:
               jobset:
                 hosts:
                   localhost:
+                    user: {user}
                     name: {self.name}
                     ip: 127.0.0.1
                     status: free
