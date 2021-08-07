@@ -434,7 +434,10 @@ class JobCommand(PluginCommand):
             variables["jobset"] = file
 
             # _function s/b renamed as it is no longer private
-            name, directory, basename = JobQueue.location(file)
+            print(file)
+            queue = JobQueue()
+            name, directory, basename = queue.location(file)
+
 
             Console.ok(f"Jobset defined as {name} located at" f"{file}")
 
@@ -454,11 +457,11 @@ class JobCommand(PluginCommand):
             """
 
             jobset = variables["jobset"] or default_location
-            _name, _directory, _basename = JobQueue.location(
+            jobqueue = JobQueue(variables["jobset"])
+            _name, _directory, _basename = jobqueue.location(
                 variables["jobset"]
             )
-
-            jobqueue = JobQueue(variables["jobset"])
+           
 
             # fixed arguments for all jobs
 
@@ -505,7 +508,8 @@ class JobCommand(PluginCommand):
             """
             # Path.expanduser needed as windows can't interpret "~"
             file = Path.expanduser(Path(arguments.FILE))
-            _name, _directory, _basename = JobQueue.location(file)
+            jobqueue = JobQueue()
+            _name, _directory, _basename = jobqueue.location(file)
 
             if variables["jobset"] is None:
                 Console.error(

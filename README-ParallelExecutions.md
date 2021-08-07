@@ -64,7 +64,7 @@ The configuration used for parallel executions is present in following file:
 This setup intends to run following set of commands on a remote server:
 | Type             | Command                                                        |
 | ---------------- | -------------------------------------------------------------- |
-| Shell script     | test.sh -o=\~/ENV3/output -i=\~/ENV3 -g=4                      |
+| Shell script     | test.sh -o \~/ENV3/output -i \~/ENV3 -g 4                      |
 | Python script    | python test.py --output=\~/ENV3/output --input=\~/ENV3 --gpu=5 |
 | Jupyter notebook | papermill --log-output -p gpu 10 test.ipynb test_out.ipynb     |
 
@@ -267,3 +267,4 @@ test_python_script_101_07282021_033655.log:2021-07-28 03:36:55,104|test_multiple
 test_python_script_201_07282021_033700.log:2021-07-28 03:37:00,028|test_multiple_inst.py|INFO|Started the instance 201 of python script at 2021-07-28 03:37:00.028821
 (ENV3) [ketanp@j-login1 output]$
 ```
+ 
