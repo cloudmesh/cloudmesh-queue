@@ -63,7 +63,7 @@ class JobQueue:
         else:
             self.user = os.environ.get("USER")
             self.hostname = os.environ.get("HOSTNAME")
-        self.cpu_count = multiprocessing.cpu_count()
+        self.cpus = multiprocessing.cpus()
 
     def template(self, name=None, user=None):
         """
@@ -101,7 +101,7 @@ class JobQueue:
         :param specification: dictionary containing jobset configuration
         :return: None, creates sample jobset
         """
-        user = JobQueue._user()
+        user = self.user
 
         if type(specification) != dict:
             Console.error("only specify a yaml dict")
@@ -119,7 +119,6 @@ class JobQueue:
                   localhost:
                     name: {self.name}
                     ip: 127.0.0.1
-                    cpu_count: None
                     status: free
                     job_counter: 0
                     max_jobs_allowed: 1
@@ -239,8 +238,11 @@ class JobQueue:
             arguments.hostname or "localhost"
         )
         config[f"cloudmesh.jobset.hosts.{tag}.ip"] = arguments.ip or "localhost"
-        config[f"cloudmesh.jobset.hosts.{tag}.cpu_count"] = (
-            arguments.cpu_count or "0"
+        config[f"cloudmesh.jobset.hosts.{tag}.cpus"] = (
+            arguments.cpus or "0"
+        )
+        config[f"cloudmesh.jobset.hosts.{tag}.gpus"] = (
+                arguments.gpus or "0"
         )
         config[f"cloudmesh.jobset.hosts.{tag}.status"] = (
             arguments.status or "free"
@@ -263,7 +265,8 @@ class JobQueue:
         order = [
             "name",
             "ip",
-            "cpu_count",
+            "cpus",
+            "gpus",
             "status",
             "job_counter",
             "max_jobs_allowed",
@@ -602,7 +605,7 @@ class Policy:
         self.availability = dict()
 
         for k, v in self.host_data.items():
-            # available = int(v["cpu_count"]) - int(v["job_counter"])
+            # available = int(v["cpus"]) - int(v["job_counter"])
             available = int(v["max_jobs_allowed"]) - int(v["job_counter"])
             if available > 0:
                 self.availability[v["ip"]] = available

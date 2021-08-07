@@ -69,11 +69,15 @@ Linux like terminal is preferred by users.
 The current jobset filename is stored in the cloudmesh variables under the 
 variable `jobset`. It can be queried with
 
-```cms set jobset```
+```bash
+$ cms set jobset
+```
 
 It can be set with
 
-```cms set jobset=VALUE```
+```bash
+$ cms set jobset=VALUE
+```
 
 An example is
 
@@ -85,7 +89,9 @@ jobset='~/.cloudmesh/job/spec.yaml'
 
 The content of the jobset can be created using
 
-```cms job template```
+```bash
+cms job template
+```
 
 This template configuration will then have the following content:
 

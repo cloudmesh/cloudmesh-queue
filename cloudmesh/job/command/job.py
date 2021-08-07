@@ -49,7 +49,7 @@ class JobCommand(PluginCommand):
             job help
             job run [--name=NAME]
             job info
-            job hosts add --hostname=hostname --ip=IP  --cpu_count=N
+            job hosts add --hostname=hostname --ip=IP  --cpus=N
                          [--status=STATUS] [--job_counter=COUNTER]
                          [--max_jobs_allowed=<JOBS>]
             job list hosts
@@ -84,7 +84,7 @@ class JobCommand(PluginCommand):
             --shell=<SHELL>           Shell to run job  [default: bash]
             --hostname=hostname       Host name         Example. 'juliet'
             --gpu=GPU                 GPU to use        Example. 7
-            --cpu_count=N             Host CPU count    Example. '12'
+            --cpus=N             Host CPU count    Example. '12'
             --job_counter=COUNTER     Job count         Example. '2'
             --policy=<POLICYNAME>     Scheduler policy  [default: sequential]
             --max_jobs_allowed=<JOBS> Max jobs allowed  [default: 1]
@@ -131,7 +131,7 @@ class JobCommand(PluginCommand):
                 Run all jobs from jobset. If --name argument is provided then
                 run a specific job
 
-              job hosts add --hostname=name --ip=ip --cpu_count=n
+              job hosts add --hostname=name --ip=ip --cpus=n
                            .--max_jobs_allowed=x
                 Adds a host in jobset yaml file.
 
@@ -228,7 +228,7 @@ class JobCommand(PluginCommand):
             cms job reset --name=NAME
                 Resets the status of the job to 'ready'.
 
-            cms job hosts add --hostname=name --ip=ip --cpu_count=n
+            cms job hosts add --hostname=name --ip=ip --cpus=n
                              .--max_jobs_allowed=x
                 Adds a host in jobset yaml file.
 
@@ -299,7 +299,7 @@ class JobCommand(PluginCommand):
             "directory",
             "user",
             "hostname",
-            "cpu_count",
+            "cpus",
             "policy",
             "max_jobs_allowed",
             "service"
@@ -402,7 +402,8 @@ class JobCommand(PluginCommand):
 
             if not Path(jobset).exists():
                 Console.error("File does not exist")
-
+            else:
+                os.system (f"cat {jobset}")
             return ""
 
         elif arguments.template:
@@ -604,7 +605,7 @@ class JobCommand(PluginCommand):
             os.system("cms help job")
 
         elif arguments.add and arguments.hosts:
-            # job hosts add --hostname=NAME --ip=ip --cpu_count=n
+            # job hosts add --hostname=NAME --ip=ip --cpus=n
 
             jobqueue = JobQueue(variables["jobset"])
             jobqueue.addhost(arguments)
