@@ -529,14 +529,17 @@ class JobQueue:
 
         spec = Configuration(self.filename)
         jobs = spec["cloudmesh.jobset.jobs"]
+        result = jobs
 
+        """
 
-        print (jobs, filter_value, filter_name)
-        return ""
-
-        for entry in spec["cloudmesh.jobset.jobs"]:
+        for k,entry in spec["cloudmesh.jobset.jobs"].items():
+            print (entry)
             if entry.get("status") is None:
                 entry["status"] = "Unavailable"
+            result.append(entry)
+
+        print (result)
 
         if filter_name is None:
             result = [jobs]
@@ -546,7 +549,7 @@ class JobQueue:
             for entry in spec["cloudmesh.jobset.jobs"]:
                 if entry[filter_name] == filter_value:
                     result[entry["name"]] = entry
-
+        """
         order = [
             "name",
             "directory",
