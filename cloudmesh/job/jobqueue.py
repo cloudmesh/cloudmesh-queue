@@ -63,7 +63,7 @@ class JobQueue:
         else:
             self.user = os.environ.get("USER")
             self.hostname = os.environ.get("HOSTNAME")
-        self.cpus = multiprocessing.cpus()
+        self.cpus = multiprocessing.cpu_count()
 
     def template(self, name=None, user=None):
         """
