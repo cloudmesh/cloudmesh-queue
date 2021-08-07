@@ -278,7 +278,8 @@ class JobQueue:
             "cores",
             "threads"
         ]
-        print(Printer.write(config["cloudmesh.jobset.hosts"], order=order))
+        result = Printer.write(config["cloudmesh.jobset.hosts"], order=order)
+        return result
 
     @staticmethod
     def _get_hostname(ip, spec):
@@ -529,27 +530,22 @@ class JobQueue:
 
         spec = Configuration(self.filename)
         jobs = spec["cloudmesh.jobset.jobs"]
-        result = jobs
 
-        """
 
-        for k,entry in spec["cloudmesh.jobset.jobs"].items():
+        for k,entry in jobs.items():
             print (entry)
             if entry.get("status") is None:
                 entry["status"] = "Unavailable"
-            result.append(entry)
 
-        print (result)
 
         if filter_name is None:
-            result = [jobs]
-            print (result)
+            result = jobs
         else:
-            result = {}
+            result = []
             for entry in spec["cloudmesh.jobset.jobs"]:
                 if entry[filter_name] == filter_value:
-                    result[entry["name"]] = entry
-        """
+                    result.append(entry)
+
         order = [
             "name",
             "directory",

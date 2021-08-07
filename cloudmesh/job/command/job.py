@@ -26,7 +26,7 @@ class JobCommand(PluginCommand):
         ::
 
           Usage:
-            job set FILE
+            job set --file=FILE
             job template [--name=NAME]
             job add FILE
             job add --name=NAME
@@ -62,6 +62,7 @@ class JobCommand(PluginCommand):
             job --service list
             job --service run
             job --service view
+            job set NAME ATTRIBUTE=VALUE
 
 
           This command is a job queuing and scheduling framework. It allows
@@ -325,7 +326,15 @@ class JobCommand(PluginCommand):
         #
         # --service
         #
-        if arguments.service:
+        if arguments.set and arguments["ATTRIBUTE=VALUE"]:
+            attribute, value = arguments["ATTRIBUTE=VALUE"].split("=")
+            name = arguments.NAME
+
+            print (name, attribute, value)
+            Console.error("implement me")
+            return ""
+
+        elif arguments.service:
 
             if arguments.start and arguments.queue:
 
@@ -406,10 +415,10 @@ class JobCommand(PluginCommand):
             else:
                 os.system (f"cat {jobset}")
                 banner("Hosts")
-                jobqueue.print_hosts()
+                print(jobqueue.print_hosts())
 
                 banner("Jobs")
-                jobqueue.print_jobs()
+                print(jobqueue.print_jobs())
                 print()
 
             return ""
