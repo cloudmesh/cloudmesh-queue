@@ -35,7 +35,7 @@ class JobCommand(PluginCommand):
                     [--input=<INPUT>]
                     [--output=<OUTPUT>]
                     [--status=<STATUS>]
-                    [--gpu=GPU]
+                    [--gpus=GPU]
                     [--user=USER]
                     [--arguments=<ARGUMENTS>]
                     [--shell=<SHELL>]
@@ -83,8 +83,8 @@ class JobCommand(PluginCommand):
             --user=USER               Remote host user  Example. $USER
             --shell=<SHELL>           Shell to run job  [default: bash]
             --hostname=hostname       Host name         Example. 'juliet'
-            --gpu=GPU                 GPU to use        Example. 7
-            --cpus=N             Host CPU count    Example. '12'
+            --gpu=GPU                 GPUs to use       Example. "0,1", [default: None]
+            --cpus=N                  Host CPU count    Example. '12', [default: '1']
             --job_counter=COUNTER     Job count         Example. '2'
             --policy=<POLICYNAME>     Scheduler policy  [default: sequential]
             --max_jobs_allowed=<JOBS> Max jobs allowed  [default: 1]
