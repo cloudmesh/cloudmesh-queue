@@ -399,6 +399,10 @@ class JobCommand(PluginCommand):
 
             jobset = variables["jobset"] or default_location
             Console.msg(f"Jobs are defined in: {jobset}")
+
+            if not Path(jobset).exists():
+                Console.error("File does not exist")
+
             return ""
 
         elif arguments.template:

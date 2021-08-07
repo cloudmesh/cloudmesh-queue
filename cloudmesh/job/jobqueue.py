@@ -22,72 +22,57 @@ class JobQueue:
     """
 
     def __init__(self, filename=None):
+        """
+
+        @param filename:
+        """
+        # TOD: evaluate if jobset should be nem for the variable?
+        self.hostname = None
+        self.user = None
         variables = Variables()
-        self.filename = (
-            filename
-            or variables["jobset"]
-            or path_expand("~/.cloudmesh/job/spec.yaml")
-        )
-        self.name, self.directory, self.basename = JobQueue.location(
-            self.filename
-        )
+        self.filename = filename or variables["jobset"] or path_expand("~/.cloudmesh/job/spec.yaml")
+        self.name, self.directory, self.basename = self.location(self.filename)
         if self.directory != "":
             Shell.mkdir(self.directory)
+        self._sysinfo()
 
-    @staticmethod
-    def location(filename):
+    def location(self, filename):
         """
         Returns name, directory and extension of a file
         :param filename: File name
         :return: file name, extension and file location
         """
         try:
-            _directory = os.path.dirname(filename)
+            self.directory = os.path.dirname(filename)
         except:
-            _directory = ""
-        _basename = os.path.basename(filename)
-        _name = _basename.split(".")[0]
-        return _name, _directory, _basename
+            self.directory = ""
+        self.basename = os.path.basename(filename)
+        # TODO: What is the "."?
+        self.name = self.basename.split(".")[0]
+        return self.name, self.directory, self.basename
 
-    @staticmethod
-    def _user():
+    def _sysinfo(self):
         """
         Returns value of system user from environment variables
         :return: User name
         """
-        user = None
+        self.user = None
         if sys.platform == "win32":
-            user = os.environ.get("USERNAME")
-            hostname = os.environ.get("COMPUTERNAME")
+            self.user = os.environ.get("USERNAME")
+            self.hostname = os.environ.get("COMPUTERNAME")
         else:
-            user = os.environ.get("USER")
-            hostname = os.environ.get("HOSTNAME")
-        return user
+            self.user = os.environ.get("USER")
+            self.hostname = os.environ.get("HOSTNAME")
+        self.cpu_count = multiprocessing.cpu_count()
 
-    @staticmethod
-    def _sysinfo():
-        """
-        Returns value of system hostname and cpu count from environment
-        variables. This is working on local machine and populated in template
-        only.
-        :return: hostname and max cpu_count
-        """
-        hostname = None
-        if sys.platform == "win32":
-            hostname = os.environ.get("COMPUTERNAME")
-        else:
-            hostname = os.environ.get("HOSTNAME")
-        cpu_count = multiprocessing.cpu_count()
-
-        return hostname, cpu_count
-
-    def template(self, name=None):
+    def template(self, name=None, user=None):
         """
         Creates a standard template of a job to be added in jobset
         :param name: Name of the job
         :return: Dictionary object of the job to be added in the jobset
         """
-        user = JobQueue._user()
+        if user is None:
+            user = self.user
         name = name or "job"
         specification = dedent(
             f"""
@@ -132,9 +117,9 @@ class JobQueue:
               jobset:
                 hosts:
                   localhost:
-                    name: {JobQueue._sysinfo()[0]}
+                    name: {self.name}
                     ip: 127.0.0.1
-                    cpu_count: {JobQueue._sysinfo()[1]}
+                    cpu_count: None
                     status: free
                     job_counter: 0
                     max_jobs_allowed: 1
