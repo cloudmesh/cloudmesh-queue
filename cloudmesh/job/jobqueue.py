@@ -528,20 +528,24 @@ class JobQueue:
         """
 
         spec = Configuration(self.filename)
+        jobs = spec["cloudmesh.jobset.jobs"]
 
-        op_dict = spec["cloudmesh.jobset.jobs"]
-        result = op_dict
 
-        for k, v in spec["cloudmesh.jobset.jobs"].items():
-            if v.get("status") is None:
-                v["status"] = "Unavailable"
+        print (jobs, filter_value, filter_name)
+        return ""
+
+        for entry in spec["cloudmesh.jobset.jobs"]:
+            if entry.get("status") is None:
+                entry["status"] = "Unavailable"
 
         if filter_name is None:
-            pass
+            result = [jobs]
+            print (result)
         else:
-            for k, entry in spec["cloudmesh.jobset.jobs"].items():
-                if entry[filter_value] == filter_value:
-                    result.append(entry)
+            result = {}
+            for entry in spec["cloudmesh.jobset.jobs"]:
+                if entry[filter_name] == filter_value:
+                    result[entry["name"]] = entry
 
         order = [
             "name",
