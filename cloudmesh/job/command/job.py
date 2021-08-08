@@ -1,6 +1,7 @@
 import os
 from pathlib import Path
 from pprint import pprint
+import shutil
 
 from cloudmesh.common.util import banner
 from cloudmesh.common.console import Console
@@ -11,6 +12,7 @@ from cloudmesh.shell.command import PluginCommand
 from cloudmesh.shell.command import command
 from cloudmesh.shell.command import map_parameters
 from cloudmesh.common.Printer import Printer
+from cloudmesh.common.util import backup_name
 from cloudmesh.configuration.Config import Config
 from cloudmesh.configuration.Configuration import Configuration
 import oyaml as yaml
@@ -104,7 +106,7 @@ class JobCommand(PluginCommand):
               job add FILE
                 adds the jobs in the file to the jobset
 
-              job template
+              job template [--name=NAME]
                 creates a job template  in the jobset
 
               job list
@@ -205,7 +207,7 @@ class JobCommand(PluginCommand):
             cms job set --file='~/.cloudmesh/job/spec.yaml'
                 Sets jobset as the FILE provided. Further process refers jobset.
 
-            cms job template --name="b[0-1]"; less a.yaml
+            cms job template --name="b[0-1]"
                 Creates the jobs b0 and b1 as templates in the jobset.
 
             cms job add --name=z[0-1] --ip=123,345 --executable='ls'
@@ -410,7 +412,7 @@ class JobCommand(PluginCommand):
             jobset = variables["jobset"] or default_location
             Console.msg(f"Jobs are defined in: {jobset}")
 
-            if not Path(jobset).exists():
+            if not Path(jobset).expanduser().exists():
                 Console.error("File does not exist")
             else:
                 banner("Hosts")
@@ -429,10 +431,13 @@ class JobCommand(PluginCommand):
             variables["jobset"] = jobset
             template = dict()
 
-            jobs = JobQueue(jobset)
+            backup_jobset = backup_name(jobset)
+            shutil.copyfile(Path(jobset).expanduser(), backup_jobset)
+
+            jobqueue = JobQueue(jobset)
             for name in names:
-                template.update(jobs.template(name=name))
-                jobs.add_template(template)
+                template.update(jobqueue.template(name=name))
+                jobqueue.add_template(template)
 
             Console.msg(f"Jobs are defined in: {jobset}")
 
