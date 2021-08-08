@@ -90,13 +90,14 @@ class JobCommand(PluginCommand):
             --job_counter=COUNTER     Job count         Example. '2'
             --policy=<POLICYNAME>     Scheduler policy  [default: sequential]
             --max_jobs_allowed=<JOBS> Max jobs allowed  [default: 1]
+            --file=FILE               Jobset yaml file  [default: ]
 
           Description:
 
               job info
                 prints the information for the queued jobs
 
-              job set FILE
+              job set --file=FILE
                 sets the jobset to the file name. All other commands will be
                 applied to a jobset
 
@@ -201,7 +202,7 @@ class JobCommand(PluginCommand):
             cms job info
                 Prints location of job queue file.
 
-            cms job set '~/.cloudmesh/job/spec.yaml'
+            cms job set --file='~/.cloudmesh/job/spec.yaml'
                 Sets jobset as the FILE provided. Further process refers jobset.
 
             cms job template --name="b[0-1]"; less a.yaml
@@ -304,7 +305,8 @@ class JobCommand(PluginCommand):
             "cpus",
             "policy",
             "max_jobs_allowed",
-            "service"
+            "service",
+            "file"
         )
 
         # status has to be obtained with arguments["--status"]
@@ -316,8 +318,6 @@ class JobCommand(PluginCommand):
         # VERBOSE(arguments)
 
         names = Parameter.expand(arguments.name)
-
-        file = arguments["FILE"]
 
         # Instantiate JobQueue without filename to get default filename
         jobqueue = JobQueue()
@@ -413,13 +413,11 @@ class JobCommand(PluginCommand):
             if not Path(jobset).exists():
                 Console.error("File does not exist")
             else:
-                os.system (f"cat {jobset}")
                 banner("Hosts")
                 print(jobqueue.print_hosts())
 
                 banner("Jobs")
                 print(jobqueue.print_jobs())
-                print()
 
             return ""
 
@@ -439,7 +437,8 @@ class JobCommand(PluginCommand):
             Console.msg(f"Jobs are defined in: {jobset}")
 
         elif arguments.set:
-            # job set FILE
+            # job set --file=FILE
+            file = arguments["file"]
 
             if not file.endswith(".yaml"):
                 Console.error(
@@ -450,13 +449,16 @@ class JobCommand(PluginCommand):
 
             variables["jobset"] = file
 
-            # _function s/b renamed as it is no longer private
-            cpus(file)
-            queue = JobQueue()
-            name, directory, basename = queue.location(file)
+            jobqueue = JobQueue()
+            name, directory, basename = jobqueue.location(file)
 
+            Console.ok(f"Jobset defined as {basename} located at " f"{directory}")
 
-            Console.ok(f"Jobset defined as {name} located at" f"{file}")
+            banner("Hosts")
+            print(jobqueue.print_hosts())
+
+            banner("Jobs")
+            print(jobqueue.print_jobs())
 
         elif arguments.add and arguments.FILE is None and not arguments.hosts:
             """

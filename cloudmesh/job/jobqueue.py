@@ -1,5 +1,6 @@
 import multiprocessing
 import os
+from posixpath import basename
 import random
 import sys
 import time
@@ -46,9 +47,10 @@ class JobQueue:
             self.directory = os.path.dirname(filename)
         except:
             self.directory = ""
+
         self.basename = os.path.basename(filename)
-        # TODO: What is the "."?
         self.name = self.basename.split(".")[0]
+
         return self.name, self.directory, self.basename
 
     def _sysinfo(self):
@@ -263,7 +265,7 @@ class JobQueue:
 
     def print_hosts(self):
         """
-        Enlists all hosts configured in jobset
+        Lists all hosts configured in jobset
         :return: list of hosts
         """
         config = Configuration(self.filename)
@@ -519,7 +521,7 @@ class JobQueue:
 
     def print_jobs(self, filter_name=None, filter_value=None, sort_var=None):
         """
-        Enlists all jobs from the jobset. Applies filter based on the
+        Lists all jobs from the jobset. Applies filter based on the
         filter_value and filter_name. Sorting of output is done on sort_var,
         or by default on job order in the jobset.
         :param filter_name: Element name to apply filter on
@@ -533,7 +535,6 @@ class JobQueue:
 
 
         for k,entry in jobs.items():
-            print (entry)
             if entry.get("status") is None:
                 entry["status"] = "Unavailable"
 
