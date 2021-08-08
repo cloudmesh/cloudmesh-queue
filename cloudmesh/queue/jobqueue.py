@@ -9,6 +9,7 @@ from textwrap import dedent
 from typing import List
 
 import oyaml as yaml
+from cloudmesh.common.util import banner
 from cloudmesh.common.Printer import Printer
 from cloudmesh.common.Shell import Shell
 from cloudmesh.common.console import Console
@@ -325,7 +326,8 @@ class JobQueue:
         :param idx: index of the job to be processed
         :return: dictionary for individual jobs
         """
-        user = JobQueue._user()
+        jobqueue = JobQueue()
+        
         _spec = {
             "name": arguments.get("names")[idx],
             "directory": arguments.get("directory") or ".",
@@ -334,7 +336,7 @@ class JobQueue:
             "output": arguments.get("output_list")[idx] or "./output",
             "status": arguments.get("status") or "ready",
             "gpu": arguments.get("gpu_list")[idx] or "",
-            "user": arguments.get("user") or user,
+            "user": arguments.get("user") or jobqueue.user,
             "arguments": arguments.get("arguments_list")[idx] or "",
             "executable": arguments.get("executable"),
             "shell": arguments.get("shell") or "bash",
@@ -417,7 +419,7 @@ class JobQueue:
 
         Console.ok(f"Host {arguments.hostname} added to jobset.")
 
-    def print_hosts(self):
+    def print_hosts(self, format='table'):
         """
         Lists all hosts configured in jobset
         :return: list of hosts
@@ -434,7 +436,8 @@ class JobQueue:
             "cores",
             "threads"
         ]
-        result = Printer.write(config["cloudmesh.jobset.hosts"], order=order)
+        result = Printer.write(config["cloudmesh.jobset.hosts"], order=order, 
+                               output=format)
         return result
 
     @staticmethod
@@ -673,7 +676,8 @@ class JobQueue:
             )
             return ""
 
-    def print_jobs(self, filter_name=None, filter_value=None, sort_var=None):
+    def print_jobs(self, filter_name=None, filter_value=None, 
+                         sort_var=None, format='table'):
         """
         Lists all jobs from the jobset. Applies filter based on the
         filter_value and filter_name. Sorting of output is done on sort_var,
@@ -681,6 +685,7 @@ class JobQueue:
         :param filter_name: Element name to apply filter on
         :param filter_value: Value of the element to be filtered in
         :param sort_var: Element name to sort the output on
+        :param format: Format of the output, table/csv/json/html
         :return: Prints a table with job list
         """
         spec = Configuration(self.filename)
@@ -725,9 +730,29 @@ class JobQueue:
             "Shell",
             "User"
         ]
-        out = Printer.write(result, order=order, sort_keys=sort_var)
+        out = Printer.write(result, order=order, 
+                            sort_keys=sort_var, output=format)
         return out
 
+    def show_list(self, jobs=True, hosts=True, format='table'):
+        """
+        Method shows list of jobs and/or hosts from the config file.
+
+        Args:
+            jobs (bool, optional): To show jod list. Defaults to True.
+            hosts (bool, optional): To show host list. Defaults to True.
+            format (str, optional): Output format. Defaults to 'table'.
+
+        Returns:
+            string: Returns the list in the format defined by format.
+        """
+        if hosts:
+            banner("Hosts")
+            print(self.print_hosts(format=format))
+
+        if jobs:
+            banner("Jobs")
+            print(self.print_jobs(format=format))
 
 class Policy:
     """

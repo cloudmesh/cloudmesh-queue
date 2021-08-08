@@ -38,7 +38,7 @@ class JobCommand(PluginCommand):
                     [--input=<INPUT>]
                     [--output=<OUTPUT>]
                     [--status=<STATUS>]
-                    [--gpus=GPU]
+                    [--gpu=GPU]
                     [--user=USER]
                     [--arguments=<ARGUMENTS>]
                     [--shell=<SHELL>]
@@ -415,11 +415,7 @@ class JobCommand(PluginCommand):
             if not Path(jobset).expanduser().exists():
                 Console.error("File does not exist")
             else:
-                banner("Hosts")
-                print(jobqueue.print_hosts())
-
-                banner("Jobs")
-                print(jobqueue.print_jobs())
+                jobqueue.show_list()
 
             return ""
 
@@ -441,11 +437,7 @@ class JobCommand(PluginCommand):
 
             Console.msg(f"Jobs are defined in: {jobset}")
 
-            banner("Hosts")
-            print(jobqueue.print_hosts())
-
-            banner("Jobs")
-            print(jobqueue.print_jobs())
+            jobqueue.show_list()
 
         elif arguments.set:
             # queue set --file=FILE
@@ -465,11 +457,7 @@ class JobCommand(PluginCommand):
 
             Console.ok(f"Jobset defined as {basename} located at " f"{directory}")
 
-            banner("Hosts")
-            print(jobqueue.print_hosts())
-
-            banner("Jobs")
-            print(jobqueue.print_jobs())
+            jobqueue.show_list()
 
         elif arguments.add and arguments.FILE is None and not arguments.hosts:
             """
@@ -490,12 +478,9 @@ class JobCommand(PluginCommand):
             jobqueue = JobQueue(variables["jobset"])
             _name, _directory, _basename = jobqueue.location(
                 variables["jobset"]
-            )
-           
+            )        
 
             # fixed arguments for all jobs
-
-            # Variable arguments
             arguments.names = names
             arguments.ip = arguments.ip or "localhost"
             arguments.input = arguments.input or "./data"
@@ -503,6 +488,7 @@ class JobCommand(PluginCommand):
             arguments.gpu = arguments.gpu or " "
             arguments.arguments = arguments.arguments or " "
 
+            # Variable arguments
             var_args = ["ip", "input", "output", "gpu", "arguments"]
 
             for arg in var_args:
@@ -512,11 +498,11 @@ class JobCommand(PluginCommand):
                 if arguments[f"{arg}_list"] == "":
                     return ""
 
-            # for debugging
             # VERBOSE(arguments)
 
-            # now we need to call the jobset and add the right things
             jobqueue.update_spec(arguments, jobset)
+
+            jobqueue.show_list(hosts=False)
 
         elif arguments.add and arguments.FILE:
             """
@@ -567,10 +553,10 @@ class JobCommand(PluginCommand):
             jobqueue.add(spec)
 
         elif arguments.status:
-
             # queue status
             jobqueue = JobQueue(variables["jobset"])
-            jobqueue.print_jobs(sort_var="JobStatus")
+            out = jobqueue.print_jobs(sort_var="status")
+            print(out)
 
         elif arguments.list and arguments["--status"] and not arguments.hosts:
             # queue list --status=STATUS
