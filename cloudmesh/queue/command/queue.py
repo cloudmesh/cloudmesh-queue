@@ -23,15 +23,15 @@ class JobCommand(PluginCommand):
 
     # noinspection PyUnusedLocal
     @command
-    def do_job(self, args, arguments):
+    def do_queue(self, args, arguments):
         """
         ::
 
           Usage:
-            job set --file=FILE
-            job template [--name=NAME]
-            job add FILE
-            job add --name=NAME
+            queue set --file=FILE
+            queue template [--name=NAME]
+            queue add FILE
+            queue add --name=NAME
                     [--ip=<IP>]
                     [--executable=<EXECUTABLE>]
                     [--directory=<DIRECTORY>]
@@ -42,29 +42,29 @@ class JobCommand(PluginCommand):
                     [--user=USER]
                     [--arguments=<ARGUMENTS>]
                     [--shell=<SHELL>]
-            job status
-            job list --status=STATUS
-            job list --name=NAME
-            job list
-            job kill [--name=NAME]
-            job reset [--name=NAME]
-            job delete [--name=NAME]
-            job help
-            job run [--name=NAME]
-            job info
-            job hosts add --hostname=hostname --ip=IP  --cpus=N
+            queue status
+            queue list --status=STATUS
+            queue list --name=NAME
+            queue list
+            queue kill [--name=NAME]
+            queue reset [--name=NAME]
+            queue delete [--name=NAME]
+            queue help
+            queue run [--name=NAME]
+            queue info
+            queue hosts add --hostname=hostname --ip=IP  --cpus=N
                          [--status=STATUS] [--job_counter=COUNTER]
                          [--max_jobs_allowed=<JOBS>]
-            job list hosts
-            job scheduler --policy=POLICYNAME
-            job scheduler info
-            job --service start
-            job --service info
-            job --service ps
-            job --service list
-            job --service run
-            job --service view
-            job set NAME ATTRIBUTE=VALUE
+            queue list hosts
+            queue scheduler --policy=POLICYNAME
+            queue scheduler info
+            queue --service start
+            queue --service info
+            queue --service ps
+            queue --service list
+            queue --service run
+            queue --service view
+            queue set NAME ATTRIBUTE=VALUE
 
 
           This command is a job queuing and scheduling framework. It allows
@@ -96,60 +96,60 @@ class JobCommand(PluginCommand):
 
           Description:
 
-              job info
+              queue info
                 prints the information for the queued jobs
 
-              job set --file=FILE
+              queue set --file=FILE
                 sets the jobset to the file name. All other commands will be
                 applied to a jobset
 
-              job add FILE
+              queue add FILE
                 adds the jobs in the file to the jobset
 
-              job template [--name=NAME]
-                creates a job template  in the jobset
+              queue template [--name=NAME]
+                creates a queue template  in the jobset
 
-              job list
+              queue list
                 lists all jobs
 
-              job list --status=open
+              queue list --status=open
                 lists all jobs with a specific status
 
-              job list --name=NAME
-                lists teh job with the given name pattern
+              queue list --name=NAME
+                lists teh queue with the given name pattern
 
-              job status
+              queue status
                 shows the status of all jobs
 
-              job kill --name=NAME
+              queue kill --name=NAME
                 kills the given jobs base on a name pattern such as
                 name[01-04] which would kill all jobs with the given names
 
-              job reset [--name=NAME]
-                resets the job to be rerun
+              queue reset [--name=NAME]
+                resets the queue to be rerun
 
-              job delete --name=NAME
+              queue delete --name=NAME
                 deletes the given jobs base on a name pattern such as
                 name[01-04] which would kill all jobs with the given names
 
-              job run [--name=NAME]
+              queue run [--name=NAME]
                 Run all jobs from jobset. If --name argument is provided then
                 run a specific job
 
-              job hosts add --hostname=name --ip=ip --cpus=n
+              queue hosts add --hostname=name --ip=ip --cpus=n
                            .--max_jobs_allowed=x
                 Adds a host in jobset yaml file.
 
-              job list hosts
+              queue list hosts
                 prints all the hosts configured in jobset
 
-              job scheduler --policy=random
+              queue scheduler --policy=random
                 Assigns policy name to the scheduler policy
 
-              job scheduler info
+              queue scheduler info
                 Shows currently configured scheduler policy
 
-              job help
+              queue help
                 prints the manual page
 
           Job States:
@@ -201,89 +201,89 @@ class JobCommand(PluginCommand):
                 variables["jobset"] = VALUE.
 
           Usage examples:
-            cms job info
+            cms queue info
                 Prints location of job queue file.
 
-            cms job set --file='~/.cloudmesh/job/spec.yaml'
+            cms queue set --file='~/.cloudmesh/job/spec.yaml'
                 Sets jobset as the FILE provided. Further process refers jobset.
 
-            cms job template --name="b[0-1]"
+            cms queue template --name="b[0-1]"
                 Creates the jobs b0 and b1 as templates in the jobset.
 
-            cms job add --name=z[0-1] --ip=123,345 --executable='ls'
+            cms queue add --name=z[0-1] --ip=123,345 --executable='ls'
                        .--input='..\data' --output='a,b'
                 Creates entries in jobset for jobs z0 and z1 with provided
                 arguments.
 
-            cms job add '~/.cloudmesh/another.yaml'
+            cms queue add '~/.cloudmesh/another.yaml'
                 Adds jobs from FILE to jobset
 
-            cms job list
+            cms queue list
                 Print all jobs
 
-            cms job list --name='perform'
+            cms queue list --name='perform'
                 Print all jobs with the phrase 'perform' in job name
 
-            cms job list --status='ready'
+            cms queue list --status='ready'
                 Print all jobs in status 'ready'
 
-            cms job status
+            cms queue status
                 Prints all jobs ordered by their status
 
-            cms job reset --name=NAME
+            cms queue reset --name=NAME
                 Resets the status of the job to 'ready'.
 
-            cms job hosts add --hostname=name --ip=ip --cpus=n
+            cms queue hosts add --hostname=name --ip=ip --cpus=n
                              .--max_jobs_allowed=x
                 Adds a host in jobset yaml file.
 
-            cms job list hosts
+            cms queue list hosts
                 Prints all the hosts configured in jobset
 
-            cms job scheduler --policy=random
+            cms queue scheduler --policy=random
                 Assigns policy name to the scheduler policy
 
-            cms job scheduler info
+            cms queue scheduler info
                 Shows currently configured scheduler policy
 
-            cms job run --name=ls_j
+            cms queue run --name=ls_j
                 Submits job(s) to host decided by the scheduler policy
 
-            cms job kill --name=ls_j
+            cms queue kill --name=ls_j
                 Kills the job
 
-            cms job delete --name=ls_j
+            cms queue delete --name=ls_j
                 Deletes a job from the jobset. If job is in 'submitted'
                 status then it is killed first and then deleted from jobset.
 
           SERVICE INTERFACE
 
-            cms job --service start [--port=port]
+            cms queue --service start [--port=port]
                 starts the rest service
 
-            cms job --service info
+            cms queue --service info
                 provides the API interface in a browser
 
-            cms job --service ps
+            cms queue --service ps
                 lists the running services
 
-            cms job --service list [--port=port] 
+            cms queue --service list [--port=port] 
                                    [--status=<STATUS>]
                                    [--name=NAME]
                 lists the queued jobs
 
-            cms job --service queue start
+            cms queue --service queue start
                 starts the queue.
 
-            cms job --service queue stop
+            cms queue --service queue stop
                 starts the queue.
 
-            cms job --service view
+            cms queue --service view
 
-            cms job --service run [--name=NAME]
+            cms queue --service run [--name=NAME]
                 Submits single or all configured jobs for execution
 
-            cms job --service kill [--name=NAME]
+            cms queue --service kill [--name=NAME]
                 Submits single or all configured jobs for execution
 
         """
@@ -407,7 +407,7 @@ class JobCommand(PluginCommand):
         #
 
         elif arguments.info and not arguments.scheduler:
-            # cms job info
+            # cms queue info
 
             jobset = variables["jobset"] or default_location
             Console.msg(f"Jobs are defined in: {jobset}")
@@ -424,7 +424,7 @@ class JobCommand(PluginCommand):
             return ""
 
         elif arguments.template:
-            # cms job template --name=job[1-2]
+            # cms queue template --name=job[1-2]
 
             names = names or ["job"]
             jobset = variables["jobset"] or default_location
@@ -442,7 +442,7 @@ class JobCommand(PluginCommand):
             Console.msg(f"Jobs are defined in: {jobset}")
 
         elif arguments.set:
-            # job set --file=FILE
+            # queue set --file=FILE
             file = arguments["file"]
 
             if not file.endswith(".yaml"):
@@ -467,7 +467,7 @@ class JobCommand(PluginCommand):
 
         elif arguments.add and arguments.FILE is None and not arguments.hosts:
             """
-            job add --name=NAME
+            queue add --name=NAME
                     --ip=IP
                     --executable=EXECUTABLE
                     [--directory=DIRECTORY]
@@ -514,7 +514,7 @@ class JobCommand(PluginCommand):
 
         elif arguments.add and arguments.FILE:
             """
-            job add FILE
+            queue add FILE
 
             FILE is supposed to contain job list only in following format
               abcd:
@@ -537,7 +537,7 @@ class JobCommand(PluginCommand):
 
             if variables["jobset"] is None:
                 Console.error(
-                    "Jobset not defined. Please use `cms job set "
+                    "Jobset not defined. Please use `cms queue set "
                     "FILE` to define the jobset."
                 )
                 return ""
@@ -562,37 +562,37 @@ class JobCommand(PluginCommand):
 
         elif arguments.status:
 
-            # job status
+            # queue status
             jobqueue = JobQueue(variables["jobset"])
             jobqueue.print_jobs(sort_var="JobStatus")
 
         elif arguments.list and arguments["--status"] and not arguments.hosts:
-            # job list --status=STATUS
+            # queue list --status=STATUS
             jobqueue = JobQueue(variables["jobset"])
             jobqueue.print_jobs(
                 filter_name="status", filter_value=arguments["--status"]
             )
 
         elif arguments.list and arguments["--name"] and not arguments.hosts:
-            # job list --name=NAME
+            # queue list --name=NAME
             jobqueue = JobQueue(variables["jobset"])
             jobqueue.print_jobs(
                 filter_name="name", filter_value=arguments["--name"]
             )
 
         elif arguments.list and not arguments.hosts:
-            # job list
+            # queue list
             jobqueue = JobQueue(variables["jobset"])
             jobqueue.print_jobs()
 
         elif arguments.kill:
-            # job kill --name=NAME
+            # queue kill --name=NAME
 
             jobqueue = JobQueue(variables["jobset"])
             jobqueue.kill_job(names)
 
         elif arguments.reset:
-            # job reset --name=NAME
+            # queue reset --name=NAME
 
             jobqueue = JobQueue(variables["jobset"])
             spec = Configuration(jobqueue.filename)
@@ -617,34 +617,34 @@ class JobCommand(PluginCommand):
                     Console.ok(f"Status reset for job {name}.")
 
         elif arguments.run:
-            # job run --name=NAME
+            # queue run --name=NAME
             jobqueue = JobQueue(variables["jobset"])
             jobqueue.run_job(names)
 
         elif arguments.delete:
-            # job delete --name=NAME
+            # queue delete --name=NAME
 
             jobqueue = JobQueue(variables["jobset"])
             jobqueue.delete_job(names)
 
         elif arguments.help:
-            # job help
+            # queue help
 
             os.system("cms help job")
 
         elif arguments.add and arguments.hosts:
-            # job hosts add --hostname=NAME --ip=ip --cpus=n
+            # queue hosts add --hostname=NAME --ip=ip --cpus=n
 
             jobqueue = JobQueue(variables["jobset"])
             jobqueue.addhost(arguments)
 
         elif arguments.hosts and arguments.list:
-            # job list hosts
+            # queue list hosts
             jobqueue = JobQueue(variables["jobset"])
             jobqueue.print_hosts()
 
         elif arguments.scheduler and arguments.info:
-            # job scheduler info
+            # queue scheduler info
 
             jobqueue = JobQueue(variables["jobset"])
             policy = jobqueue.get_policy()
@@ -652,7 +652,7 @@ class JobCommand(PluginCommand):
             Console.info(f"Configured scheduler policy: {policy}")
 
         elif arguments.scheduler and arguments.policy:
-            # job scheduler --policy=random
+            # queue scheduler --policy=random
 
             jobqueue = JobQueue(variables["jobset"])
             print()
