@@ -19,6 +19,25 @@ from cloudmesh.configuration.Configuration import Configuration
 from cloudmesh.common.debug import VERBOSE
 from yamldb import yamldb
 
+
+def sysinfo():
+    # this may alredy axist in common, if not it should be updated or integrated.
+
+    """
+    Returns value of system user from environment variables
+    :return: User name
+    """
+    user = None
+    if sys.platform == "win32":
+        user = os.environ.get("USERNAME")
+        hostname = os.environ.get("COMPUTERNAME")
+    else:
+        user = os.environ.get("USER")
+        hostname = os.environ.get("HOSTNAME")
+    cpus = multiprocessing.cpu_count()
+    return user, hostname, cpus
+
+
 @dataclass
 class Host:
 
@@ -33,8 +52,8 @@ class Host:
 class Job:
     name: str
     directory: str = "."
-    input: str = "."
-    output: str = "."
+    input: str = "./data"
+    output: str = "./output"
     status: str = "ready"
     gpu: str = ""
     user: str
@@ -42,7 +61,11 @@ class Job:
     executable: str = ""
     shell: str = "bash"
 
-    def info(self):
+    def info(self, output="print"):
+        for field in Job.__dataclass_fields__:
+            value = getattr(Job, field)
+            print(f"{field}: {value}")
+        """
         for label, entry in [
             ("Name", self.name),
             ("Directory", self.directory),
@@ -55,10 +78,14 @@ class Job:
             ("Executable", self.executable),
             ("Shell", self.shell)]:
             print(f"{label}: {entry}")
+        """
 
     def Print(self, format="table"):
         pass
 
+    def example(self, name: str, user=None):
+        user, hostname, cpus = sysinfo()
+        self.name = name, hostname, cpus
 
 class Queue:
     def add(self, job: Job):
@@ -70,8 +97,10 @@ class Queue:
     def jobs(self):
         pass
 
-    def info(self):
-        pass
+    def info(self, output="print"):
+        for field in Queue.__dataclass_fields__:
+            value = getattr(Queue, field)
+            print(f"{field}: {value}")
 
     def Print(self, query=None, format="table"):
         pass
@@ -98,6 +127,10 @@ class Cluster:
     def add_policy(self, policy):
         pass
 
+    def info(self, output="table"):
+        for host in self.hosts:
+            data = host.info(output=output)
+            print (data)
 
 class Database:
 
