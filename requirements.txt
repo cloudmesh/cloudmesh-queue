@@ -1,3 +1,4 @@
 cloudmesh-cmd5
+yamldb
 fastapi[all]
 uvicorn[standard]
