@@ -18,7 +18,7 @@ from cloudmesh.common.variables import Variables
 from cloudmesh.configuration.Configuration import Configuration
 from cloudmesh.common.debug import VERBOSE
 from yamldb import yamldb
-
+from dataclasses import dataclass
 
 def sysinfo():
     # this may alredy axist in common, if not it should be updated or integrated.
@@ -68,7 +68,7 @@ class Job:
     output: str = "./output"
     status: str = "ready"
     gpu: str = ""
-    user: str
+    user: str = ""
     arguments: str = ""
     executable: str = ""
     shell: str = "bash"
