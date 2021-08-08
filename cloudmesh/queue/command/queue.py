@@ -441,6 +441,12 @@ class JobCommand(PluginCommand):
 
             Console.msg(f"Jobs are defined in: {jobset}")
 
+            banner("Hosts")
+            print(jobqueue.print_hosts())
+
+            banner("Jobs")
+            print(jobqueue.print_jobs())
+
         elif arguments.set:
             # queue set --file=FILE
             file = arguments["file"]
