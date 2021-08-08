@@ -683,14 +683,8 @@ class JobQueue:
         :param sort_var: Element name to sort the output on
         :return: Prints a table with job list
         """
-        print("======> ", self.filename)
         spec = Configuration(self.filename)
         jobs = spec["cloudmesh.jobset.jobs"]
-        print(jobs)
-
-        print("==========================")
-        print(filter_name, filter_value, sort_var)
-        print("==========================")
 
         for k, entry in jobs.items():
             if entry.get("status") is None:
@@ -700,8 +694,9 @@ class JobQueue:
             result = jobs
         else:
             result = []
-            for entry in spec["cloudmesh.jobset.jobs"]:
-                if entry[filter_name] == filter_value:
+            for k, entry in jobs.items():
+                # Applying partial match
+                if filter_value in entry[filter_name]:
                     result.append(entry)
 
         order = [

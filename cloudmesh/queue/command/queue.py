@@ -575,16 +575,18 @@ class JobCommand(PluginCommand):
         elif arguments.list and arguments["--status"] and not arguments.hosts:
             # queue list --status=STATUS
             jobqueue = JobQueue(variables["jobset"])
-            jobqueue.print_jobs(
+            out = jobqueue.print_jobs(
                 filter_name="status", filter_value=arguments["--status"]
             )
+            print(out)
 
         elif arguments.list and arguments["--name"] and not arguments.hosts:
             # queue list --name=NAME
             jobqueue = JobQueue(variables["jobset"])
-            jobqueue.print_jobs(
+            out = jobqueue.print_jobs(
                 filter_name="name", filter_value=arguments["--name"]
             )
+            print(out)
 
         elif arguments.list and not arguments.hosts:
             # queue list
