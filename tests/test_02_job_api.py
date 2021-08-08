@@ -16,7 +16,7 @@ from cloudmesh.configuration.Configuration import Configuration
 from textwrap import dedent
 from cloudmesh.common.util import path_expand
 from cloudmesh.job.jobqueue import JobQueue
-from cloudmesh.job.command.job import JobCommand
+from cloudmesh.job.command.job import QueueCommand
 from cloudmesh.common.dotdict import dotdict
 
 import oyaml as yaml
@@ -47,7 +47,7 @@ class TestJob:
         HEADING()
 
         Benchmark.Start()
-        result = JobCommand.do_job.__doc__
+        result = QueueCommand.do_job.__doc__
         Benchmark.Stop()
         VERBOSE(result)
 
