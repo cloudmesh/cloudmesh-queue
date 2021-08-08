@@ -1,4 +1,4 @@
-import os
+  import os
 from pathlib import Path
 from pprint import pprint
 import shutil
@@ -30,7 +30,7 @@ class JobCommand(PluginCommand):
           Usage:
             queue set --file=FILE
             queue template [--name=NAME]
-            queue add FILE
+            queue add --file=FILE
             queue add --name=NAME
                     [--ip=<IP>]
                     [--executable=<EXECUTABLE>]
@@ -103,7 +103,7 @@ class JobCommand(PluginCommand):
                 sets the jobset to the file name. All other commands will be
                 applied to a jobset
 
-              queue add FILE
+              queue add --file=FILE
                 adds the jobs in the file to the jobset
 
               queue template [--name=NAME]
@@ -215,7 +215,7 @@ class JobCommand(PluginCommand):
                 Creates entries in jobset for jobs z0 and z1 with provided
                 arguments.
 
-            cms queue add '~/.cloudmesh/another.yaml'
+            cms queue add --file='~/.cloudmesh/another.yaml'
                 Adds jobs from FILE to jobset
 
             cms queue list
@@ -459,7 +459,7 @@ class JobCommand(PluginCommand):
 
             jobqueue.show_list()
 
-        elif arguments.add and arguments.FILE is None and not arguments.hosts:
+        elif arguments.add and arguments.file is None and not arguments.hosts:
             """
             queue add --name=NAME
                     --ip=IP
@@ -504,9 +504,9 @@ class JobCommand(PluginCommand):
 
             jobqueue.show_list(hosts=False)
 
-        elif arguments.add and arguments.FILE:
+        elif arguments.add and arguments.file:
             """
-            queue add FILE
+            queue add --file=FILE
 
             FILE is supposed to contain job list only in following format
               abcd:
@@ -523,7 +523,7 @@ class JobCommand(PluginCommand):
                 shell: bash
             """
             # Path.expanduser needed as windows can't interpret "~"
-            file = Path.expanduser(Path(arguments.FILE))
+            file = Path.expanduser(Path(arguments.file))
             jobqueue = JobQueue()
             _name, _directory, _basename = jobqueue.location(file)
 
@@ -551,6 +551,8 @@ class JobCommand(PluginCommand):
                 spec = yaml.load(fi, Loader=yaml.FullLoader)
 
             jobqueue.add(spec)
+
+            jobqueue.show_list(hosts=False)
 
         elif arguments.status:
             # queue status
