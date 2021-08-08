@@ -17,7 +17,7 @@ from cloudmesh.common.util import path_expand
 from cloudmesh.common.variables import Variables
 from cloudmesh.configuration.Configuration import Configuration
 from cloudmesh.common.debug import VERBOSE
-from yamldb import yamldb
+from yamldb import YamlDB
 from dataclasses import dataclass
 
 def sysinfo():
