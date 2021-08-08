@@ -289,7 +289,7 @@ class JobCommand(PluginCommand):
         """
 
         # do the import here to avoid long loading times for other commands
-        from cloudmesh.job.jobqueue import JobQueue
+        from cloudmesh.queue.jobqueue import JobQueue
 
         map_parameters(
             arguments,
