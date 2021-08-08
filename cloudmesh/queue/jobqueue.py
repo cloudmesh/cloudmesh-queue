@@ -40,9 +40,21 @@ def sysinfo():
 
 @dataclass
 class Host:
+    user: str
+    name: str
+    ip: str = "127.0.0.1"
+    status: str = "free"
+    job_counter: int = 0
+    max_jobs_allowed: int = 1
+    cores: int = 1
+    threads: int = 1
+    gpus: str = ""
 
-    def info(self):
-        pass
+    def info(self, output="print"):
+        for field in Host.__dataclass_fields__:
+            value = getattr(Host, field)
+            print(f"{field : < 20}: {value}")
+
 
     def Print(self, format="table"):
         pass
@@ -87,6 +99,7 @@ class Job:
         user, hostname, cpus = sysinfo()
         self.name = name, hostname, cpus
 
+
 class Queue:
     def add(self, job: Job):
         pass
@@ -100,13 +113,14 @@ class Queue:
     def info(self, output="print"):
         for field in Queue.__dataclass_fields__:
             value = getattr(Queue, field)
-            print(f"{field}: {value}")
+            print(f"{field : < 20}: {value}")
 
     def Print(self, query=None, format="table"):
         pass
 
     def add_policy(self, policy):
         pass
+
 
 @dataclass
 class Cluster:
@@ -130,7 +144,8 @@ class Cluster:
     def info(self, output="table"):
         for host in self.hosts:
             data = host.info(output=output)
-            print (data)
+            print(data)
+
 
 class Database:
 
@@ -142,6 +157,7 @@ class Database:
 
     def save(self, data):
         pass
+
     """
     Not yet sure if we do it this way or if load safe is part of cluster, jobs, and hosts
     def load_jobs(self):
@@ -156,6 +172,7 @@ class Database:
     def save_hosts(self, hosts):
         pass
     """
+
 
 class JobQueue:
     """
