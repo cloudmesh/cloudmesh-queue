@@ -353,20 +353,20 @@ class JobCommand(PluginCommand):
 
             elif arguments.start:
 
-                from cloudmesh.job.service.Manager import Manager
+                from cloudmesh.queue.service.Manager import Manager
 
                 service = Manager.start()
 
             elif arguments.info:
 
-                from cloudmesh.job.service.Manager import Manager
+                from cloudmesh.queue.service.Manager import Manager
 
                 port = arguments.port or "8000"
                 service = Manager.docs(port=port)
 
             elif arguments.ps:
 
-                from cloudmesh.job.service.Manager import Manager
+                from cloudmesh.queue.service.Manager import Manager
 
                 port = arguments.port or "8000"
                 service = Manager.ps(port=port, 
@@ -375,7 +375,7 @@ class JobCommand(PluginCommand):
 
             elif arguments.list:
                 
-                from cloudmesh.job.service.Manager import Manager
+                from cloudmesh.queue.service.Manager import Manager
 
                 port = arguments.port or "8000"
                 service = Manager.show(port=port,
@@ -384,7 +384,7 @@ class JobCommand(PluginCommand):
 
             elif arguments.run:
 
-                from cloudmesh.job.service.Manager import Manager
+                from cloudmesh.queue.service.Manager import Manager
 
                 port = arguments.port or "8000"
                 service = Manager.show(port=port,
@@ -392,7 +392,7 @@ class JobCommand(PluginCommand):
 
             elif arguments.kill:
 
-                from cloudmesh.job.service.Manager import Manager
+                from cloudmesh.queue.service.Manager import Manager
 
                 port = arguments.port or "8000"
                 service = Manager.show(port=port,
@@ -589,7 +589,8 @@ class JobCommand(PluginCommand):
         elif arguments.list and not arguments.hosts:
             # queue list
             jobqueue = JobQueue(variables["jobset"])
-            jobqueue.print_jobs()
+            out = jobqueue.print_jobs()
+            print(out)
 
         elif arguments.kill:
             # queue kill --name=NAME
@@ -647,7 +648,8 @@ class JobCommand(PluginCommand):
         elif arguments.hosts and arguments.list:
             # queue list hosts
             jobqueue = JobQueue(variables["jobset"])
-            jobqueue.print_hosts()
+            out = jobqueue.print_hosts()
+            print(out)
 
         elif arguments.scheduler and arguments.info:
             # queue scheduler info
