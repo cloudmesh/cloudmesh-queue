@@ -7,8 +7,10 @@ import time
 from pathlib import Path
 from textwrap import dedent
 from typing import List
+import shlex
 
 import oyaml as yaml
+from cloudmesh.common.Shell import Shell
 from cloudmesh.common.util import banner
 from cloudmesh.common.Printer import Printer
 from cloudmesh.common.Shell import Shell
@@ -20,6 +22,7 @@ from cloudmesh.configuration.Configuration import Configuration
 from cloudmesh.common.debug import VERBOSE
 from yamldb import YamlDB
 from dataclasses import dataclass
+from cloudmesh.common.util import readfile
 
 def sysinfo():
     # this may alredy axist in common, if not it should be updated or integrated.
@@ -67,12 +70,18 @@ class Job:
     directory: str = "."
     input: str = "./data"
     output: str = "./output"
+    log: str = "./log"
     status: str = "ready"
     gpu: str = ""
     user: str = ""
     arguments: str = ""
     executable: str = ""
+    command: str = ""
     shell: str = "bash"
+
+    @property
+    def scriptname(self):
+        return f"{self.name}-script.{self.shell}"
 
     def info(self, output="print"):
         for field in Job.__dataclass_fields__:
@@ -100,6 +109,55 @@ class Job:
         user, hostname, cpus = sysinfo()
         self.name = name, hostname, cpus
 
+    def set(self, command: str):
+        self.command = command
+        _command = shlex.split(command)
+        if " " in command:
+            self.executable = _command[0]
+            self.arguments = _command [1:]
+        else:
+            self.executable = self.command[0]
+
+    def generate_script(self):
+        shell = Shell.which(self.shell)
+        with open(self.scriptname, "w") as f:
+            start_line = self.logging("start")
+            end_line = self.logging("end")
+            script = "\n".join([
+                f"#! {shell}",
+                f"mkdir -p  {self.output}",
+                f"mkdir -p  {self.log}",
+                f"rm -f {self.output}/{self.name}.output",
+                f"rm -f {self.log}/{self.name}.log",
+                f"{start_line}",
+                f"{self.command} >> {self.output}/{self.name}.output",
+                f"{end_line}",
+                "#"])
+            f.write(script)
+
+    def logging(self, msg: str):
+        return f'echo "# cloudmesh state: {msg}" >> {self.log}/{self.name}.log'
+
+    @property
+    def state(self):
+        logfile = f"{self.log}/{self.name}.log"
+        lines = readfile(logfile).splitlines()
+        result = Shell.find_lines_with(lines=lines, what="# cloudmesh state:")
+        if lines is None:
+            status = "not ready"
+        else:
+            status = lines[-1:][0].split(":", 1)[1].strip()
+        self.status = status
+        return status
+
+    def reset(self):
+        # delete log file
+        try:
+            logfile = f"{self.log}/{self.name}.log"
+            os.remove(logfile)
+
+        except:
+            pass
 
 class Queue:
     def add(self, job: Job):
