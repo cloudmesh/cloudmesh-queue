@@ -12,6 +12,7 @@ import shlex
 import oyaml as yaml
 from cloudmesh.common.Shell import Shell
 from cloudmesh.common.util import banner
+from cloudmesh.common.util import str_banner
 from cloudmesh.common.Printer import Printer
 from cloudmesh.common.Shell import Shell
 from cloudmesh.common.console import Console
@@ -67,10 +68,11 @@ class Host:
 @dataclass
 class Job:
     name: str
+    experiment: str = "./experiment"
     directory: str = "."
-    input: str = "./data"
-    output: str = "./output"
-    log: str = "./log"
+    input: str = "./experiment/data"
+    output: str = "./experiment/output"
+    log: str = "./experiment/log"
     status: str = "ready"
     gpu: str = ""
     user: str = ""
@@ -81,12 +83,18 @@ class Job:
 
     @property
     def scriptname(self):
-        return f"{self.name}-script.{self.shell}"
+        return f"{self.experiment}/{self.name}-script.{self.shell}"
+
+    @property
+    def logname(self):
+        return f"{self.experiment}/{self.name}.log"
+
+    @property
+    def outputname(self):
+        return f"{self.experiment}/{self.name}.output"
 
     def info(self, output="print"):
-        for field in Job.__dataclass_fields__:
-            value = getattr(Job, field)
-            print(f"{field}: {value}")
+        print (self)
         """
         for label, entry in [
             ("Name", self.name),
@@ -102,9 +110,6 @@ class Job:
             print(f"{label}: {entry}")
         """
 
-    def Print(self, format="table"):
-        pass
-
     def example(self, name: str, user=None):
         user, hostname, cpus = sysinfo()
         self.name = name, hostname, cpus
@@ -119,29 +124,28 @@ class Job:
             self.executable = self.command[0]
 
     def generate_script(self):
+        os.system(f"mkdir -p {self.experiment}")
         shell = Shell.which(self.shell)
         with open(self.scriptname, "w") as f:
             start_line = self.logging("start")
             end_line = self.logging("end")
             script = "\n".join([
                 f"#! {shell}",
-                f"mkdir -p  {self.output}",
-                f"mkdir -p  {self.log}",
-                f"rm -f {self.output}/{self.name}.output",
-                f"rm -f {self.log}/{self.name}.log",
+                f"mkdir -p  {self.experiment}",
+                f"rm -f {self.outputname}",
+                f"rm -f {self.logname}",
                 f"{start_line}",
-                f"{self.command} >> {self.output}/{self.name}.output",
+                f"{self.command} >> {self.outputname}",
                 f"{end_line}",
                 "#"])
             f.write(script)
 
     def logging(self, msg: str):
-        return f'echo "# cloudmesh state: {msg}" >> {self.log}/{self.name}.log'
+        return f'echo "# cloudmesh state: {msg}" >> {self.logname}'
 
     @property
     def state(self):
-        logfile = f"{self.log}/{self.name}.log"
-        lines = readfile(logfile).splitlines()
+        lines = readfile(self.logname).splitlines()
         result = Shell.find_lines_with(lines=lines, what="# cloudmesh state:")
         if lines is None:
             status = "not ready"
@@ -153,11 +157,21 @@ class Job:
     def reset(self):
         # delete log file
         try:
-            logfile = f"{self.log}/{self.name}.log"
-            os.remove(logfile)
-
+            os.remove(self.logname)
         except:
             pass
+
+    def __str__(self):
+        result = [str_banner(f"{self.experiment}/{self.name}")]
+
+        for field in Job.__dataclass_fields__:
+            try:
+                value = getattr(Job, field)
+                result.append(f"{field:<20}: {value}")
+            except:
+                pass
+
+        return "\n".join(result) + "\n"
 
 class Queue:
     def add(self, job: Job):
