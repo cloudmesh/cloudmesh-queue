@@ -1,4 +1,4 @@
-  import os
+import os
 from pathlib import Path
 from pprint import pprint
 import shutil
@@ -130,7 +130,7 @@ class JobCommand(PluginCommand):
 
               queue delete --name=NAME
                 deletes the given jobs base on a name pattern such as
-                name[01-04] which would kill all jobs with the given names
+                name[01-04] which would delete all jobs with the given names
 
               queue run [--name=NAME]
                 Run all jobs from jobset. If --name argument is provided then
@@ -618,11 +618,18 @@ class JobCommand(PluginCommand):
             jobqueue = JobQueue(variables["jobset"])
             jobqueue.run_job(names)
 
+            out = jobqueue.print_jobs(
+                filter_name="name", filter_value=arguments["--name"]
+            )
+            print(out)
+            
         elif arguments.delete:
             # queue delete --name=NAME
 
             jobqueue = JobQueue(variables["jobset"])
             jobqueue.delete_job(names)
+
+            jobqueue.show_list(hosts=False)
 
         elif arguments.help:
             # queue help
