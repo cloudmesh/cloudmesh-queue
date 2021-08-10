@@ -87,9 +87,9 @@ class Job:
     name: str = "TBD"
     experiment: str = "./experiment"
     directory: str = "."
-    input: str = "./experiment/data"
-    output: str = "./experiment/output"
-    log: str = "./experiment/log"
+    input: str = None # "./experiment/data"
+    output: str = None # "./experiment/output"
+    log: str = None # "./experiment/log"
     status: str = "ready"
     gpu: str = ""
     user: str = ""
@@ -106,18 +106,16 @@ class Job:
 
     def __post_init__(self):
         Console.ok(f"Creating: {self.name}")
+        if self.input is None:
+            self.input = f"{self.experiment}/{self.name}/input"
+        if self.output is None:
+            self.output = f"{self.experiment}/{self.name}.output"
+        if self.log is None:
+            self.log = f"{self.experiment}/{self.name}.log"
 
     @property
     def scriptname(self):
         return f"{self.experiment}/{self.name}-script.{self.shell}"
-
-    @property
-    def logname(self):
-        return f"{self.experiment}/{self.name}.log"
-
-    @property
-    def outputname(self):
-        return f"{self.experiment}/{self.name}.output"
 
     def info(self, output="print"):
         print (self)
@@ -147,20 +145,20 @@ class Job:
             script = "\n".join([
                 f"#! {shell}",
                 f"mkdir -p  {self.experiment}",
-                f"rm -f {self.outputname}",
-                f"rm -f {self.logname}",
+                f"rm -f {self.output}",
+                f"rm -f {self.log}",
                 f"{start_line}",
-                f"{self.command} >> {self.outputname}",
+                f"{self.command} >> {self.output}",
                 f"{end_line}",
                 "#"])
             f.write(script)
 
     def logging(self, msg: str):
-        return f'echo "# cloudmesh state: {msg}" >> {self.logname}'
+        return f'echo "# cloudmesh state: {msg}" >> {self.log}'
 
     @property
     def state(self):
-        lines = readfile(self.logname).splitlines()
+        lines = readfile(self.log).splitlines()
         result = Shell.find_lines_with(lines=lines, what="# cloudmesh state:")
         if lines is None:
             status = "not ready"
@@ -172,7 +170,7 @@ class Job:
     def reset(self):
         # delete log file
         try:
-            os.remove(self.logname)
+            os.remove(self.log)
         except:
             pass
 
