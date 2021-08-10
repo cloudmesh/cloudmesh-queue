@@ -25,6 +25,8 @@ from yamldb import YamlDB
 from dataclasses import dataclass
 from cloudmesh.common.util import readfile
 
+Console.init()
+
 def sysinfo():
     # this may alredy axist in common, if not it should be updated or integrated.
 
@@ -42,11 +44,30 @@ def sysinfo():
     cpus = multiprocessing.cpu_count()
     return user, hostname, cpus
 
+def _to_string(obj, msg):
+    result = [str_banner(msg)]
+    for field in obj.__dataclass_fields__:
+        try:
+            value = getattr(obj, field)
+            result.append(f"{field:<20}: {value}")
+        except:
+            pass
+    return "\n".join(result) + "\n"
+
+def _to_dict(obj):
+    result = {}
+    for field in obj.__dataclass_fields__:
+        try:
+            value = getattr(obj, field)
+            result[str(field)] = value
+        except:
+            pass
+    return result
 
 @dataclass
 class Host:
-    user: str
-    name: str
+    user: str = "TBD"
+    name: str = "TBD"
     ip: str = "127.0.0.1"
     status: str = "free"
     job_counter: int = 0
@@ -56,18 +77,14 @@ class Host:
     gpus: str = ""
 
     def info(self, output="print"):
-        for field in Host.__dataclass_fields__:
-            value = getattr(Host, field)
-            print(f"{field : < 20}: {value}")
+        print(self)
 
-
-    def Print(self, format="table"):
-        pass
-
+    def __str__(self):
+        return _to_string(self, f"{self.user}@{self.name}")
 
 @dataclass
 class Job:
-    name: str
+    name: str = "TBD"
     experiment: str = "./experiment"
     directory: str = "."
     input: str = "./experiment/data"
@@ -80,6 +97,15 @@ class Job:
     executable: str = ""
     command: str = ""
     shell: str = "bash"
+
+    def to_dict(self):
+        return _to_dict(self)
+
+    def order (self):
+        return self.__dataclass_fields__
+
+    def __post_init__(self):
+        Console.ok(f"Creating: {self.name}")
 
     @property
     def scriptname(self):
@@ -95,20 +121,9 @@ class Job:
 
     def info(self, output="print"):
         print (self)
-        """
-        for label, entry in [
-            ("Name", self.name),
-            ("Directory", self.directory),
-            ("Input", self.input),
-            ("Output", self.output),
-            ("Status", self.status),
-            ("GPU", self.gpu),
-            ("User", self.user),
-            ("Arguments", self.arguments),
-            ("Executable", self.executable),
-            ("Shell", self.shell)]:
-            print(f"{label}: {entry}")
-        """
+
+    def __str__(self):
+        return _to_string(self, f"{self.experiment}/{self.name}")
 
     def example(self, name: str, user=None):
         user, hostname, cpus = sysinfo()
@@ -161,38 +176,59 @@ class Job:
         except:
             pass
 
-    def __str__(self):
-        result = [str_banner(f"{self.experiment}/{self.name}")]
-
-        for field in Job.__dataclass_fields__:
-            try:
-                value = getattr(Job, field)
-                result.append(f"{field:<20}: {value}")
-            except:
-                pass
-
-        return "\n".join(result) + "\n"
-
+@dataclass
 class Queue:
+    name : str =  "TBD"
+    experiment : str = "./experiment"
+    jobs = []
+
+    @property
+    def queuefilename(self):
+        return f"{self.experiment}/{self.name}-queue.yaml"
+
+    def to_list(self):
+        data = []
+        for job in self.jobs:
+            entry = job.to_dict()
+            data.append(entry)
+        return data
+
+    def save(self):
+        queue = {
+            "name": self.name,
+            "experiment": self.experiment,
+            "jobs": self.to_list()
+        }
+        with open(self.queuefilename, 'w') as file:
+            result = yaml.dump(queue, file)
+
+    def load(self):
+        with open(self.queuefilename, 'r') as file:
+            result = yaml.load(file, Loader=yaml.SafeLoader)
+        self.name = result["name"]
+        self.experiment = result["experiment"]
+
+
     def add(self, job: Job):
-        pass
+        self.jobs.append(job)
+        self.save()
 
     def delete(self, name: str):
         pass
 
-    def jobs(self):
-        pass
+    def info(self, output="print", order=["name", "status", "command", "gpu", "output", "log", "experiment"]):
+        banner(f"Queue: {self.name}")
 
-    def info(self, output="print"):
-        for field in Queue.__dataclass_fields__:
-            value = getattr(Queue, field)
-            print(f"{field : < 20}: {value}")
+        data = self.to_list()
+        print(Printer.write(data, order=order))
 
-    def Print(self, query=None, format="table"):
-        pass
 
     def add_policy(self, policy):
         pass
+
+    def __str__(self):
+        return _to_string(self, f"{self.experiment}/{self.name}")
+
 
 
 @dataclass

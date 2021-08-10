@@ -65,7 +65,7 @@ class JobCommand(PluginCommand):
             queue --service run
             queue --service view
             queue set NAME ATTRIBUTE=VALUE
-
+            queue exec HOST JOB
 
           This command is a job queuing and scheduling framework. It allows
           users to leverage all the available compute resources to perform
@@ -328,7 +328,14 @@ class JobCommand(PluginCommand):
         #
         # --service
         #
-        if arguments.set and arguments["ATTRIBUTE=VALUE"]:
+        if arguments.execute:
+
+            hostname = arguments.HOST
+            jobname = arguments.JOB
+
+            print (hostname, jobname)
+
+        elif arguments.set and arguments["ATTRIBUTE=VALUE"]:
             attribute, value = arguments["ATTRIBUTE=VALUE"].split("=")
             name = arguments.NAME
 
