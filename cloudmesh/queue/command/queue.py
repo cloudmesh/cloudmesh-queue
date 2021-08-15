@@ -289,7 +289,7 @@ class JobCommand(PluginCommand):
         """
 
         # do the import here to avoid long loading times for other commands
-        from cloudmesh.queue.jobqueue import JobQueue
+        from cloudmesh.queue.jobqueue import JobQueue, Host
 
         map_parameters(
             arguments,
@@ -629,7 +629,7 @@ class JobCommand(PluginCommand):
                 filter_name="name", filter_value=arguments["--name"]
             )
             print(out)
-            
+
         elif arguments.delete:
             # queue delete --name=NAME
 
@@ -649,11 +649,14 @@ class JobCommand(PluginCommand):
             jobqueue = JobQueue(variables["jobset"])
             jobqueue.addhost(arguments)
 
+            jobqueue.show_list(jobs=False)
+
         elif arguments.hosts and arguments.list:
             # queue list hosts
             jobqueue = JobQueue(variables["jobset"])
-            out = jobqueue.print_hosts()
-            print(out)
+            # out = jobqueue.print_hosts()
+            # print(out)
+            jobqueue.show_list(jobs=False)
 
         elif arguments.scheduler and arguments.info:
             # queue scheduler info

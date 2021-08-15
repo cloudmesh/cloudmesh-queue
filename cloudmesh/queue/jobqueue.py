@@ -66,8 +66,8 @@ def _to_dict(obj):
 
 @dataclass
 class Host:
-    user: str = "TBD"
-    name: str = "TBD"
+    user: str = sysinfo()[0]
+    name: str = "localhost"
     ip: str = "127.0.0.1"
     status: str = "free"
     job_counter: int = 0
@@ -78,6 +78,28 @@ class Host:
 
     def info(self, output="print"):
         print(self)
+
+    def save(self, config_file):
+
+        host_spec = dedent(
+            f"""
+              {self.name}:
+                name: {self.name}  
+                user:  {self.user}
+                ip: {self.ip}
+                status: {self.status}
+                job_counter: {self.job_counter}
+                max_jobs_allowed: {self.max_jobs_allowed}
+                cores: {self.cores}
+                threads: {self.threads}
+                gpus: {self.gpus}
+              """
+        ).strip()
+        specification = yaml.safe_load(host_spec)      
+
+        config = Configuration(config_file)
+        config["cloudmesh.jobset.hosts"].update(specification)
+        config.save(config_file)
 
     def __str__(self):
         return _to_string(self, f"{self.user}@{self.name}")
@@ -500,28 +522,21 @@ class JobQueue:
         :param arguments: dictionary containing host info
         :return: updates the jobset with host info
         """
-        config = Configuration(self.filename)
+        default = Host() 
 
-        tag = arguments.hostname
-        config[f"cloudmesh.jobset.hosts.{tag}.name"] = (
-                arguments.hostname or "localhost"
+        new_host = Host(
+            user=arguments.host_username or default.user,
+            name=arguments.hostname or default.name,
+            ip=arguments.ip or default.ip,
+            status=arguments.status or default.status,
+            job_counter=arguments.job_counter or default.job_counter,
+            max_jobs_allowed=arguments.max_jobs_allowed or default.max_jobs_allowed,
+            cores=arguments.cores or default.cores,
+            threads=arguments.threads or default.threads,
+            gpus=arguments.gpus or default.gpus
         )
-        config[f"cloudmesh.jobset.hosts.{tag}.ip"] = arguments.ip or "localhost"
-        config[f"cloudmesh.jobset.hosts.{tag}.cpus"] = (
-                arguments.cpus or "0"
-        )
-        config[f"cloudmesh.jobset.hosts.{tag}.gpus"] = (
-                arguments.gpus or "0"
-        )
-        config[f"cloudmesh.jobset.hosts.{tag}.status"] = (
-                arguments.status or "free"
-        )
-        config[f"cloudmesh.jobset.hosts.{tag}.job_counter"] = (
-                arguments.job_counter or "0"
-        )
-        config[f"cloudmesh.jobset.hosts.{tag}.max_jobs_allowed"] = (
-                arguments.max_jobs_allowed or "1"
-        )
+
+        new_host.save(config_file=self.filename)
 
         Console.ok(f"Host {arguments.hostname} added to jobset.")
 
