@@ -572,6 +572,7 @@ class JobCommand(PluginCommand):
             # queue status
             jobqueue = JobQueue(variables["jobset"])
             out = jobqueue.print_jobs(sort_var="status")
+            banner("Jobs")
             print(out)
 
         elif arguments.list and arguments["--status"] and not arguments.hosts:
@@ -580,6 +581,7 @@ class JobCommand(PluginCommand):
             out = jobqueue.print_jobs(
                 filter_name="status", filter_value=arguments["--status"]
             )
+            banner("Jobs")
             print(out)
 
         elif arguments.list and arguments["--name"] and not arguments.hosts:

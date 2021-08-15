@@ -598,7 +598,7 @@ class JobQueue:
             "threads"
         ]
         result = Printer.write(config["cloudmesh.jobset.hosts"], order=order, output=format)
-        
+
         return result
 
     @staticmethod
@@ -804,7 +804,7 @@ class JobQueue:
                 Console.error(f"Job '{name}' not found in jobset. ")
             except Exception as e:
                 Console.error(
-                    f"Job {name} could not be deleted. Please check. Error-", e
+                    f"Job {name} could not be deleted. Please check. Error- {e}"
                 )
 
     def get_policy(self):
