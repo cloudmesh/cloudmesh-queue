@@ -392,27 +392,12 @@ class JobQueue:
         if user is None:
             user = self.user
         name = name or "job"
-        specification = dedent(
-            f"""
-              {name}:
-                name: {name}  
-                directory: .
-                ip: 127.0.0.1
-                input: .
-                output: .
-                status: ready
-                gpu: "" 
-                user:  {user}
-                arguments:  -lisa
-                executable: ls
-                shell: bash
-              """
-        ).strip()
 
-        specification = yaml.safe_load(specification)
+        job = Job(name=name, user=user)
+        spec = job.to_dict()
 
-        return specification
-
+        return {f"{name}" : spec}
+        
     def add_template(self, specification):
         """
         Adds template in the jobset
