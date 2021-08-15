@@ -147,7 +147,7 @@ class Job:
     user: str = ""
     arguments: str = ""
     executable: str = ""
-    command: str = ""
+    command: str = "uname -u"
     shell: str = "bash"
 
     def to_dict(self):
@@ -501,11 +501,6 @@ class JobQueue:
         jobset = path_expand(jobset)
 
         dict_out = dict()
-
-        # for name in specification["names"]:
-        #     dict_out[name] = JobQueue.define(
-        #         specification, name
-        #     )
 
         for idx in range(len(specification["names"])):
             dict_out[specification["names"][idx]] = JobQueue.define(
@@ -865,9 +860,10 @@ class JobQueue:
         order = [
             "name",
             "directory",
-            "ip",
+            "experiment",
             "input",
             "output",
+            "log",
             "status",
             "gpu",
             "arguments",
@@ -878,9 +874,10 @@ class JobQueue:
         header = [
             "Name",
             "Directory",
-            "IP",
+            "Experiment",
             "Input",
             "Output",
+            "Log",
             "Status",
             "GPU",
             "Arguments",
@@ -911,6 +908,33 @@ class JobQueue:
         if jobs:
             banner("Jobs")
             print(self.print_jobs(format=format))
+
+    def set_attribute(self, config, name, attribute, value):
+        """
+
+        Args:
+            config ([type]): [description]
+            name ([type]): [description]
+            attribute ([type]): [description]
+            value ([type]): [description]
+
+        Returns:
+            [type]: [description]
+        """
+        spec = Configuration(self.filename)
+        config_types = spec["cloudmesh.jobset"].keys()
+
+        if config not in config_types:
+            Console.error(f"Config type {config} is not implemented in config file {self.filename}")
+        
+        try:
+            spec[f"cloudmesh.jobset.{config}.{name}.{attribute}"] = value
+        except KeyError:
+            Console.error(f"Attribute {attribute} is not found in config file {self.filename}")
+        except Exception as e:
+            Console.error(f"Could not set {attribute} to {value}: {e}")
+
+
 
 class Policy:
     """

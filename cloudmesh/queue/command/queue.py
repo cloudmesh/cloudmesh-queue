@@ -64,7 +64,7 @@ class JobCommand(PluginCommand):
             queue --service list
             queue --service run
             queue --service view
-            queue set NAME ATTRIBUTE=VALUE
+            queue set --config=CONFIG --name=NAME ATTRIBUTE=VALUE
             queue exec HOST JOB
 
           This command is a job queuing and scheduling framework. It allows
@@ -96,6 +96,7 @@ class JobCommand(PluginCommand):
             --log=<LOG>               Command logs      [default: .]
             --experiment=<EXPERIMENT> Experiment name   [default: 'experiment']
             --command=COMMAND         Command to run    Example: 'uname -u'
+            --config=<CONFIG>         Config to update  [default: jobs]
 
           Description:
 
@@ -320,7 +321,8 @@ class JobCommand(PluginCommand):
             "file",
             "command",
             "log",
-            "experiment"
+            "experiment",
+            "config"
         )
 
         # status has to be obtained with arguments["--status"]
@@ -351,11 +353,13 @@ class JobCommand(PluginCommand):
 
         elif arguments.set and arguments["ATTRIBUTE=VALUE"]:
             attribute, value = arguments["ATTRIBUTE=VALUE"].split("=")
-            name = arguments.NAME
+            name = arguments.name
+            config = arguments.config
 
-            print (name, attribute, value)
-            Console.error("implement me")
-            return ""
+            jobqueue = JobQueue()
+            jobqueue.set_attribute(config, name, attribute, value)
+
+            Console.ok(f"Updated {attribute} to {value} for {name} in config {config}.") 
 
         elif arguments.service:
 
@@ -500,17 +504,10 @@ class JobCommand(PluginCommand):
             _name, _directory, _basename = jobqueue.location(
                 variables["jobset"]
             )        
-
-            # fixed arguments for all jobs
             arguments.names = names
-            arguments.ip = arguments.ip or "localhost"
-            arguments.input = arguments.input or "./data"
-            arguments.output = arguments.output or "./output/" + arguments.name
-            arguments.gpu = arguments.gpu or " "
-            arguments.arguments = arguments.arguments or " "
 
             # Variable arguments
-            var_args = ["ip", "input", "output", "gpu", "arguments"]
+            var_args = ["ip", "input", "output", "gpu"]
 
             for arg in var_args:
                 arguments[f"{arg}_list"] = jobqueue.expand_args(
