@@ -31,17 +31,16 @@ class JobCommand(PluginCommand):
             queue set --file=FILE
             queue template [--name=NAME]
             queue add --file=FILE
-            queue add --name=NAME
-                    [--ip=<IP>]
-                    [--executable=<EXECUTABLE>]
+            queue add --name=NAME --command=COMMAND
                     [--directory=<DIRECTORY>]
                     [--input=<INPUT>]
                     [--output=<OUTPUT>]
                     [--status=<STATUS>]
                     [--gpu=GPU]
                     [--user=USER]
-                    [--arguments=<ARGUMENTS>]
                     [--shell=<SHELL>]
+                    [--log=<LOG>]
+                    [--experiment=<EXPERIMENT>]
             queue status
             queue list --status=STATUS
             queue list --name=NAME
@@ -93,7 +92,10 @@ class JobCommand(PluginCommand):
             --job_counter=COUNTER     Job count         Example. '2'
             --policy=<POLICYNAME>     Scheduler policy  [default: sequential]
             --max_jobs_allowed=<JOBS> Max jobs allowed  [default: 1]
-            --file=FILE               Jobset yaml file  [default: ]
+            --file=<FILE>             Jobset yaml file  [default: ]
+            --log=<LOG>               Command logs      [default: .]
+            --experiment=<EXPERIMENT> Experiment name   [default: 'experiment']
+            --command=COMMAND         Command to run    Example: 'uname -u'
 
           Description:
 
@@ -214,7 +216,7 @@ class JobCommand(PluginCommand):
             cms queue template --name="b[0-1]"
                 Creates the jobs b0 and b1 as templates in the jobset.
 
-            cms queue add --name=z[0-1] --ip=123,345 --executable='ls'
+            cms queue add --name=z[0-1] --command='uname -u'
                        .--input='..\data' --output='a,b'
                 Creates entries in jobset for jobs z0 and z1 with provided
                 arguments.
@@ -296,8 +298,8 @@ class JobCommand(PluginCommand):
         """
 
         # do the import here to avoid long loading times for other commands
-        from cloudmesh.queue.jobqueue import JobQueue, Host
-
+        from cloudmesh.queue.jobqueue import JobQueue
+        
         map_parameters(
             arguments,
             "name",
@@ -315,12 +317,17 @@ class JobCommand(PluginCommand):
             "policy",
             "max_jobs_allowed",
             "service",
-            "file"
+            "file",
+            "command",
+            "log",
+            "experiment"
         )
 
         # status has to be obtained with arguments["--status"]
         # we simply set it to state so its still easy to read
         arguments["state"] = arguments["--status"]
+        if arguments["file"] == "":
+            arguments["file"] = None
 
         variables = Variables()
 
@@ -476,16 +483,16 @@ class JobCommand(PluginCommand):
         elif arguments.add and arguments.file is None and not arguments.hosts:
             """
             queue add --name=NAME
-                    --ip=IP
-                    --executable=EXECUTABLE
+                    --command=COMMAND
                     [--directory=DIRECTORY]
                     [--input=INPUT]
                     [--output=OUTPUT]
                     [--status=STATUS]
                     [--gpu=GPU]
                     [--user=USER]
-                    [--arguments=ARGUMENTS]
                     [--shell=SHELL]
+                    [--log=LOG]
+                    [--experiment=EXPERIMENT]
             """
 
             jobset = variables["jobset"] or default_location

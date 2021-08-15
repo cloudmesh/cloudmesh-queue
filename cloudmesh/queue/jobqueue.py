@@ -161,6 +161,9 @@ class Job:
             self.output = f"{self.experiment}/{self.name}.output"
         if self.log is None:
             self.log = f"{self.experiment}/{self.name}.log"
+        
+        if self.command:
+            self.set(self.command)
 
     @property
     def scriptname(self):
@@ -181,7 +184,7 @@ class Job:
         _command = shlex.split(command)
         if " " in command:
             self.executable = _command[0]
-            self.arguments = _command [1:]
+            self.arguments = " ".join(_command [1:])
         else:
             self.executable = self.command[0]
 
@@ -469,7 +472,7 @@ class JobQueue:
         spec = Configuration(self.filename)
 
         spec["cloudmesh.jobset.jobs"].update(specification)
-        # VERBOSE(spec['jobs'])
+        # VERBOSE(spec)
 
         spec.save(self.filename)
 
@@ -481,21 +484,26 @@ class JobQueue:
         :param idx: index of the job to be processed
         :return: dictionary for individual jobs
         """
+
         jobqueue = JobQueue()
+        default = Job()
+
+        job = Job(
+            name = arguments.get("names")[idx],
+            experiment = arguments.experiment or default.experiment,
+            directory = arguments.directory or default.directory,
+            input = arguments.input_list[idx] or default.input,
+            output = arguments.output_list[idx] or default.output,
+            log = arguments.log or default.log,
+            status = arguments.status or default.status,
+            gpu = arguments.gpu_list[idx] or default.gpu,
+            user = arguments.user or jobqueue.user,
+            command = arguments.command or default.command,
+            shell = arguments.shell or default.shell,
+        )
         
-        _spec = {
-            "name": arguments.get("names")[idx],
-            "directory": arguments.get("directory") or ".",
-            "ip": arguments.get("ip_list")[idx] or "localhost",
-            "input": arguments.get("input_list")[idx] or "./data",
-            "output": arguments.get("output_list")[idx] or "./output",
-            "status": arguments.get("status") or "ready",
-            "gpu": arguments.get("gpu_list")[idx] or "",
-            "user": arguments.get("user") or jobqueue.user,
-            "arguments": arguments.get("arguments_list")[idx] or "",
-            "executable": arguments.get("executable"),
-            "shell": arguments.get("shell") or "bash",
-        }
+        _spec = job.to_dict()
+
         return _spec
 
     def update_spec(self, specification, jobset=None):
@@ -506,17 +514,23 @@ class JobQueue:
         :param jobset: jobset file name
         :return: None, adds jobs from specifications into the jobset
         """
-        # Remove hardcoded sepc.yaml  s/b instance property self.filename
         jobset = jobset or self.filename
         jobset = path_expand(jobset)
 
         dict_out = dict()
+
+        # for name in specification["names"]:
+        #     dict_out[name] = JobQueue.define(
+        #         specification, name
+        #     )
+
         for idx in range(len(specification["names"])):
             dict_out[specification["names"][idx]] = JobQueue.define(
                 specification, idx
             )
-        # VERBOSE(dict_out)
 
+        # VERBOSE(dict_out)
+        
         self.add(dict_out)
 
     @staticmethod
