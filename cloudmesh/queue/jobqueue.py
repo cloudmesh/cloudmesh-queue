@@ -78,6 +78,9 @@ class Host:
 
     def info(self, output="print"):
         print(self)
+    
+    def to_dict(self):
+        return _to_dict(self)
 
     def save(self, config_file):
         try:
@@ -412,6 +415,9 @@ class JobQueue:
         jobset = Path.expanduser(Path(self.filename))
         Path.mkdir(jobset.parent, exist_ok=True)
 
+        default_host = Host()
+        host_spec = default_host.to_dict()
+
         template = dedent(
             f"""
             cloudmesh:
@@ -419,16 +425,8 @@ class JobQueue:
                 user: {user}
               jobset:
                 hosts:
-                  localhost:
-                    user: {user}
-                    name: {self.name}
-                    ip: 127.0.0.1
-                    status: free
-                    job_counter: 0
-                    max_jobs_allowed: 1
-                    cores: 1
-                    threads: 1
-                    gpus: None
+                  {default_host.name}:
+                    {host_spec}
                 scheduler:
                   policy: sequential
             """
