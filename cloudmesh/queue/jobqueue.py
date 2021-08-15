@@ -597,8 +597,8 @@ class JobQueue:
             "cores",
             "threads"
         ]
-        result = Printer.write(config["cloudmesh.jobset.hosts"], order=order, 
-                               output=format)
+        result = Printer.write(config["cloudmesh.jobset.hosts"], order=order, output=format)
+        
         return result
 
     @staticmethod

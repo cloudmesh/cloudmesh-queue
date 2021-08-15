@@ -588,12 +588,15 @@ class JobCommand(PluginCommand):
             out = jobqueue.print_jobs(
                 filter_name="name", filter_value=arguments["--name"]
             )
+            banner("Jobs")
             print(out)
 
         elif arguments.list and not arguments.hosts:
             # queue list
+
             jobqueue = JobQueue(variables["jobset"])
             out = jobqueue.print_jobs()
+            banner("Jobs")
             print(out)
 
         elif arguments.kill:
