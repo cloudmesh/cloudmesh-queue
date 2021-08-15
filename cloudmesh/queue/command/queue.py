@@ -56,6 +56,7 @@ class JobCommand(PluginCommand):
                          [--status=STATUS] [--job_counter=COUNTER]
                          [--max_jobs_allowed=<JOBS>]
             queue list hosts
+            queue delete hosts --hostname=hostname
             queue scheduler --policy=POLICYNAME
             queue scheduler info
             queue --service start
@@ -142,6 +143,9 @@ class JobCommand(PluginCommand):
 
               queue list hosts
                 prints all the hosts configured in jobset
+            
+              queue delete hosts --hostname=name
+                Delete a host from the config
 
               queue scheduler --policy=random
                 Assigns policy name to the scheduler policy
@@ -239,6 +243,9 @@ class JobCommand(PluginCommand):
 
             cms queue list hosts
                 Prints all the hosts configured in jobset
+
+            cms queue delete hosts --hostname=name
+                Delete a host from the config
 
             cms queue scheduler --policy=random
                 Assigns policy name to the scheduler policy
@@ -630,7 +637,7 @@ class JobCommand(PluginCommand):
             )
             print(out)
 
-        elif arguments.delete:
+        elif arguments.delete and not arguments.hosts:
             # queue delete --name=NAME
 
             jobqueue = JobQueue(variables["jobset"])
@@ -651,8 +658,17 @@ class JobCommand(PluginCommand):
 
             jobqueue.show_list(jobs=False)
 
+        elif arguments.hosts and arguments.delete:
+            # queue delete hosts --hostname=hostname
+
+            jobqueue = JobQueue(variables["jobset"])
+            jobqueue.delete_host(host_name=arguments.hostname)
+
+            jobqueue.show_list(jobs=False)
+
         elif arguments.hosts and arguments.list:
             # queue list hosts
+
             jobqueue = JobQueue(variables["jobset"])
             # out = jobqueue.print_hosts()
             # print(out)

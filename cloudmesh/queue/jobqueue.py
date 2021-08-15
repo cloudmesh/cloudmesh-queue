@@ -80,26 +80,53 @@ class Host:
         print(self)
 
     def save(self, config_file):
+        try:
+            host_spec = dedent(
+                f"""
+                {self.name}:
+                    name: {self.name}  
+                    user:  {self.user}
+                    ip: {self.ip}
+                    status: {self.status}
+                    job_counter: {self.job_counter}
+                    max_jobs_allowed: {self.max_jobs_allowed}
+                    cores: {self.cores}
+                    threads: {self.threads}
+                    gpus: {self.gpus}
+                """
+            ).strip()
+            specification = yaml.safe_load(host_spec)      
 
-        host_spec = dedent(
-            f"""
-              {self.name}:
-                name: {self.name}  
-                user:  {self.user}
-                ip: {self.ip}
-                status: {self.status}
-                job_counter: {self.job_counter}
-                max_jobs_allowed: {self.max_jobs_allowed}
-                cores: {self.cores}
-                threads: {self.threads}
-                gpus: {self.gpus}
-              """
-        ).strip()
-        specification = yaml.safe_load(host_spec)      
+            config = Configuration(config_file)
+            config["cloudmesh.jobset.hosts"].update(specification)
+            config.save(config_file)
+        except Exception as e:
+            Console.error(f"Host {self.name} could not be added- {e}")
+            return ""
 
-        config = Configuration(config_file)
-        config["cloudmesh.jobset.hosts"].update(specification)
-        config.save(config_file)
+    def delete_host(self, config_file):
+        spec = Configuration(config_file)
+
+        try:
+            job_counter = int(spec[f"cloudmesh.jobset.hosts.{self.name}.job_counter"])
+        except Exception as e:
+            job_counter = 0
+
+        try:
+            if job_counter > 0:
+                Console.error(f"Host {self.name} is running {job_counter} jobs. Please kill those jobs before deleting this Host.")
+
+            del spec["cloudmesh.jobset.hosts"][self.name]
+
+            spec.save(config_file)
+
+        except KeyError:
+            Console.error(f"Host '{self.name}' not found in jobset.")
+
+        except Exception as e:
+            Console.error(
+                f"Job {self.name} could not be deleted. Please check. Error- {e}"
+            )
 
     def __str__(self):
         return _to_string(self, f"{self.user}@{self.name}")
@@ -539,6 +566,19 @@ class JobQueue:
         new_host.save(config_file=self.filename)
 
         Console.ok(f"Host {arguments.hostname} added to jobset.")
+    
+    def delete_host(self, host_name):
+        """
+        Deletes a host sepc from config
+
+        Args:
+            host_name (str): Host name to delete
+            config_file (str): Config file
+        """
+        host = Host(name=host_name)
+        host.delete_host(config_file=self.filename)
+
+        Console.ok(f"Host {host_name} is removed from jobset.")
 
     def print_hosts(self, format='table'):
         """
