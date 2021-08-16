@@ -352,9 +352,15 @@ class JobCommand(PluginCommand):
             print (hostname, jobname)
 
         elif arguments.set and arguments["ATTRIBUTE=VALUE"]:
+            # queue set --config=jobs --name=job7 gpu=9
+            
             attribute, value = arguments["ATTRIBUTE=VALUE"].split("=")
             name = arguments.name
             config = arguments.config
+
+            if config == 'scheduler':
+                Console.error("Please use `queue scheduler --policy=random`")
+                return ""
 
             jobqueue = JobQueue()
             jobqueue.set_attribute(config, name, attribute, value)

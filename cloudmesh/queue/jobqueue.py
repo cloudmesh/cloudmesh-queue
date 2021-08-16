@@ -911,15 +911,15 @@ class JobQueue:
 
     def set_attribute(self, config, name, attribute, value):
         """
-
+        Sets given value for the attribute
         Args:
-            config ([type]): [description]
-            name ([type]): [description]
-            attribute ([type]): [description]
-            value ([type]): [description]
+            config (str): Config type, jobs or hosts
+            name (str): Job/Host name
+            attribute (str): Attribute
+            value (Any): Value of the attribute
 
         Returns:
-            [type]: [description]
+            [None]: Updates the value.
         """
         spec = Configuration(self.filename)
         config_types = spec["cloudmesh.jobset"].keys()
