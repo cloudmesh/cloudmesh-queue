@@ -43,11 +43,11 @@ with open('README.md') as f:
 
 
 
-NAME = "cloudmesh-job"
-DESCRIPTION = "A command called job and foo for the cloudmesh shell"
+NAME = "cloudmesh-queue"
+DESCRIPTION = "A command called queue to manage remote jobs via cloudmesh shell"
 AUTHOR = "Gregor von Laszewski"
 AUTHOR_EMAIL = "laszewski@gmail.com"
-URL = "https://github.com/cloudmesh/cloudmesh-job"
+URL = "https://github.com/cloudmesh/cloudmesh-queue"
 
 
 setup(
@@ -69,8 +69,7 @@ setup(
         "Operating System :: OS Independent",
         "Programming Language :: Python",
         "Programming Language :: Python :: 3",
-        "Programming Language :: Python :: 3.7",
-        "Programming Language :: Python :: 3.8",
+        "Programming Language :: Python :: 3.9",
     ],
     install_requires=requiers,
     tests_require=[
