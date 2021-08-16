@@ -51,11 +51,11 @@ class JobCommand(PluginCommand):
             queue help
             queue run [--name=NAME]
             queue info
-            queue hosts add --hostname=hostname --ip=IP  --cpus=N
+            queue host add --hostname=hostname --ip=IP  --cpus=N
                          [--status=STATUS] [--job_counter=COUNTER]
                          [--max_jobs_allowed=<JOBS>]
-            queue list hosts
-            queue delete hosts --hostname=hostname
+            queue host list
+            queue host delete --hostname=hostname
             queue scheduler --policy=POLICYNAME
             queue scheduler info
             queue --service start
@@ -66,6 +66,7 @@ class JobCommand(PluginCommand):
             queue --service view
             queue set --config=CONFIG --name=NAME ATTRIBUTE=VALUE
             queue exec HOST JOB
+
 
           This command is a job queuing and scheduling framework. It allows
           users to leverage all the available compute resources to perform
@@ -140,14 +141,14 @@ class JobCommand(PluginCommand):
                 Run all jobs from jobset. If --name argument is provided then
                 run a specific job
 
-              queue hosts add --hostname=name --ip=ip --cpus=n
+              queue host add --hostname=name --ip=ip --cpus=n
                            .--max_jobs_allowed=x
                 Adds a host in jobset yaml file.
 
-              queue list hosts
+              queue host list
                 prints all the hosts configured in jobset
             
-              queue delete hosts --hostname=name
+              queue host delete --hostname=name
                 Delete a host from the config
 
               queue scheduler --policy=random
@@ -240,14 +241,14 @@ class JobCommand(PluginCommand):
             cms queue reset --name=NAME
                 Resets the status of the job to 'ready'.
 
-            cms queue hosts add --hostname=name --ip=ip --cpus=n
+            cms queue host add --hostname=name --ip=ip --cpus=n
                              .--max_jobs_allowed=x
                 Adds a host in jobset yaml file.
 
-            cms queue list hosts
+            cms queue host list
                 Prints all the hosts configured in jobset
 
-            cms queue delete hosts --hostname=name
+            cms queue host delete --hostname=name
                 Delete a host from the config
 
             cms queue scheduler --policy=random
@@ -490,7 +491,7 @@ class JobCommand(PluginCommand):
 
             jobqueue.show_list()
 
-        elif arguments.add and arguments.file is None and not arguments.hosts:
+        elif arguments.add and arguments.file is None and not arguments.host:
             """
             queue add --name=NAME
                     --command=COMMAND
@@ -585,7 +586,7 @@ class JobCommand(PluginCommand):
             banner("Jobs")
             print(out)
 
-        elif arguments.list and arguments["--status"] and not arguments.hosts:
+        elif arguments.list and arguments["--status"] and not arguments.host:
             # queue list --status=STATUS
             jobqueue = JobQueue(variables["jobset"])
             out = jobqueue.print_jobs(
@@ -594,7 +595,7 @@ class JobCommand(PluginCommand):
             banner("Jobs")
             print(out)
 
-        elif arguments.list and arguments["--name"] and not arguments.hosts:
+        elif arguments.list and arguments["--name"] and not arguments.host:
             # queue list --name=NAME
             jobqueue = JobQueue(variables["jobset"])
             out = jobqueue.print_jobs(
@@ -603,7 +604,7 @@ class JobCommand(PluginCommand):
             banner("Jobs")
             print(out)
 
-        elif arguments.list and not arguments.hosts:
+        elif arguments.list and not arguments.host:
             # queue list
 
             jobqueue = JobQueue(variables["jobset"])
@@ -652,7 +653,7 @@ class JobCommand(PluginCommand):
             )
             print(out)
 
-        elif arguments.delete and not arguments.hosts:
+        elif arguments.delete and not arguments.host:
             # queue delete --name=NAME
 
             jobqueue = JobQueue(variables["jobset"])
@@ -665,7 +666,7 @@ class JobCommand(PluginCommand):
 
             os.system("cms help job")
 
-        elif arguments.add and arguments.hosts:
+        elif arguments.add and arguments.host:
             # queue hosts add --hostname=NAME --ip=ip --cpus=n
 
             jobqueue = JobQueue(variables["jobset"])
@@ -673,7 +674,7 @@ class JobCommand(PluginCommand):
 
             jobqueue.show_list(jobs=False)
 
-        elif arguments.hosts and arguments.delete:
+        elif arguments.host and arguments.delete:
             # queue delete hosts --hostname=hostname
 
             jobqueue = JobQueue(variables["jobset"])
@@ -681,7 +682,7 @@ class JobCommand(PluginCommand):
 
             jobqueue.show_list(jobs=False)
 
-        elif arguments.hosts and arguments.list:
+        elif arguments.host and arguments.list:
             # queue list hosts
 
             jobqueue = JobQueue(variables["jobset"])
