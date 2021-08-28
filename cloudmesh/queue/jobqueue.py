@@ -9,6 +9,9 @@ from textwrap import dedent
 from typing import List
 import shlex
 
+import socket
+import platform
+
 import oyaml as yaml
 from cloudmesh.common.Shell import Shell
 from cloudmesh.common.util import banner
@@ -134,6 +137,24 @@ class Host:
     def __str__(self):
         return _to_string(self, f"{self.user}@{self.name}")
 
+
+def is_local(host):
+    host in ["127.0.0.1",
+             "localhost",
+             socket.gethostname(),
+             # just in case socket.gethostname() does not work  we also try the following:
+             platform.node(),
+             socket.gethostbyaddr(socket.gethostname())[0]
+             ]
+
+
+@dataclass Placement:
+    pid: int = None
+    host: str = None
+    user: str = None
+
+
+
 @dataclass
 class Job:
     name: str = "TBD"
@@ -144,11 +165,11 @@ class Job:
     log: str = None # "./experiment/log"
     status: str = "ready"
     gpu: str = ""
-    user: str = ""
     arguments: str = ""
     executable: str = ""
     command: str = "uname -u"
     shell: str = "bash"
+    placement: Placement = None
 
     def to_dict(self):
         return _to_dict(self)
