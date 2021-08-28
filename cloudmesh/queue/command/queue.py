@@ -28,6 +28,7 @@ class JobCommand(PluginCommand):
         ::
 
           Usage:
+            queue set --experiment=EXPERIMENT
             queue set --file=FILE
             queue template [--name=NAME]
             queue add --file=FILE
