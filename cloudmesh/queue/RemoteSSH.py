@@ -13,7 +13,7 @@ class RemoteSSH:
         self.status = "defined"
         self.uuid = None
 
-    def run(self, name, command, directory="~/."):
+    def generate(self, name, command, directory=None):
         # run job remotely with ssh in nohup
         # redirect pid to file in homedir
         # copy pid and put in db
@@ -23,24 +23,37 @@ class RemoteSSH:
         self.pid = "TBD"
         self.status = "running"
         self.command = command
-        self.directory = directory
+        self._command = None
+        self.directory = directory or self.directory
 
-        job = Job(directory=directory,command=command, name=name)
+        job = Job(directory=self.directory, command=self.command, name=self.name)
 
         job.generate()
 
-        print(job)
+        _command = (
+            f"ssh {self.user}@{self.host} "
+            f"\"cd {self.directory}; "
+            f"exec {self.command}\""
+        )
+        self._command = _command
 
+    def run(self, name, command, directory=None):
+        # run job remotely with ssh in nohup
+        # redirect pid to file in homedir
+        # copy pid and put in db
+        # develop output parser to check for job states
+        # such as # cm-status: running, deleted, done, defined
+        self.name = name
+        self.pid = "TBD"
+        self.status = "running"
+        self.command = command
+        self.directory = directory or self.directory
 
-        #_command = (
-        #        f"ssh {self.user}@{self.host} "
-        #        f"\"cd {self.directory}; "
-        ##        f"sh -c 'echo PID=$$' > {name}.log; "
-        #        f"exec {self.command}\""
-        #)
-        #print (_command)
-        # r = os.system(_command)
-        #print ("R:", r)
+        if self._command is None:
+            self.generate(name, command, directory=directory)
+        print (self._command)
+        r = os.system(_command)
+        print ("R:", r)
 
     @classmethod
     def status(self, uuid=None, name=None):
