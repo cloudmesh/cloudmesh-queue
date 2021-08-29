@@ -79,6 +79,15 @@ class Host:
     threads: int = 1
     gpus: str = ""
 
+    @staticmethod
+    def sync(user, host, experiment):
+        if "/" not in experiment:
+            experiment = f"./{experiment}"
+        command = f"rsync -r {experiment}/* {user}@{host}:{experiment}"
+        print(command)
+        r = os.system(command)
+        return r == 0
+
     def info(self, output="print"):
         print(self)
     
@@ -148,7 +157,8 @@ def is_local(host):
              ]
 
 
-@dataclass Placement:
+@dataclass
+class Placement:
     pid: int = None
     host: str = None
     user: str = None
@@ -170,6 +180,7 @@ class Job:
     command: str = "uname -u"
     shell: str = "bash"
     placement: Placement = None
+    scriptname: str = None
 
     def to_dict(self):
         return _to_dict(self)
@@ -189,9 +200,7 @@ class Job:
         if self.command:
             self.set(self.command)
 
-    @property
-    def scriptname(self):
-        return f"{self.experiment}/{self.name}-script.{self.shell}"
+        self.scriptname = f"{self.experiment}/{self.name}.{self.shell}"
 
     def info(self, output="print"):
         print (self)
@@ -212,19 +221,30 @@ class Job:
         else:
             self.executable = self.command[0]
 
-    def generate_script(self):
+    def shell_path(self, name):
+        if "/" in name:
+            _name = name
+        else:
+            _name = f"/usr/bin{name}"
+        self.shell = name
+        return _name
+
+    def generate(self, shell="/usr/bin/bash"):
         os.system(f"mkdir -p {self.experiment}")
-        shell = Shell.which(self.shell)
+        shell = self.shell_path(shell)
         with open(self.scriptname, "w") as f:
             start_line = self.logging("start")
             end_line = self.logging("end")
             script = "\n".join([
                 f"#! {shell}",
                 f"mkdir -p  {self.experiment}",
+                f"echo ${{PID}} > {self.experiment}/{self.name}.pid",
                 f"rm -f {self.output}",
                 f"rm -f {self.log}",
                 f"{start_line}",
+                f'echo -ne "# date: " >> {self.log}; date >> {self.log}',
                 f"{self.command} >> {self.output}",
+                f'echo -ne "# date: " >> {self.log}; date >> {self.log}',
                 f"{end_line}",
                 "#"])
             f.write(script)
@@ -249,6 +269,11 @@ class Job:
             os.remove(self.log)
         except:
             pass
+
+    def sync(self, user, host):
+        command = f"rsync -r {self.experiment} {user}@{host}:{self.experiment}"
+        print(command)
+        os.system(command)
 
 @dataclass
 class Queue:
@@ -671,7 +696,7 @@ class JobQueue:
                         command = (
                             f"ssh {v['user']}@{ip} "
                             f"\"cd {v['directory']};"
-                            f"sh -c 'echo \$\$ > {v['output']}/{k}_pid.log;"
+                            f"sh -c 'echo $$ > {v['output']}/{k}_pid.log;"
                             f"exec {v['executable']} {v['arguments']}'\""
                         )
                         # VERBOSE(command)
@@ -757,7 +782,7 @@ class JobQueue:
                         command = (
                             f"ssh {v['user']}@{ip} "
                             f"\"cd {v['output']};"
-                            f'kill -9 \$(cat {k}_pid.log)"'
+                            f'kill -9 $(cat {k}_pid.log)"'
                         )
 
                         # VERBOSE(command)
