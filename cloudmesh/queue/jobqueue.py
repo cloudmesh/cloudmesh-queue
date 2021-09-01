@@ -283,8 +283,19 @@ class Job:
 
     @property
     def state(self):
-        lines = readfile(self.log).splitlines()
+        localhost = False
+
+        #get log file
+
+        if localhost:
+            lines = readfile(self.log)
+        else:
+            lines = Shell.ssh(f"cat {self.directory}/{self.name}/self.log")
+        lines = lines.splitines()
+
         result = Shell.find_lines_with(lines=lines, what="# cloudmesh state:")
+
+
         if lines is None:
             status = "not ready"
         else:
