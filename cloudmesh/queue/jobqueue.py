@@ -168,16 +168,16 @@ def is_local(host):
 class Job:
     name: str = "TBD"
     id: str = str(uuid.uuid4().hex)
-    experiment: str = "./experiment"
-    directory: str = "."
-    input: str = None  # "./experiment/data"
-    output: str = None  # "./experiment/output"
-    log: str = None  # "./experiment/log"
+    experiment: str = "experiment"
+    directory: str = "./experiment"
+    input: str = None
+    output: str = None
+    log: str = None
     status: str = "ready"
     gpu: str = ""
     arguments: str = ""
     executable: str = ""
-    command: str = "uname -u"
+    command: str = None
     shell: str = "bash"
     shell_path: str = None
     scriptname: str = None
@@ -186,6 +186,30 @@ class Job:
     pid: str =None
     host: str =None
     user: str =None
+
+    def __post_init__(self):
+        print(self.info())
+
+        Console.ok(f"Creating: {self.name}")
+        if self.input is None:
+            self.input = f"{self.name}/input"
+        if self.output is None:
+            self.output = f"{self.name}.out"
+        if self.log is None:
+            self.log = f"{self.name}.log"
+        if self.shell_path is None:
+            self.shell_path = f"/usr/bin/{self.shell}"
+        if self.command:
+            print ("KKKKK")
+            self.set(self.command)
+
+        self.scriptname = f"{self.experiment}/{self.name}/{self.name}.{self.shell}"
+
+        self.generate_remote_command()
+        self.generate_script(shell=self.shell)
+
+
+
 
     # def nohup(self):
     @staticmethod
@@ -198,22 +222,6 @@ class Job:
     def order(self):
         return self.__dataclass_fields__
 
-    def __post_init__(self):
-        print(self.info())
-
-        Console.ok(f"Creating: {self.name}")
-        if self.input is None:
-            self.input = f"{self.experiment}/{self.name}/input"
-        if self.output is None:
-            self.output = f"{self.experiment}/{self.name}.output"
-        if self.log is None:
-            self.log = f"{self.experiment}/{self.name}.log"
-        if self.shell_path is None:
-            self.shell_path = f"/usr/bin/{self.shell}"
-        if self.command:
-            self.set(self.command)
-
-        self.scriptname = f"{self.experiment}/{self.name}.{self.shell}"
 
     def info(self):
         result = []
@@ -224,7 +232,7 @@ class Job:
         return "\n".join(result)
 
     def __str__(self):
-        return _to_string(self, f"{self.experiment}/{self.name}")
+        return _to_string(self, f"{self.experiment}/{self.name}/{self.name}")
 
     def example(self, name: str, user=None):
         user, hostname, cpus = sysinfo()
@@ -243,30 +251,35 @@ class Job:
         self.nohup_command = self.nohup(name=self.name, shell=self.shell)
         self.remote_command = \
             f"ssh {self.user}@{self.host} " + \
+            f"\"cd {self.directory}/{self.name} ; " + \
+            f"{self.nohup_command}\""
+
+    def generate_local_command(self):
+        self.nohup_command = self.nohup(name=self.name, shell=self.shell)
+        self.remote_command = \
             f"\"cd {self.directory}; " + \
             f"{self.nohup_command}\""
 
     def generate_script(self, shell="/usr/bin/bash"):
-        os.system(f"mkdir -p {self.experiment}")
+        os.system(f"mkdir -p {self.experiment}/{self.name}")
         with open(self.scriptname, "w") as f:
             start_line = self.logging("start")
             end_line = self.logging("end")
             script = "\n".join([
-                f"#! {self.shell_path}",
-                f"mkdir -p  {self.experiment}",
-                f"echo ${{PID}} > {self.experiment}/{self.name}.pid",
+                f"#! {self.shell_path} -x",
+                f"echo $$ > {self.name}.pid",
                 f"rm -f {self.output}",
                 f"rm -f {self.log}",
                 f"{start_line}",
-                f'echo -ne "# date: " >> {self.log}; date >> {self.log}',
-                f"{self.command} >> {self.output}",
+                f'echo -ne "# date: " > {self.log}; date >> {self.log}',
+                f"{self.command} > {self.output}",
                 f'echo -ne "# date: " >> {self.log}; date >> {self.log}',
                 f"{end_line}",
                 "#"])
             f.write(script)
 
     def logging(self, msg: str):
-        return f'echo "# cloudmesh state: {msg}" >> {self.log}'
+        return f'echo "# cloudmesh state: {msg}" >> {self.name}.log'
 
     @property
     def state(self):
@@ -292,10 +305,8 @@ class Job:
         os.system(command)
 
     def run(self):
-        self.generate_remote_command()
         banner(f"Run: {self.name}")
-        print(self)
-        print()
+        os.system(self.remote_command)
 
     #def __str__(self):
     #    return self.info()
