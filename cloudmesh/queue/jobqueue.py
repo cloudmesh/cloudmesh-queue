@@ -208,10 +208,6 @@ class Job:
         self.generate_remote_command()
         self.generate_script(shell=self.shell)
 
-
-
-
-    # def nohup(self):
     @staticmethod
     def nohup(name=None, shell="bash"):
         return f"nohup {shell} {name}.{shell} >> {name}-nohub.log 2>&1 &"
@@ -290,18 +286,21 @@ class Job:
         if localhost:
             lines = readfile(self.log)
         else:
-            lines = Shell.ssh(f"cat {self.directory}/{self.name}/self.log")
-        lines = lines.splitines()
+            lines = Shell.run(f"ssh {self.user}@{self.host} \"cat {self.directory}/{self.name}/{self.log}\"")
+        if lines is not None:
+            lines = lines.splitlines()
 
-        result = Shell.find_lines_with(lines=lines, what="# cloudmesh state:")
+            result = Shell.find_lines_with(lines=lines, what="# cloudmesh state:")
 
 
-        if lines is None:
-            status = "not ready"
+            if lines is None:
+                status = "not ready"
+            else:
+                status = lines[-1:][0].split(":", 1)[1].strip()
+            self.status = status
         else:
-            status = lines[-1:][0].split(":", 1)[1].strip()
-        self.status = status
-        return status
+            self.status = "unkown"
+        return self.status
 
     def reset(self):
         # delete log file

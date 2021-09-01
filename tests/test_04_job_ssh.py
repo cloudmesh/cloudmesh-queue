@@ -78,7 +78,7 @@ class TestJob:
 
         Benchmark.Start()
         job3 = Job(name="job3",
-                   command="/usr/bin/sleep 1",
+                   command="/usr/bin/sleep 10",
                    user=user,
                    host=host,
                    directory=directory)
@@ -99,11 +99,24 @@ class TestJob:
         global job3
 
         Benchmark.Start()
-
         result = job3.run()
-
         Benchmark.Stop()
         print(result)
+
+    def test_state_job3(self):
+        HEADING()
+
+        global job3
+
+        Benchmark.Start()
+        result = "undefined"
+        while result not in ["end"]:
+            result = job3.state
+            print (result)
+            time.sleep(1)
+        Benchmark.Stop()
+        print(result)
+
 
 
 class a:
