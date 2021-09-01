@@ -28,7 +28,10 @@ from yamldb import YamlDB
 from dataclasses import dataclass
 from cloudmesh.common.util import readfile
 
+import uuid
+
 Console.init()
+
 
 def sysinfo():
     # this may alredy axist in common, if not it should be updated or integrated.
@@ -47,6 +50,7 @@ def sysinfo():
     cpus = multiprocessing.cpu_count()
     return user, hostname, cpus
 
+
 def _to_string(obj, msg):
     result = [str_banner(msg)]
     for field in obj.__dataclass_fields__:
@@ -57,6 +61,7 @@ def _to_string(obj, msg):
             pass
     return "\n".join(result) + "\n"
 
+
 def _to_dict(obj):
     result = {}
     for field in obj.__dataclass_fields__:
@@ -66,6 +71,7 @@ def _to_dict(obj):
         except:
             pass
     return result
+
 
 @dataclass
 class Host:
@@ -90,7 +96,7 @@ class Host:
 
     def info(self, output="print"):
         print(self)
-    
+
     def to_dict(self):
         return _to_dict(self)
 
@@ -110,7 +116,7 @@ class Host:
                     gpus: {self.gpus}
                 """
             ).strip()
-            specification = yaml.safe_load(host_spec)      
+            specification = yaml.safe_load(host_spec)
 
             config = Configuration(config_file)
             config["cloudmesh.jobset.hosts"].update(specification)
@@ -129,7 +135,8 @@ class Host:
 
         try:
             if job_counter > 0:
-                Console.error(f"Host {self.name} is running {job_counter} jobs. Please kill those jobs before deleting this Host.")
+                Console.error(
+                    f"Host {self.name} is running {job_counter} jobs. Please kill those jobs before deleting this Host.")
 
             del spec["cloudmesh.jobset.hosts"][self.name]
 
@@ -158,37 +165,42 @@ def is_local(host):
 
 
 @dataclass
-class Placement:
-    pid: int = None
-    host: str = None
-    user: str = None
-
-
-
-@dataclass
 class Job:
     name: str = "TBD"
+    id: str = str(uuid.uuid4().hex)
     experiment: str = "./experiment"
     directory: str = "."
-    input: str = None # "./experiment/data"
-    output: str = None # "./experiment/output"
-    log: str = None # "./experiment/log"
+    input: str = None  # "./experiment/data"
+    output: str = None  # "./experiment/output"
+    log: str = None  # "./experiment/log"
     status: str = "ready"
     gpu: str = ""
     arguments: str = ""
     executable: str = ""
     command: str = "uname -u"
     shell: str = "bash"
-    placement: Placement = None
+    shell_path: str = None
     scriptname: str = None
+    remote_command: str = None
+    # placement
+    pid: str =None
+    host: str =None
+    user: str =None
+
+    # def nohup(self):
+    @staticmethod
+    def nohup(name=None, shell="bash"):
+        return f"nohup {shell} {name}.{shell} >> {name}-nohub.log 2>&1 &"
 
     def to_dict(self):
         return _to_dict(self)
 
-    def order (self):
+    def order(self):
         return self.__dataclass_fields__
 
     def __post_init__(self):
+        print(self.info())
+
         Console.ok(f"Creating: {self.name}")
         if self.input is None:
             self.input = f"{self.experiment}/{self.name}/input"
@@ -196,14 +208,20 @@ class Job:
             self.output = f"{self.experiment}/{self.name}.output"
         if self.log is None:
             self.log = f"{self.experiment}/{self.name}.log"
-        
+        if self.shell_path is None:
+            self.shell_path = f"/usr/bin/{self.shell}"
         if self.command:
             self.set(self.command)
 
         self.scriptname = f"{self.experiment}/{self.name}.{self.shell}"
 
-    def info(self, output="print"):
-        print (self)
+    def info(self):
+        result = []
+        keys = self.__dict__
+        for key in keys:
+            entry = f"{key} = {keys[key]}"
+            result.append(entry)
+        return "\n".join(result)
 
     def __str__(self):
         return _to_string(self, f"{self.experiment}/{self.name}")
@@ -217,26 +235,24 @@ class Job:
         _command = shlex.split(command)
         if " " in command:
             self.executable = _command[0]
-            self.arguments = " ".join(_command [1:])
+            self.arguments = " ".join(_command[1:])
         else:
             self.executable = self.command[0]
 
-    def shell_path(self, name):
-        if "/" in name:
-            _name = name
-        else:
-            _name = f"/usr/bin{name}"
-        self.shell = name
-        return _name
+    def generate_remote_command(self):
+        self.nohup_command = self.nohup(name=self.name, shell=self.shell)
+        self.remote_command = \
+            f"ssh {self.user}@{self.host} " + \
+            f"\"cd {self.directory}; " + \
+            f"{self.nohup_command}\""
 
-    def generate(self, shell="/usr/bin/bash"):
+    def generate_script(self, shell="/usr/bin/bash"):
         os.system(f"mkdir -p {self.experiment}")
-        shell = self.shell_path(shell)
         with open(self.scriptname, "w") as f:
             start_line = self.logging("start")
             end_line = self.logging("end")
             script = "\n".join([
-                f"#! {shell}",
+                f"#! {self.shell_path}",
                 f"mkdir -p  {self.experiment}",
                 f"echo ${{PID}} > {self.experiment}/{self.name}.pid",
                 f"rm -f {self.output}",
@@ -275,10 +291,20 @@ class Job:
         print(command)
         os.system(command)
 
+    def run(self):
+        self.generate_remote_command()
+        banner(f"Run: {self.name}")
+        print(self)
+        print()
+
+    #def __str__(self):
+    #    return self.info()
+
+
 @dataclass
 class Queue:
-    name : str =  "TBD"
-    experiment : str = "./experiment"
+    name: str = "TBD"
+    experiment: str = "./experiment"
     jobs = []
 
     @property
@@ -307,7 +333,6 @@ class Queue:
         self.name = result["name"]
         self.experiment = result["experiment"]
 
-
     def add(self, job: Job):
         self.jobs.append(job)
         self.save()
@@ -321,13 +346,11 @@ class Queue:
         data = self.to_list()
         print(Printer.write(data, order=order))
 
-
     def add_policy(self, policy):
         pass
 
     def __str__(self):
         return _to_string(self, f"{self.experiment}/{self.name}")
-
 
 
 @dataclass
@@ -445,8 +468,8 @@ class JobQueue:
         job = Job(name=name, user=user)
         spec = job.to_dict()
 
-        return {f"{name}" : spec}
-        
+        return {f"{name}": spec}
+
     def add_template(self, specification):
         """
         Adds template in the jobset
@@ -518,19 +541,19 @@ class JobQueue:
         default = Job()
 
         job = Job(
-            name = arguments.get("names")[idx],
-            experiment = arguments.experiment or default.experiment,
-            directory = arguments.directory or default.directory,
-            input = arguments.input_list[idx] or default.input,
-            output = arguments.output_list[idx] or default.output,
-            log = arguments.log or default.log,
-            status = arguments.status or default.status,
-            gpu = arguments.gpu_list[idx] or default.gpu,
-            user = arguments.user or jobqueue.user,
-            command = arguments.command or default.command,
-            shell = arguments.shell or default.shell,
+            name=arguments.get("names")[idx],
+            experiment=arguments.experiment or default.experiment,
+            directory=arguments.directory or default.directory,
+            input=arguments.input_list[idx] or default.input,
+            output=arguments.output_list[idx] or default.output,
+            log=arguments.log or default.log,
+            status=arguments.status or default.status,
+            gpu=arguments.gpu_list[idx] or default.gpu,
+            user=arguments.user or jobqueue.user,
+            command=arguments.command or default.command,
+            shell=arguments.shell or default.shell,
         )
-        
+
         _spec = job.to_dict()
 
         return _spec
@@ -554,7 +577,7 @@ class JobQueue:
             )
 
         # VERBOSE(dict_out)
-        
+
         self.add(dict_out)
 
     @staticmethod
@@ -587,7 +610,7 @@ class JobQueue:
         :param arguments: dictionary containing host info
         :return: updates the jobset with host info
         """
-        default = Host() 
+        default = Host()
 
         new_host = Host(
             user=arguments.host_username or default.user,
@@ -604,7 +627,7 @@ class JobQueue:
         new_host.save(config_file=self.filename)
 
         Console.ok(f"Host {arguments.hostname} added to jobset.")
-    
+
     def delete_host(self, host_name):
         """
         Deletes a host sepc from config
@@ -875,8 +898,8 @@ class JobQueue:
             )
             return ""
 
-    def print_jobs(self, filter_name=None, filter_value=None, 
-                         sort_var=None, format='table'):
+    def print_jobs(self, filter_name=None, filter_value=None,
+                   sort_var=None, format='table'):
         """
         Lists all jobs from the jobset. Applies filter based on the
         filter_value and filter_name. Sorting of output is done on sort_var,
@@ -931,7 +954,7 @@ class JobQueue:
             "Shell",
             "User"
         ]
-        out = Printer.write(result, order=order, 
+        out = Printer.write(result, order=order,
                             sort_keys=sort_var, output=format)
         return out
 
@@ -972,14 +995,13 @@ class JobQueue:
 
         if config not in config_types:
             Console.error(f"Config type {config} is not implemented in config file {self.filename}")
-        
+
         try:
             spec[f"cloudmesh.jobset.{config}.{name}.{attribute}"] = value
         except KeyError:
             Console.error(f"Attribute {attribute} is not found in config file {self.filename}")
         except Exception as e:
             Console.error(f"Could not set {attribute} to {value}: {e}")
-
 
 
 class Policy:

@@ -4,44 +4,44 @@ import os
 from submitqueue import SubmitQueue
 
 field_tests = [
-            #    ["CHD", "CSMOKING", "CANCER", "svi_minority", "Estbeds"],
-            #    [],
-            #    ['Population'],
-            #    ['Insurance'],
-            ['Nbeds'],
-            # ['Nbeds_per1000'],
-            # ['Nhosp'],
-            # ['Estbeds'],
-            # ['senior_percent'],
-            # ['black_percent'],
-            # ['Percentblacks'],
-            # ['Percenthispanics'],
-            # ['pop_density_2010'],
-            # ['poverty_percent'],
-            # ['svi_minority'],
-            # ['svi_overall'],
-            # ['CASTHMA'],
-            # ['HIGHCHOL'],
-            # ['DIABETES'],
-            # ['OBESITY'],
-            # ['CANCER'],
-            # ['STROKE'],
-            # ['MHLTH'],
-            # ['CSMOKING'],
-            # ['CHOLSCREEN'],
-            # ['INSURANCE'],
-            # ['CHD'],
-            # ['CHECKUP'],
-            # ['KIDNEY'],
-            # ['BINGE'],
-            # ['LPA'],
-            # ['ARTHRITIS'],
-            # ['BPMED'],
-            # ['PHLTH'],
-            # ['BPHIGH'],
-            # ['COPD'],
-            # ['PVI']
-    ]
+    #    ["CHD", "CSMOKING", "CANCER", "svi_minority", "Estbeds"],
+    #    [],
+    #    ['Population'],
+    #    ['Insurance'],
+    ['Nbeds'],
+    # ['Nbeds_per1000'],
+    # ['Nhosp'],
+    # ['Estbeds'],
+    # ['senior_percent'],
+    # ['black_percent'],
+    # ['Percentblacks'],
+    # ['Percenthispanics'],
+    # ['pop_density_2010'],
+    # ['poverty_percent'],
+    # ['svi_minority'],
+    # ['svi_overall'],
+    # ['CASTHMA'],
+    # ['HIGHCHOL'],
+    # ['DIABETES'],
+    # ['OBESITY'],
+    # ['CANCER'],
+    # ['STROKE'],
+    # ['MHLTH'],
+    # ['CSMOKING'],
+    # ['CHOLSCREEN'],
+    # ['INSURANCE'],
+    # ['CHD'],
+    # ['CHECKUP'],
+    # ['KIDNEY'],
+    # ['BINGE'],
+    # ['LPA'],
+    # ['ARTHRITIS'],
+    # ['BPMED'],
+    # ['PHLTH'],
+    # ['BPHIGH'],
+    # ['COPD'],
+    # ['PVI']
+]
 
 job_queue = SubmitQueue()
 
@@ -64,7 +64,6 @@ for fields in field_tests:
                                        'data': './cm/cloudmesh-timeseries/data'
                                        }
                            )
-
 
 # submit s/b outside of sweep.py
 job_queue.submit()
