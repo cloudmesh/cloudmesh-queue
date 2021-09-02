@@ -87,6 +87,7 @@ class Host:
 
     @staticmethod
     def sync(user, host, experiment):
+
         if "/" not in experiment:
             experiment = f"./{experiment}"
         command = f"rsync -r {experiment}/* {user}@{host}:{experiment}"
@@ -200,7 +201,6 @@ class Job:
         if self.shell_path is None:
             self.shell_path = f"/usr/bin/{self.shell}"
         if self.command:
-            print ("KKKKK")
             self.set(self.command)
 
         self.scriptname = f"{self.experiment}/{self.name}/{self.name}.{self.shell}"
@@ -235,13 +235,13 @@ class Job:
         self.name = name, hostname, cpus
 
     def set(self, command: str):
-        self.command = command
-        _command = shlex.split(command)
+        self.command = command.strip()
         if " " in command:
+            _command = shlex.split(command)
             self.executable = _command[0]
             self.arguments = " ".join(_command[1:])
         else:
-            self.executable = self.command[0]
+            self.executable = self.command
 
     def generate_remote_command(self):
         self.nohup_command = self.nohup(name=self.name, shell=self.shell)
@@ -310,13 +310,30 @@ class Job:
             pass
 
     def sync(self, user, host):
-        command = f"rsync -r {self.experiment} {user}@{host}:{self.experiment}"
-        print(command)
-        os.system(command)
+        """
+        sync the experiment directory with the host. Only sync if the host is not the localhost.
+        """
+        # only sync if host is not local
+        if not is_local(host):
+            command = f"rsync -r {self.experiment} {user}@{host}:{self.experiment}"
+            print(command)
+            os.system(command)
 
     def run(self):
+        """
+        run the script on the remote host
+        """
         banner(f"Run: {self.name}")
         os.system(self.remote_command)
+
+    def to_yaml(self):
+        result = []
+        result.append(f'{self.name}:')
+        for argument in ["name", "id", "experiment", "directory", "input", "output",
+                         "status", "gpu","command", "shell", "pid", "host", "user"]:
+            values = self.to_dict()
+            result.append(f"  {argument}: {values[argument]}")
+        return ("\n".join(result))
 
     #def __str__(self):
     #    return self.info()

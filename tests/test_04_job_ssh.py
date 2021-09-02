@@ -36,54 +36,42 @@ Benchmark.debug()
 host = "dgx"
 user = "gregor"
 directory = "./experiment"
-job1 = None
-job2 = None
-job3 = None
+jobs = []
+i = -1
+
 
 @pytest.mark.incremental
 class TestJob:
 
-    def test_hostname(self):
-        HEADING()
-
-        global job1
+    def create_command(self, command):
+        global jobs, i
+        i = i + 1
 
         Benchmark.Start()
-        job1 = Job(name="job1",
-                   command = "uname -u",
-                   user=user,
-                   host=host,
-                   directory=directory)
+        job = Job(name=f"job{i}",
+                  command=command,
+                  user=user,
+                  host=host,
+                  directory=directory)
+        jobs.append(job)
         Benchmark.Stop()
-        print(job1)
+        print(job)
+
+    def test_hostname(self):
+        HEADING()
+        self.create_command("uname")
 
     def test_ls(self):
         HEADING()
-
-        global job2
-
-        Benchmark.Start()
-        job2 = Job(name="job2",
-                   command="ls",
-                   user=user,
-                   host=host,
-                   directory=directory)
-        Benchmark.Stop()
-        print (job2)
+        self.create_command("ls")
 
     def test_sleep(self):
         HEADING()
+        self.create_command("/usr/bin/sleep 10")
 
-        global job3
-
-        Benchmark.Start()
-        job3 = Job(name="job3",
-                   command="/usr/bin/sleep 10",
-                   user=user,
-                   host=host,
-                   directory=directory)
-        Benchmark.Stop()
-        print(job3)
+    def test_which_python(self):
+        HEADING()
+        self.create_command("which python")
 
     def test_sync(self):
         HEADING()
@@ -93,27 +81,40 @@ class TestJob:
         assert result
         print(result)
 
-    def test_run_job3(self):
+    def test_run_job2(self):
         HEADING()
 
-        global job3
+        global jobs
 
+        job = jobs[2]
         Benchmark.Start()
-        result = job3.run()
+        result = job.run()
         Benchmark.Stop()
         print(result)
 
-    def test_state_job3(self):
+    def test_state_job2(self):
         HEADING()
 
-        global job3
+        global jobs
+        job = jobs[2]
 
         Benchmark.Start()
         result = "undefined"
         while result not in ["end"]:
-            result = job3.state
+            result = job.state
             print (result)
             time.sleep(1)
+        Benchmark.Stop()
+        print(result)
+
+    def test_yaml_job2(self):
+        HEADING()
+
+        global jobs
+        job = jobs[2]
+
+        Benchmark.Start()
+        result = job.to_yaml()
         Benchmark.Stop()
         print(result)
 
