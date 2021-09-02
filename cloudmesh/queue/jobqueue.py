@@ -259,7 +259,7 @@ class Job:
     def generate_script(self, shell="/usr/bin/bash"):
         os.system(f"mkdir -p {self.experiment}/{self.name}")
         with open(self.scriptname, "w") as f:
-            start_line = self.logging("start")
+            start_line = self.logging("start", append=False)
             end_line = self.logging("end")
             script = "\n".join([
                 f"#! {self.shell_path} -x",
@@ -267,15 +267,16 @@ class Job:
                 f"rm -f {self.output}",
                 f"rm -f {self.log}",
                 f"{start_line}",
-                f'echo -ne "# date: " > {self.log}; date >> {self.log}',
-                f"{self.command} > {self.output}",
                 f'echo -ne "# date: " >> {self.log}; date >> {self.log}',
                 f"{end_line}",
                 "#"])
             f.write(script)
 
-    def logging(self, msg: str):
-        return f'echo "# cloudmesh state: {msg}" >> {self.name}.log'
+    def logging(self, msg: str, append=True):
+        if append:
+            return f'echo "# cloudmesh state: {msg}" >> {self.name}.log'
+        else:
+            return f'echo "# cloudmesh state: {msg}" > {self.name}.log'
 
     @property
     def state(self):
