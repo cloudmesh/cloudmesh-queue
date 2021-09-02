@@ -335,8 +335,19 @@ class Job:
             result.append(f"  {argument}: {values[argument]}")
         return ("\n".join(result))
 
-    #def __str__(self):
-    #    return self.info()
+    def load_from_yaml(self, content, with_key=True):
+        """
+        content is a string in yaml format
+        """
+        job_str = dedent(content).strip()
+        data = yaml.safe_load(job_str)
+        if with_key:
+            name = list(data.keys())[0]
+            data = data[name]
+        new_job = Job(**data)
+        self = new_job
+
+
 
 
 @dataclass

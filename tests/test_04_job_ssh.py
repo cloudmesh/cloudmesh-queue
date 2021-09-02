@@ -81,7 +81,7 @@ class TestJob:
         assert result
         print(result)
 
-    def test_run_job2(self):
+    def aaa_test_run_job2(self):
         HEADING()
 
         global jobs
@@ -117,6 +117,56 @@ class TestJob:
         result = job.to_yaml()
         Benchmark.Stop()
         print(result)
+
+
+    def test_read_from_string(self):
+        HEADING()
+
+        HEADING()
+
+        global jobs
+        job = jobs[2]
+
+        job_str = dedent("""
+              pytest_job:
+                name: pytest_job
+                experiment: experiment
+                user: user
+                host: dgx
+                command: ls -lisa
+                shell: bash
+        """)
+
+        Benchmark.Start()
+
+        job_sleep = Job().load_from_yaml(job_str)
+
+        Benchmark.Stop()
+        print(job_sleep)
+
+    def test_read_from_flat_string(self):
+        HEADING()
+
+        HEADING()
+
+        global jobs
+        job = jobs[2]
+
+        job_str = dedent("""
+                name: pytest_job
+                experiment: experiment
+                user: user
+                host: dgx
+                command: ls -lisa
+                shell: bash
+        """)
+
+        Benchmark.Start()
+
+        job_sleep = Job().load_from_yaml(job_str, with_key=False)
+
+        Benchmark.Stop()
+        print(job_sleep)
 
 
 
