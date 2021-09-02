@@ -167,6 +167,48 @@ def is_local(host):
 
 @dataclass
 class Job:
+    """
+    The Job class creates a simple job that can be executed asynchronously
+    on a remote computer using ssh. The status of the job is managed through
+    a number of files that can be quered to identify its execution state.
+
+    I job can be created as follows
+
+        job = Job(name=f"job1",
+                  command="/usr/bin/sleep 120",
+                  user="user",
+                  host="host")
+
+    it will create a n experiment directory where the job specification is
+    located. To run it, it needs first to be syncronized and copied to the
+    remote host.
+
+        job.rsync()
+
+    After this we can run it with
+
+        job.run()
+
+    Please note the the job runs asynchronously and you can probe its state with
+
+        job.state
+
+    Note this is a property and not a function for the user. The final
+    state is called "end". Users can define their onw states and add them
+    to the log file so custom actions could be called.
+
+    To retrieve the CURRENT log file as a string you can use the functions
+
+        job.get_log()
+
+    To get the pid on the remote machine we can use
+
+        job.pid
+
+    Note that prior to running the command job.run(), the variable job.pid has
+    the value None
+
+    """
     name: str = "TBD"
     id: str = str(uuid.uuid4().hex)
     experiment: str = "experiment"
@@ -210,16 +252,37 @@ class Job:
 
     @staticmethod
     def nohup(name=None, shell="bash"):
+        """
+        returns the nohup command for a remote machine
+
+        :param name: name of the job
+        :param shell: name of the shell
+        :return: str
+        """
         return f"nohup {shell} {name}.{shell} >> {name}-nohup.log 2>&1 &"
 
     def to_dict(self):
+        """
+        Returns a dict of the Job
+
+        :return: dict
+        """
         return _to_dict(self)
 
     def order(self):
+        """
+        returns all keys of the dict represented as dataclass
+        :return:
+        """
         return self.__dataclass_fields__
 
 
     def info(self):
+        """
+        Returns an information string of the job
+
+        :return: str
+        """
         result = []
         keys = self.__dict__
         for key in keys:
@@ -228,13 +291,31 @@ class Job:
         return "\n".join(result)
 
     def __str__(self):
+        """
+        Returns a string of the job
+
+        :return: str
+        """
         return _to_string(self, f"{self.experiment}/{self.name}/{self.name}")
 
     def example(self, name: str, user=None):
+        """
+        Not implemented
+
+        :param name:
+        :param user:
+        :return:
+        """
         user, hostname, cpus = sysinfo()
         self.name = name, hostname, cpus
 
     def set(self, command: str):
+        """
+        Sets the command
+
+        :param str command: the command to be executed
+        :return: None
+        """
         self.command = command.strip()
         if " " in command:
             _command = shlex.split(command)
@@ -244,6 +325,11 @@ class Job:
             self.executable = self.command
 
     def generate_remote_command(self):
+        """
+        Generates a command to run it remotely
+
+        :return: None
+        """
         self.nohup_command = self.nohup(name=self.name, shell=self.shell)
         self.remote_command = \
             f"ssh {self.user}@{self.host} " + \
@@ -251,12 +337,25 @@ class Job:
             f"{self.nohup_command}\""
 
     def generate_local_command(self):
+        """
+        Not implemented
+
+        Generates a command to run it locally
+
+        :return: None
+        """
         self.nohup_command = self.nohup(name=self.name, shell=self.shell)
         self.remote_command = \
             f"\"cd {self.directory}; " + \
             f"{self.nohup_command}\""
 
     def generate_script(self, shell="/usr/bin/bash"):
+        """
+        generates a job script that can be copied with sunc to the remote machine
+
+        :param shell: name of the shell
+        :return: None
+        """
         os.system(f"mkdir -p {self.experiment}/{self.name}")
         with open(self.scriptname, "w") as f:
             start_line = self.logging("start", append=False)
@@ -280,6 +379,10 @@ class Job:
 
     @property
     def state(self):
+        """
+        returns the state of the remote job from the log file
+        :return:
+        """
         lines = self.get_process_file(self.log)
 
         if lines is not None:
@@ -300,6 +403,10 @@ class Job:
 
     @property
     def rpid(self):
+        """
+        returns the remote pid from the job
+        :return:
+        """
         if self.pid is not None:
             return self.pid
 
@@ -313,6 +420,12 @@ class Job:
         return self.pid
 
     def get_process_file(self, name):
+        """
+        retrieves the contents of the named file in the experiment/job directory
+
+        :param name: name of the file
+        :return: content as string
+        """
         localhost = False
 
         if localhost:
@@ -322,21 +435,42 @@ class Job:
         return lines
 
     def get_log(self):
+        """
+        Retrieves the log file form the host machine where the command is executed.
+
+        @return: str
+        """
         return self.get_process_file(self.log)
 
     def get_log_nohup(self):
+        """
+        Retrieves the nohup log file form the host machine where the command is executed.
+
+        @return:
+        """
         return self.get_process_file(f"{self.name}-nohup.log")
 
     def reset(self):
+        """
+        Not yet implementted
+
+        @return: None
+        """
         # delete log file
         try:
             os.remove(self.log)
         except:
             pass
 
-    def sync(self, user, host):
+    def sync(self, user: str, host: str):
         """
-        sync the experiment directory with the host. Only sync if the host is not the localhost.
+        sync the experiment directory with the host. Only sync if the host
+        is not the localhost.
+
+        @param str user: the user name
+        @param str host: the host name or ip address
+
+        @return: None
         """
         # only sync if host is not local
         if not is_local(host):
