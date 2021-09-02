@@ -10,6 +10,7 @@ import pytest
 from cloudmesh.common.Shell import Shell
 from cloudmesh.common.debug import VERBOSE
 from cloudmesh.common.util import HEADING
+from cloudmesh.common.util import banner
 from cloudmesh.common.Benchmark import Benchmark
 from cloudmesh.common.variables import Variables
 from cloudmesh.configuration.Configuration import Configuration
@@ -81,7 +82,7 @@ class TestJob:
         assert result
         print(result)
 
-    def aaa_test_run_job2(self):
+    def test_run_job2(self):
         HEADING()
 
         global jobs
@@ -102,11 +103,18 @@ class TestJob:
         result = "undefined"
         while result not in ["end"]:
             result = job.state
-            print (result)
+            print (job.pid, result)
             time.sleep(1)
         Benchmark.Stop()
         print(result)
+        banner("Log")
+        print(job.get_log())
+        banner("Log Nohup")
 
+        print(job.get_log_nohup())
+
+
+class gg:
     def test_yaml_job2(self):
         HEADING()
 

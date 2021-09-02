@@ -210,7 +210,7 @@ class Job:
 
     @staticmethod
     def nohup(name=None, shell="bash"):
-        return f"nohup {shell} {name}.{shell} >> {name}-nohub.log 2>&1 &"
+        return f"nohup {shell} {name}.{shell} >> {name}-nohup.log 2>&1 &"
 
     def to_dict(self):
         return _to_dict(self)
@@ -279,28 +279,52 @@ class Job:
 
     @property
     def state(self):
-        localhost = False
+        lines = self.get_process_file(self.log)
 
-        #get log file
-
-        if localhost:
-            lines = readfile(self.log)
-        else:
-            lines = Shell.run(f"ssh {self.user}@{self.host} \"cat {self.directory}/{self.name}/{self.log}\"")
         if lines is not None:
             lines = lines.splitlines()
 
             result = Shell.find_lines_with(lines=lines, what="# cloudmesh state:")
 
+            print (result)
 
-            if lines is None:
-                status = "not ready"
+            if len(result) == 0:
+                status = "running"
             else:
                 status = lines[-1:][0].split(":", 1)[1].strip()
             self.status = status
         else:
             self.status = "unkown"
         return self.status
+
+    @property
+    def rpid(self):
+        if self.pid is not None:
+            return self.pid
+
+        lines = self.get_process_file(f"{self.name}.pid")
+
+        if lines is not None:
+            self.pid = lines.strip()
+        else:
+            self.status = "no pid"
+            return None
+        return self.pid
+
+    def get_process_file(self, name):
+        localhost = False
+
+        if localhost:
+            lines = readfile(f"{self.directory}/{name}")
+        else:
+            lines = Shell.run(f"ssh {self.user}@{self.host} \"cat {self.directory}/{self.name}/{name}\"")
+        return lines
+
+    def get_log(self):
+        return self.get_process_file(self.log)
+
+    def get_log_nohup(self):
+        return self.get_process_file(f"{self.name}-nohup.log")
 
     def reset(self):
         # delete log file
@@ -325,6 +349,8 @@ class Job:
         """
         banner(f"Run: {self.name}")
         os.system(self.remote_command)
+        pid = self.rpid
+        return pid
 
     def to_yaml(self):
         result = []
