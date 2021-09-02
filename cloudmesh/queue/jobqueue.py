@@ -367,6 +367,8 @@ class Job:
                 f"rm -f {self.log}",
                 f"{start_line}",
                 f'echo -ne "# date: " >> {self.log}; date >> {self.log}',
+                f"{self.command} >> {self.output}",
+                f'echo -ne "# date: " >> {self.log}; date >> {self.log}',
                 f"{end_line}",
                 "#"])
             f.write(script)
@@ -484,8 +486,8 @@ class Job:
         """
         banner(f"Run: {self.name}")
         os.system(self.remote_command)
-        pid = self.rpid
-        return pid
+        self.pid = self.rpid
+        return self.pid
 
     def to_yaml(self):
         result = []
