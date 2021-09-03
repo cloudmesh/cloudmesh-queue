@@ -444,6 +444,14 @@ class Job:
         """
         return self.get_process_file(self.log)
 
+    def get_output(self):
+        """
+        Retrieves the output file form the host machine where the command is executed.
+
+        @return: str
+        """
+        return self.get_process_file(self.output)
+
     def get_log_nohup(self):
         """
         Retrieves the nohup log file form the host machine where the command is executed.

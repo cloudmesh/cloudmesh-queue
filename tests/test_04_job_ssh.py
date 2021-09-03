@@ -82,22 +82,18 @@ class TestJob:
         assert result
         print(result)
 
-    def test_run_job2(self):
-        HEADING()
-
+    def run_job(self, i):
         global jobs
 
-        job = jobs[2]
+        job = jobs[i]
         Benchmark.Start()
         result = job.run()
         Benchmark.Stop()
         print(result)
 
-    def test_state_job2(self):
-        HEADING()
-
+    def monitor_job_state(self, i):
         global jobs
-        job = jobs[2]
+        job = jobs[i]
 
         Benchmark.Start()
         result = "undefined"
@@ -110,8 +106,20 @@ class TestJob:
         banner("Log")
         print(job.get_log())
         banner("Log Nohup")
-
         print(job.get_log_nohup())
+        banner("Out")
+        print(job.get_output())
+
+
+    def test_state_job2(self):
+        HEADING()
+        self.run_job(2)
+        self.monitor_job_state(2)
+
+    def test_state_job0(self):
+        HEADING()
+        self.run_job(0)
+        self.monitor_job_state(0)
 
 
 class gg:
