@@ -536,24 +536,24 @@ class Queue:
     experiment: str = "./experiment"
     jobs = []
     data = None
+    filename: str = None
 
     def __post_init__(self):
+        self.filename = f"{self.experiment}/{self.name}-queue.yaml"
+        self.data = "aaa" # YamlDB(filename=self.filename)
         pass
-        self.data = YamlDB(self.queuefilename)
 
-    @property
-    def queuefilename(self):
-        return f"{self.experiment}/{self.name}-queue.yaml"
+    """
 
-    def __getattr__(self, item):
-        return data[item]
+    def __getattr__(self, key):
+        return self.data[key]
 
     def __setattr__(self, key, value):
         self.data[key] = value
 
     def add(self, job):
         raise NotImplemented
-
+    """
 
     def to_list(self):
         data = []
@@ -568,11 +568,11 @@ class Queue:
             "experiment": self.experiment,
             "jobs": self.to_list()
         }
-        with open(self.queuefilename, 'w') as file:
+        with open(self.filename, 'w') as file:
             result = yaml.dump(queue, file)
 
     def load(self):
-        with open(self.queuefilename, 'r') as file:
+        with open(self.filename, 'r') as file:
             result = yaml.load(file, Loader=yaml.SafeLoader)
         self.name = result["name"]
         self.experiment = result["experiment"]
