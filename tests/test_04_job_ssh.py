@@ -103,8 +103,7 @@ class TestJob:
         result = "undefined"
         while result not in ["end"]:
             result = job.state
-            print (job.pid, result)
-            print (job.ps())
+            print ("Job info:", job.pid, result, job.ps())
             time.sleep(1)
         Benchmark.Stop()
         print(result)

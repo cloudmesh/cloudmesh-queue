@@ -101,7 +101,6 @@ class Host:
             if "/" not in experiment:
                 experiment = f"./{experiment}"
             command = f"rsync -r {experiment}/* {user}@{host}:{experiment}"
-            print(command)
             r = os.system(command)
         else:
             r=0
@@ -353,7 +352,7 @@ class Job:
         self.nohup_command = self.nohup(name=self.name, shell=self.shell)
         if is_local(self.host):
             self.remote_command = \
-                f"cd {self.directory}; " + \
+                f"cd {self.directory}/{self.name}; " + \
                 f"{self.nohup_command}"
         else:
             self.remote_command = \
@@ -402,15 +401,11 @@ class Job:
         if lines is not None:
             lines = lines.splitlines()
 
-            result = Shell.find_lines_with(lines=lines, what="# cloudmesh state:")
-
-            print (result)
-
+            result = Shell.find_lines_with(lines=lines, what="cloudmesh state:")
             if len(result) == 0:
-                status = "running"
+                self.status = "unkown"
             else:
-                status = lines[-1:][0].split(":", 1)[1].strip()
-            self.status = status
+                self.status = result[-1].split(":", 1)[1].strip()
         else:
             self.status = "unkown"
         return self.status
@@ -423,8 +418,10 @@ class Job:
         """
         if self.pid is not None:
             return self.pid
-
-        lines = self.get_process_file(f"{self.name}.pid")
+        try:
+            lines = self.get_process_file(f"{self.name}.pid")
+        except:
+            return None
 
         if lines is not None:
             self.pid = lines.strip()
@@ -441,7 +438,6 @@ class Job:
         :return: content as string
         """
         if is_local(self.host):
-            print (f"{self.directory}/{self.name}/{name}")
             lines = readfile(f"{self.directory}/{self.name}/{name}")
         else:
             lines = Shell.run(f"ssh {self.user}@{self.host} \"cat {self.directory}/{self.name}/{name}\"")
@@ -496,7 +492,6 @@ class Job:
         # only sync if host is not local
         if not is_local(host):
             command = f"rsync -r {self.experiment} {user}@{host}:{self.experiment}"
-            print(command)
             os.system(command)
 
     def run(self):
@@ -504,8 +499,8 @@ class Job:
         run the script on the remote host
         """
         banner(f"Run: {self.name}")
-        print (self.remote_command)
-        os.system(self.remote_command)
+        print ("Command:", self.remote_command)
+        r = os.system(self.remote_command)
         self.pid = self.rpid
         return self.pid
 
