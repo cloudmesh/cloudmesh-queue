@@ -439,10 +439,16 @@ class Job:
         :param name: name of the file
         :return: content as string
         """
-        if is_local(self.host):
-            lines = readfile(f"{self.directory}/{self.name}/{name}")
-        else:
-            lines = Shell.run(f"ssh {self.user}@{self.host} \"cat {self.directory}/{self.name}/{name}\"")
+        found = False
+        while not found:
+            try:
+                if is_local(self.host):
+                    lines = readfile(f"{self.directory}/{self.name}/{name}")
+                else:
+                    lines = Shell.run(f"ssh {self.user}@{self.host} \"cat {self.directory}/{self.name}/{name}\"")
+                found = True
+            except:
+                pass
         return lines
 
     def get_log(self):
