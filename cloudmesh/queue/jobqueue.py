@@ -250,6 +250,24 @@ class Job:
         self.generate_remote_command()
         self.generate_script(shell=self.shell)
 
+    def ps(self):
+        keys = ["pid","user","ppid","sz","tty","%cpu","%mem","cmd"]
+        keys_str = ",".join(keys)
+        command = f"ps --format {keys_str} {self.pid}"
+        if not is_local(self.host):
+            command = f"ssh {self.user}@{self.host} \"{command}\""
+        try:
+            lines = Shell.run(command).splitlines()
+            lines = ' '.join(lines[1].split()).split(" ", len(keys)-1)
+            i = -1
+            entry= {}
+            for key in keys:
+                i = i + 1
+                entry[key] = lines[i]
+            return entry
+        except:
+            return None
+
     @staticmethod
     def nohup(name=None, shell="bash"):
         """

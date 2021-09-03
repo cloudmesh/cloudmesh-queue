@@ -100,6 +100,7 @@ class TestJob:
         while result not in ["end"]:
             result = job.state
             print (job.pid, result)
+            print (job.ps())
             time.sleep(1)
         Benchmark.Stop()
         print(result)
