@@ -36,6 +36,10 @@ Benchmark.debug()
 
 host = "dgx"
 user = "gregor"
+
+host = "localhost"
+user = getpass.getuser()
+
 directory = "./experiment"
 jobs = []
 i = -1

@@ -32,6 +32,15 @@ import uuid
 
 Console.init()
 
+def is_local(host):
+    return host in ["127.0.0.1",
+             "localhost",
+             socket.gethostname(),
+             # just in case socket.gethostname() does not work  we also try the following:
+             platform.node(),
+             socket.gethostbyaddr(socket.gethostname())[0]
+             ]
+
 
 def sysinfo():
     # this may alredy axist in common, if not it should be updated or integrated.
@@ -88,11 +97,14 @@ class Host:
     @staticmethod
     def sync(user, host, experiment):
 
-        if "/" not in experiment:
-            experiment = f"./{experiment}"
-        command = f"rsync -r {experiment}/* {user}@{host}:{experiment}"
-        print(command)
-        r = os.system(command)
+        if not is_local(host):
+            if "/" not in experiment:
+                experiment = f"./{experiment}"
+            command = f"rsync -r {experiment}/* {user}@{host}:{experiment}"
+            print(command)
+            r = os.system(command)
+        else:
+            r=0
         return r == 0
 
     def info(self, output="print"):
@@ -154,15 +166,6 @@ class Host:
     def __str__(self):
         return _to_string(self, f"{self.user}@{self.name}")
 
-
-def is_local(host):
-    host in ["127.0.0.1",
-             "localhost",
-             socket.gethostname(),
-             # just in case socket.gethostname() does not work  we also try the following:
-             platform.node(),
-             socket.gethostbyaddr(socket.gethostname())[0]
-             ]
 
 
 @dataclass
@@ -246,8 +249,7 @@ class Job:
             self.set(self.command)
 
         self.scriptname = f"{self.experiment}/{self.name}/{self.name}.{self.shell}"
-
-        self.generate_remote_command()
+        self.generate_command()
         self.generate_script(shell=self.shell)
 
     def ps(self):
@@ -342,30 +344,22 @@ class Job:
         else:
             self.executable = self.command
 
-    def generate_remote_command(self):
+    def generate_command(self):
         """
         Generates a command to run it remotely
 
         :return: None
         """
         self.nohup_command = self.nohup(name=self.name, shell=self.shell)
-        self.remote_command = \
-            f"ssh {self.user}@{self.host} " + \
-            f"\"cd {self.directory}/{self.name} ; " + \
-            f"{self.nohup_command}\""
-
-    def generate_local_command(self):
-        """
-        Not implemented
-
-        Generates a command to run it locally
-
-        :return: None
-        """
-        self.nohup_command = self.nohup(name=self.name, shell=self.shell)
-        self.remote_command = \
-            f"\"cd {self.directory}; " + \
-            f"{self.nohup_command}\""
+        if is_local(self.host):
+            self.remote_command = \
+                f"cd {self.directory}; " + \
+                f"{self.nohup_command}"
+        else:
+            self.remote_command = \
+                f"ssh {self.user}@{self.host} " + \
+                f"\"cd {self.directory}/{self.name} ; " + \
+                f"{self.nohup_command}\""
 
     def generate_script(self, shell="/usr/bin/bash"):
         """
@@ -446,10 +440,9 @@ class Job:
         :param name: name of the file
         :return: content as string
         """
-        localhost = False
-
-        if localhost:
-            lines = readfile(f"{self.directory}/{name}")
+        if is_local(self.host):
+            print (f"{self.directory}/{self.name}/{name}")
+            lines = readfile(f"{self.directory}/{self.name}/{name}")
         else:
             lines = Shell.run(f"ssh {self.user}@{self.host} \"cat {self.directory}/{self.name}/{name}\"")
         return lines
@@ -511,6 +504,7 @@ class Job:
         run the script on the remote host
         """
         banner(f"Run: {self.name}")
+        print (self.remote_command)
         os.system(self.remote_command)
         self.pid = self.rpid
         return self.pid
