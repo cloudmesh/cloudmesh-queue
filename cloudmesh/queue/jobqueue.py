@@ -12,6 +12,8 @@ import shlex
 import socket
 import platform
 
+from yamldb.YamlDB import YamlDB
+
 import oyaml as yaml
 from cloudmesh.common.Shell import Shell
 from cloudmesh.common.util import banner
@@ -533,10 +535,25 @@ class Queue:
     name: str = "TBD"
     experiment: str = "./experiment"
     jobs = []
+    data = None
+
+    def __post_init__(self):
+        pass
+        self.data = YamlDB(self.queuefilename)
 
     @property
     def queuefilename(self):
         return f"{self.experiment}/{self.name}-queue.yaml"
+
+    def __getattr__(self, item):
+        return data[item]
+
+    def __setattr__(self, key, value):
+        self.data[key] = value
+
+    def add(self, job):
+        raise NotImplemented
+
 
     def to_list(self):
         data = []

@@ -34,7 +34,7 @@ Benchmark.debug()
 #remote_host_ip = variables['host'] or 'juliet.futuresystems.org'
 #remote_host_user = variables['user'] or getpass.getuser()
 
-remote = True
+remote = False
 
 if remote:
     host = "dgx"
