@@ -34,11 +34,14 @@ Benchmark.debug()
 #remote_host_ip = variables['host'] or 'juliet.futuresystems.org'
 #remote_host_user = variables['user'] or getpass.getuser()
 
-host = "dgx"
-user = "gregor"
+remote = True
 
-host = "localhost"
-user = getpass.getuser()
+if remote:
+    host = "dgx"
+    user = "gregor"
+else:
+    host = "localhost"
+    user = getpass.getuser()
 
 directory = "./experiment"
 jobs = []
