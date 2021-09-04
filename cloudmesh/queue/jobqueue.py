@@ -547,6 +547,8 @@ class Queue:
         self.name = name
         self.experiment=  experiment or "./experiment"
         self.filename = filename or f"{self.experiment}/{self.name}-queue.yaml"
+        if not os.path.exists(self.experiment):
+            os.makedirs(self.experiment)
         if os.path.isfile(self.filename):
             self.jobs = {}
         else:
