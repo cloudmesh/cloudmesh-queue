@@ -8,9 +8,12 @@ from pathlib import Path
 from textwrap import dedent
 from typing import List
 import shlex
+import json
+import oyaml as yaml
 
 import socket
 import platform
+
 
 from yamldb.YamlDB import YamlDB
 
@@ -26,7 +29,6 @@ from cloudmesh.common.util import path_expand
 from cloudmesh.common.variables import Variables
 from cloudmesh.configuration.Configuration import Configuration
 from cloudmesh.common.debug import VERBOSE
-from yamldb import YamlDB
 from dataclasses import dataclass
 from cloudmesh.common.util import readfile
 
@@ -536,56 +538,49 @@ class Job:
 
 
 
-@dataclass
 class Queue:
-    name: str = "TBD"
-    experiment: str = "./experiment"
-    jobs = []
-    data = None
-    filename: str = None
 
-    def __post_init__(self):
-        self.filename = f"{self.experiment}/{self.name}-queue.yaml"
-        self.data = "aaa" # YamlDB(filename=self.filename)
-        pass
+    def __init__(self,
+                 name: str = "TBD",
+                 experiment: str = None,
+                 filename: str = None,
+                 jobs: List = None):
+
+        self.name = name
+        self.experiment=  experiment or "./experiment"
+        self.filename = filename or f"{self.experiment}/{self.name}-queue.yaml"
+        if os.path.isfile(self.filename):
+            self.jobs = {}
+        else:
+            self.jobs = {}
+        self.jobs = YamlDB(data=self.jobs, filename=self.filename)
 
     """
-
     def __getattr__(self, key):
         return self.data[key]
 
+    """
+    """
     def __setattr__(self, key, value):
         self.data[key] = value
-
-    def add(self, job):
-        raise NotImplemented
     """
-
-    def to_list(self):
+    """
+        def to_list(self):
         data = []
         for job in self.jobs:
             entry = job.to_dict()
             data.append(entry)
         return data
-
-    def save(self):
-        queue = {
-            "name": self.name,
-            "experiment": self.experiment,
-            "jobs": self.to_list()
-        }
-        with open(self.filename, 'w') as file:
-            result = yaml.dump(queue, file)
-
+    """
     def load(self):
-        with open(self.filename, 'r') as file:
-            result = yaml.load(file, Loader=yaml.SafeLoader)
-        self.name = result["name"]
-        self.experiment = result["experiment"]
+        self.jobs = YamlDB(data=self.jobs, filename=self.filename)
 
     def add(self, job: Job):
-        self.jobs.append(job)
+        self.jobs[job.name] = job
         self.save()
+
+    def save(self):
+        self.jobs.flush()
 
     def delete(self, name: str):
         pass
@@ -599,9 +594,29 @@ class Queue:
     def add_policy(self, policy):
         pass
 
-    def __str__(self):
-        return _to_string(self, f"{self.experiment}/{self.name}")
+    def to_json(self):
 
+        pass
+
+    def to_yaml(self):
+        pass
+
+    def __str__(self):
+        print("OOOO")
+        result = {
+            "config": {
+                "name": self.name,
+                "experiment": self.experiment,
+                "filename": self.filename,
+            },
+            "jobs": {}
+        }
+        for job in self.jobs:
+            result["jobs"][job] = self.jobs[job]
+
+        # return _to_string(self, f"{self.experiment}/{self.name}")
+        from pprint import pprint; pprint(result)
+        return str(result)
 
 @dataclass
 class Cluster:
