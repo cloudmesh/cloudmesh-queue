@@ -579,7 +579,7 @@ class Queue:
         """
         return self.jobs[name]
 
-    def replace(self, job: job):
+    def set(self, job: Job):
         """
         Overwrites the contents of the job. If the job
         does not exist, it will be updated.
