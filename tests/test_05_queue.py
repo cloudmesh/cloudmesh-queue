@@ -102,6 +102,18 @@ class TestQueue:
         banner("json")
         print(queue.to_json())
 
+    def test_empty_queue(self):
+        HEADING()
+        queue = Queue(name="b",experiment="b_experiment")
+        queue.save()
+        queue_file = open("./b_experiment/b-queue.yaml", "r")
+        queue_str = queue_file.read()
+        assert queue.to_yaml() == queue_str
+
+    def test_load_queue(self):
+        queue = Queue(name='a')
+        print("HERE")
+        print(queue.jobs)
 
 class ooo:
     def test_sync(self):
