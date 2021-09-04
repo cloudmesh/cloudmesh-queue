@@ -570,6 +570,22 @@ class Queue:
             data.append(entry)
         return data
     """
+
+    def get(self, name):
+        """
+        Returns the job with the given name
+
+        :param name: name of the job
+        :return:
+        """
+        return self.jobs[name]
+
+    def update(self, job):
+        raise NotImplemented
+
+    def search(self, query):
+        return self.jobs.search(query)
+
     def load(self):
         self.jobs = YamlDB(data=self.jobs, filename=self.filename)
 
