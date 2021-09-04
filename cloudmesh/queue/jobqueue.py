@@ -591,7 +591,6 @@ class Queue:
         return self.jobs.search(query)
 
     def load(self):
-        self.jobs = YamlDB(filename=self.filename+"jobs",backend=":memory:")
         for job in self.db:
             self.jobs[self.db[job]["name"]] = Job(**self.db[job])
 
