@@ -607,11 +607,11 @@ class Queue:
             result["jobs"][job] = _to_dict( self.jobs[job])
         return result
 
-    def to_json(self):
-        return json.dumps(self.to_dict(), indent=4)
+    def to_json(self, indent=2):
+        return json.dumps(self.to_dict(), indent=indent)
 
     def to_yaml(self):
-        pass
+        return yaml.dump(self.to_dict())
 
     def __str__(self):
         result = self.to_dict()
