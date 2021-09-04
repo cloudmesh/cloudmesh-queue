@@ -536,8 +536,6 @@ class Job:
         self = new_job
 
 
-
-
 class Queue:
 
     def __init__(self,
