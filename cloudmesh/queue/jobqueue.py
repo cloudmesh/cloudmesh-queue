@@ -555,34 +555,37 @@ class Queue:
             self.jobs = {}
         self.jobs = YamlDB(data=self.jobs, filename=self.filename)
 
-    """
-    def __getattr__(self, key):
-        return self.data[key]
-
-    """
-    """
-    def __setattr__(self, key, value):
-        self.data[key] = value
-    """
-    """
-        def to_list(self):
-        data = []
-        for job in self.jobs:
-            entry = job.to_dict()
-            data.append(entry)
-        return data
-    """
-
-    def get(self, name):
+    def delete(self, name: str) -> Job:
         """
         Returns the job with the given name
 
         :param name: name of the job
-        :return:
+        :return: Job
+        """
+        try:
+            # check if job is running
+            # if it is running kill job (not yet implemented in Job class to do)
+            # finally delete from queue
+            self.jobs.delete(name)
+        except:
+            pass
+
+    def get(self, name: str) -> Job:
+        """
+        Returns the job with the given name
+
+        :param name: name of the job
+        :return: Job
         """
         return self.jobs[name]
 
-    def update(self, job):
+    def replace(self, job: job):
+        """
+        Overwrites the contents of the job. If the job
+        does not exist, it will be updated.
+
+        :param job: the job
+        """
         raise NotImplemented
 
     def search(self, query):
