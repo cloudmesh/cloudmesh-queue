@@ -608,7 +608,7 @@ class Queue:
         return result
 
     def to_json(self):
-        pass
+        return json.dumps(self.to_dict(), indent=4)
 
     def to_yaml(self):
         pass
