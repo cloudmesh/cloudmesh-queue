@@ -606,19 +606,15 @@ class Queue:
         for job in self.jobs:
             result["jobs"][job] = self.jobs[job]
         return result
-    
-    def to_json(self):
 
+    def to_json(self):
         pass
 
     def to_yaml(self):
         pass
 
     def __str__(self):
-        print("OOOO")
-
-        # return _to_string(self, f"{self.experiment}/{self.name}")
-        from pprint import pprint; pprint(result)
+        result = self.to_dict()
         return str(result)
 
 @dataclass
