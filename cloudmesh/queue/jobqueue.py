@@ -604,7 +604,7 @@ class Queue:
             "jobs": {}
         }
         for job in self.jobs:
-            result["jobs"][job] = self.jobs[job]
+            result["jobs"][job] = _to_dict( self.jobs[job])
         return result
 
     def to_json(self):
