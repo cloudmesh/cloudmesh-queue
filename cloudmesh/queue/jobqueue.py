@@ -596,10 +596,11 @@ class Queue:
 
     def add(self, job: Job):
         self.jobs[job.name] = job
-        self.db[job.name] = job.to_dict()
         self.save()
 
     def save(self):
+        for job in self.jobs:
+            self.db[self.jobs[job].name] = _to_dict(self.jobs[job])
         self.db.flush()
 
     def delete(self, name: str):
