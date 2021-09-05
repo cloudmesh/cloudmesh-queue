@@ -2,9 +2,9 @@
 # cms set host='juliet.futuresystems.org'
 # cms set user=$USER
 #
-# pytest -v --capture=no tests/test_05_queue.py
-# pytest -v  tests/test_05_queue.py
-# pytest -v --capture=no  tests/test_05_queue.py::TestSSHJob::<METHODNAME>
+# pytest -v --capture=no tests/test_06_cluster.py
+# pytest -v  tests/test_06_cluster.py
+# pytest -v --capture=no  tests/test_06_cluster.py::TestSSHHost::<METHODNAME>
 ###############################################################
 import getpass
 from pprint import pprint
@@ -15,16 +15,16 @@ from cloudmesh.common.util import HEADING
 from cloudmesh.common.util import banner
 from cloudmesh.common.util import readfile
 
-from cloudmesh.queue.jobqueue import Job
-from cloudmesh.queue.jobqueue import Queue
+from cloudmesh.queue.jobqueue import Host
+from cloudmesh.queue.jobqueue import Cluster
 
 Benchmark.debug()
 
 # variables = Variables()
 # print(variables)
-# variables["jobset"] = path_expand("./a.yaml")
+# variables["hostset"] = path_expand("./a.yaml")
 
-# configured_jobset = variables["jobset"]
+# configured_hostset = variables["hostset"]
 # remote_host_ip = variables['host'] or 'juliet.futuresystems.org'
 # remote_host_user = variables['user'] or getpass.getuser()
 
@@ -39,111 +39,91 @@ else:
     user = getpass.getuser()
 
 directory = "./experiment"
-jobs = []
-queue = Queue(name="a")
+hosts = []
+cluster = Cluster(name="a")
 i = -1
 
 
 @pytest.mark.incremental
-class TestQueue:
+class TestCluster:
 
-    def create_command(self, command):
-        global jobs, i
+    def create_host(self):
+        global hosts, i
         i = i + 1
 
         Benchmark.Start()
-        job = Job(name=f"job{i}",
-                  command=command,
-                  user=user,
-                  host=host,
-                  directory=directory)
-        jobs.append(job)
+        host = Host(name=f"host{i}")
+        hosts.append(host)
         Benchmark.Stop()
-        print(job)
+        print(host)
 
-    def test_hostname(self):
+    def test_create_hosts(self):
         HEADING()
         Benchmark.Start()
-        self.create_command("uname")
+        self.create_host()
+        self.create_host()
+        self.create_host()
+        self.create_host()
         Benchmark.Stop()
 
-    def test_ls(self):
+    def test_add_to_cluster(self):
         HEADING()
+        global hosts
         Benchmark.Start()
-
-        self.create_command("ls")
-        Benchmark.Stop()
-
-    def test_sleep(self):
-        HEADING()
-        Benchmark.Start()
-        self.create_command("/usr/bin/sleep 10")
-        Benchmark.Stop()
-
-    def test_which_python(self):
-        HEADING()
-        Benchmark.Start()
-        self.create_command("which python")
-        Benchmark.Stop()
-
-    def test_add_to_queue(self):
-        HEADING()
-        global jobs
-        Benchmark.Start()
-        for job in jobs:
-            queue.add(job)
-        queue.save()
+        for host in hosts:
+            cluster.add(host)
+        cluster.save()
         Benchmark.Stop()
 
         banner("print")
-        print(queue)
+        print(cluster)
 
     def test_converters(self):
         HEADING()
         Benchmark.Start()
         banner("dict")
-        pprint(queue.to_dict())
+        pprint(cluster.to_dict())
         banner("yaml")
-        print(queue.to_yaml())
+        print(cluster.to_yaml())
         banner("json")
-        print(queue.to_json())
+        print(cluster.to_json())
         Benchmark.Stop()
 
     def test_save(self):
         HEADING()
         Benchmark.Start()
-        queue.save()
-        content = readfile("./experiment/a-queue.yaml")
+        cluster.save()
+        content = readfile("./experiment/a-cluster.yaml")
         Benchmark.Stop()
-        assert "job3:" in content
-        assert "name: job3" in content
+        assert "host3:" in content
+        assert "name: host3" in content
 
     def test_load_from_file(self):
         HEADING()
         Benchmark.Start()
-        q = Queue(name="c")
-        q.load(filename="./experiment/a-queue.yaml")
+        q = Cluster(name="c")
+        q.load(filename="./experiment/a-cluster.yaml")
         Benchmark.Stop()
         print(q.to_yaml())
-        assert "filename: ./experiment/c-queue.yaml" in q.to_yaml()
+        assert "filename: ./experiment/c-cluster.yaml" in q.to_yaml()
 
-    def test_load_with_jobs(self):
+    def test_load_with_hosts(self):
         HEADING()
         Benchmark.Start()
-        q = Queue(name="d", jobs=jobs)
-        q.load(filename="./experiment/d-queue.yaml")
+        q = Cluster(name="d", hosts=hosts)
+        q.load(filename="./experiment/d-cluster.yaml")
         Benchmark.Stop()
         print(q.to_yaml())
         print("LLL", len(q))
-        assert len(q) == len(jobs)
-        assert "filename: ./experiment/d-queue.yaml" in q.to_yaml()
+        assert len(q) == len(hosts)
+        assert "filename: ./experiment/d-cluster.yaml" in q.to_yaml()
 
-    def test_load_queue(self):
+    def test_load_cluster(self):
         HEADING()
         Benchmark.Start()
-        queue = Queue(name='a')
-        banner("Jobs")
-        print(queue.to_yaml())
+        cluster = Cluster(name='a')
+        banner("Hosts")
+        print(cluster.to_yaml())
         Benchmark.Stop()
 
     def test_benchmark(self):
@@ -151,12 +131,3 @@ class TestQueue:
         Benchmark.print(sysinfo=sysinfo, csv=True)
 
 
-class broken:
-    def test_empty_queue(self):
-        HEADING()
-        empty = Queue(name="b", experiment="b_experiment")
-        empty.save()
-        content = readfile("./b_experiment/b-queue.yaml")
-        print("Content", content)
-        queue_str = queue_file.read()
-        assert queue.to_yaml() == queue_str

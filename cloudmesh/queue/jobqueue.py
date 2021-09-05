@@ -610,7 +610,7 @@ class Cluster:
                  name: str = "TBD",
                  experiment: str = None,
                  filename: str = None,
-                 hosts: List = None)
+                 hosts: List = None):
         self.name = name
         self.experiment = experiment or "./experiment"
         self.filename = filename or f"{self.experiment}/{self.name}-cluster.yaml"
