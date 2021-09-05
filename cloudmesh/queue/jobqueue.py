@@ -568,6 +568,8 @@ class Host:
     ping_status: boolean = False
     ping_time: date = None
 
+
+    # see also cloudmesh.common.Host.ping/check and so on. we can reuse that
     def ping(self):
         """
         Conducts a ping on the host and updates the probestatus
@@ -765,10 +767,12 @@ class Cluster:
         function for that. So in principal this is already
         implemented.
 
+        see also cloudmesh.common.Host.ping/check and so on. we can reuse that
+
         :param parallelism:
         :return:
         """
-    def sshprobe(self, parallelism=1):
+    def probe(self, parallelism=1):
         """
 
         :param parallelism:
