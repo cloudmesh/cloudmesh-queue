@@ -560,9 +560,6 @@ class Queue:
 
 @dataclass
 class Host:
-    """
-    THIS CLASS IS NOT YET IMPLEMENTED CORRECTLY
-    """
     user: str = sysinfo()[0]
     name: str = "localhost"
     ip: str = "127.0.0.1"
@@ -593,9 +590,15 @@ class Host:
             r = 0
         return r == 0
 
-    def info(self, output="print"):
-        raise NotImplementedError
-        print(self)
+    def info(self,
+             output="print",
+             order=["name", "status", "ip", "job_counter", "max_jobs_allowed",
+                "cores", "threads", "gpus"]):
+        banner(f"Host: {self.name}")
+
+        data = self.to_list()
+        # we could use the attribute writer instead
+        print(Printer.write(data, order=order))
 
     def to_dict(self):
         """
@@ -604,6 +607,58 @@ class Host:
         :return: dict
         """
         return _to_dict(self)
+
+
+@dataclass
+class Cluster:
+    hosts: List[Host]
+
+    def add(self, host: Host):
+        """
+        Adds a host to the cluster
+
+        :param host: the HOst
+        """
+        pass
+
+    def remove(self, name: str):
+        """
+        Removes a host from the cluster
+
+        :param name: name of the host
+        :return:
+        """
+        pass
+
+    def activate(self, name: str, status: bool = True):
+        """
+        Activates the host. A host can be disabled with the status set to False.
+        Only acive hosts are used.
+
+        This function is important if we find out that a host may not be available
+        during long running jobs.
+
+        :param name: Name of the host to activate or deactivate
+        :param status: If True the host is active
+        """
+        pass
+
+    def add_policy(self, policy):
+        """
+        Adds a sceduling policy to select the next available host for scheduling a job.
+
+        :param policy:
+        :return:
+        """
+        pass
+
+    def info(self, output="table"):
+        for host in self.hosts:
+            data = host.info(output=output)
+            print(data)
+
+    '''
+    move this to cluster and fix with yamldb
 
     def save(self, filename):
         """
@@ -668,51 +723,4 @@ class Host:
 
     def __str__(self):
         return _to_string(self, f"{self.user}@{self.name}")
-
-@dataclass
-class Cluster:
-    hosts: List[Host]
-
-    def add(self, host: Host):
-        """
-        Adds a host to the cluster
-
-        :param host: the HOst
-        """
-        pass
-
-    def remove(self, name: str):
-        """
-        Removes a host from the cluster
-
-        :param name: name of the host
-        :return:
-        """
-        pass
-
-    def activate(self, name: str, status: bool = True):
-        """
-        Activates the host. A host can be disabled with the status set to False.
-        Only acive hosts are used.
-
-        This function is important if we find out that a host may not be available
-        during long running jobs.
-
-        :param name: Name of the host to activate or deactivate
-        :param status: If True the host is active
-        """
-        pass
-
-    def add_policy(self, policy):
-        """
-        Adds a sceduling policy to select the next available host for scheduling a job.
-
-        :param policy:
-        :return:
-        """
-        pass
-
-    def info(self, output="table"):
-        for host in self.hosts:
-            data = host.info(output=output)
-            print(data)
+    '''
