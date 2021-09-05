@@ -563,6 +563,24 @@ class Host:
     cores: int = 1
     threads: int = 1
     gpus: str = ""
+    probe_status: boolean = False
+    probe_time: date = None
+    ping_status: boolean = False
+    ping_time: date = None
+
+    def ping(self):
+        """
+        Conducts a ping on the host and updates the probestatus
+        :return: ping_status, datetime
+        """
+        raise NotImplementedError
+
+    def probe(self):
+        """
+        Executes a command on the host and updates the probe_status
+        :return: probestatsu, datetime
+        """
+        raise NotImplementedError
 
     @staticmethod
     def sync(user, host, experiment):
@@ -735,6 +753,27 @@ class Cluster:
         for host in self.hosts:
             data = host.info(output=output)
             print(data)
+
+    def ping(self, parallelism=1):
+        """
+        Sends a ping to all hosts that are mared with
+        status==active and identifies if they are reachable
+        with ping. Each host will be marked with the last time
+        the ping was conducted and the result of the ping.
+
+        Please note that cloudmesh.common has a build in
+        function for that. So in principal this is already
+        implemented.
+
+        :param parallelism:
+        :return:
+        """
+    def sshprobe(self, parallelism=1):
+        """
+
+        :param parallelism:
+        :return:
+        """
 
     '''
     move this to cluster and fix with yamldb
