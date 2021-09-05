@@ -445,117 +445,6 @@ class Job:
         self = new_job
 
 
-@dataclass
-class Host:
-    """
-    THIS CLASS IS NOT YET IMPLEMENTED CORRECTLY
-    """
-    user: str = sysinfo()[0]
-    name: str = "localhost"
-    ip: str = "127.0.0.1"
-    status: str = "free"
-    job_counter: int = 0
-    max_jobs_allowed: int = 1
-    cores: int = 1
-    threads: int = 1
-    gpus: str = ""
-
-    @staticmethod
-    def sync(user, host, experiment):
-        """
-        Syncronizes the experiment directory to the given host on the user account
-
-        :param user: Name of user
-        :param host: Name of the host
-        :param experiment: Directory tos syncronize
-        :return:
-        """
-
-        if not is_local(host):
-            if "/" not in experiment:
-                experiment = f"./{experiment}"
-            command = f"rsync -r {experiment}/* {user}@{host}:{experiment}"
-            r = os.system(command)
-        else:
-            r = 0
-        return r == 0
-
-    def info(self, output="print"):
-        raise NotImplementedError
-        print(self)
-
-    def to_dict(self):
-        """
-        Returns the dict of the Host
-
-        :return: dict
-        """
-        return _to_dict(self)
-
-    def save(self, filename):
-        """
-        Saves the host specification to a file
-
-        :param filename: The filename
-        """
-        try:
-            host_spec = dedent(
-                f"""
-                {self.name}:
-                    name: {self.name}  
-                    user:  {self.user}
-                    ip: {self.ip}
-                    status: {self.status}
-                    job_counter: {self.job_counter}
-                    max_jobs_allowed: {self.max_jobs_allowed}
-                    cores: {self.cores}
-                    threads: {self.threads}
-                    gpus: {self.gpus}
-                """
-            ).strip()
-            specification = yaml.safe_load(host_spec)
-
-            config = Configuration(filename)
-            config["cloudmesh.jobset.hosts"].update(specification)
-            config.save(filename)
-        except Exception as e:
-            Console.error(f"Host {self.name} could not be added- {e}")
-            return ""
-
-    def delete_host(self, config_file):
-        """
-        Deletes the host from the configuration file
-
-        :param config_file:
-        :return:
-        """
-        spec = Configuration(config_file)
-
-        try:
-            job_counter = int(spec[f"cloudmesh.jobset.hosts.{self.name}.job_counter"])
-        except Exception as e:
-            job_counter = 0
-
-        try:
-            if job_counter > 0:
-                Console.error(
-                    f"Host {self.name} is running {job_counter} jobs. Please kill those jobs before deleting this Host.")
-
-            del spec["cloudmesh.jobset.hosts"][self.name]
-
-            spec.save(config_file)
-
-        except KeyError:
-            Console.error(f"Host '{self.name}' not found in jobset.")
-
-        except Exception as e:
-            Console.error(
-                f"Job {self.name} could not be deleted. Please check. Error- {e}"
-            )
-
-    def __str__(self):
-        return _to_string(self, f"{self.user}@{self.name}")
-
 
 class Queue:
 
@@ -668,6 +557,117 @@ class Queue:
         result = self.to_dict()
         return str(result)
 
+
+@dataclass
+class Host:
+    """
+    THIS CLASS IS NOT YET IMPLEMENTED CORRECTLY
+    """
+    user: str = sysinfo()[0]
+    name: str = "localhost"
+    ip: str = "127.0.0.1"
+    status: str = "free"
+    job_counter: int = 0
+    max_jobs_allowed: int = 1
+    cores: int = 1
+    threads: int = 1
+    gpus: str = ""
+
+    @staticmethod
+    def sync(user, host, experiment):
+        """
+        Syncronizes the experiment directory to the given host on the user account
+
+        :param user: Name of user
+        :param host: Name of the host
+        :param experiment: Directory tos syncronize
+        :return:
+        """
+
+        if not is_local(host):
+            if "/" not in experiment:
+                experiment = f"./{experiment}"
+            command = f"rsync -r {experiment}/* {user}@{host}:{experiment}"
+            r = os.system(command)
+        else:
+            r = 0
+        return r == 0
+
+    def info(self, output="print"):
+        raise NotImplementedError
+        print(self)
+
+    def to_dict(self):
+        """
+        Returns the dict of the Host
+
+        :return: dict
+        """
+        return _to_dict(self)
+
+    def save(self, filename):
+        """
+        Saves the host specification to a file
+
+        :param filename: The filename
+        """
+        try:
+            host_spec = dedent(
+                f"""
+                {self.name}:
+                    name: {self.name}  
+                    user:  {self.user}
+                    ip: {self.ip}
+                    status: {self.status}
+                    job_counter: {self.job_counter}
+                    max_jobs_allowed: {self.max_jobs_allowed}
+                    cores: {self.cores}
+                    threads: {self.threads}
+                    gpus: {self.gpus}
+                """
+            ).strip()
+            specification = yaml.safe_load(host_spec)
+
+            config = Configuration(filename)
+            config["cloudmesh.jobset.hosts"].update(specification)
+            config.save(filename)
+        except Exception as e:
+            Console.error(f"Host {self.name} could not be added- {e}")
+            return ""
+
+    def delete_host(self, config_file):
+        """
+        Deletes the host from the configuration file
+
+        :param config_file:
+        :return:
+        """
+        spec = Configuration(config_file)
+
+        try:
+            job_counter = int(spec[f"cloudmesh.jobset.hosts.{self.name}.job_counter"])
+        except Exception as e:
+            job_counter = 0
+
+        try:
+            if job_counter > 0:
+                Console.error(
+                    f"Host {self.name} is running {job_counter} jobs. Please kill those jobs before deleting this Host.")
+
+            del spec["cloudmesh.jobset.hosts"][self.name]
+
+            spec.save(config_file)
+
+        except KeyError:
+            Console.error(f"Host '{self.name}' not found in jobset.")
+
+        except Exception as e:
+            Console.error(
+                f"Job {self.name} could not be deleted. Please check. Error- {e}"
+            )
+
+    def __str__(self):
+        return _to_string(self, f"{self.user}@{self.name}")
 
 @dataclass
 class Cluster:
