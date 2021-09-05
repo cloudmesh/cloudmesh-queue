@@ -514,7 +514,6 @@ class Queue:
         self.save()
 
     def save(self):
-        print ("LLL", self.jobs)
         if len(self.jobs.data) > 0:
             self.jobs.save(self.filename)
 
@@ -670,7 +669,6 @@ class Cluster:
         self.save()
 
     def save(self):
-        print ("LLL", self.hosts)
         if len(self.hosts.data) > 0:
             self.hosts.save(self.filename)
 
