@@ -6,36 +6,27 @@
 # pytest -v  tests/test_04_queue.py
 # pytest -v --capture=no  tests/test_04_queue.py::TestSSHJob::<METHODNAME>
 ###############################################################
+import getpass
+from pprint import pprint
+
 import pytest
-from cloudmesh.common.Shell import Shell
-from cloudmesh.common.debug import VERBOSE
+from cloudmesh.common.Benchmark import Benchmark
 from cloudmesh.common.util import HEADING
 from cloudmesh.common.util import banner
-from cloudmesh.common.Benchmark import Benchmark
-from cloudmesh.common.variables import Variables
-from cloudmesh.configuration.Configuration import Configuration
-from textwrap import dedent
-from cloudmesh.common.util import path_expand
-from cloudmesh.queue.jobqueue import Queue
-from cloudmesh.queue.jobqueue import Job
-from cloudmesh.queue.jobqueue import Host
-from pprint import pprint
 from cloudmesh.common.util import readfile
-import oyaml as yaml
-import re
-import time
-import getpass
-import os
+
+from cloudmesh.queue.jobqueue import Job
+from cloudmesh.queue.jobqueue import Queue
 
 Benchmark.debug()
 
-#variables = Variables()
-#print(variables)
-#variables["jobset"] = path_expand("./a.yaml")
+# variables = Variables()
+# print(variables)
+# variables["jobset"] = path_expand("./a.yaml")
 
-#configured_jobset = variables["jobset"]
-#remote_host_ip = variables['host'] or 'juliet.futuresystems.org'
-#remote_host_user = variables['user'] or getpass.getuser()
+# configured_jobset = variables["jobset"]
+# remote_host_ip = variables['host'] or 'juliet.futuresystems.org'
+# remote_host_user = variables['user'] or getpass.getuser()
 
 remote = False
 sysinfo = False
@@ -143,8 +134,8 @@ class TestQueue:
         q.load(filename="./experiment/d-queue.yaml")
         Benchmark.Stop()
         print(q.to_yaml())
-        print ("LLL", len(q))
-        assert len(q)  == len(jobs)
+        print("LLL", len(q))
+        assert len(q) == len(jobs)
         assert "filename: ./experiment/d-queue.yaml" in q.to_yaml()
 
     def test_load_queue(self):
@@ -159,6 +150,7 @@ class TestQueue:
         HEADING()
         Benchmark.print(sysinfo=sysinfo, csv=True)
 
+
 class broken:
     def test_empty_queue(self):
         HEADING()
@@ -168,5 +160,3 @@ class broken:
         print("Content", content)
         queue_str = queue_file.read()
         assert queue.to_yaml() == queue_str
-
-
