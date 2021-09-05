@@ -545,7 +545,7 @@ class Queue:
                  jobs: List = None):
 
         self.name = name
-        self.experiment=  experiment or "./experiment"
+        self.experiment=experiment or "./experiment"
         self.filename = filename or f"{self.experiment}/{self.name}-queue.yaml"
         if not os.path.exists(self.experiment):
             os.makedirs(self.experiment)
@@ -585,7 +585,7 @@ class Queue:
 
         :param job: the job
         """
-        raise NotImplemented
+        self.jobs[job.name] = job.to_dict()
 
     def search(self, query):
         return self.jobs.search(query)
@@ -594,16 +594,18 @@ class Queue:
         self.jobs = YamlDB(filename=self.filename)
 
     def add(self, job: Job):
-        self.jobs[job.name] = job
+        self.jobs[job.name] = job.to_dict()
         self.save()
 
     def save(self):
         self.jobs.flush()
 
     def delete(self, name: str):
-        pass
+        self.jobs.delete(name)
 
-    def info(self, output="print", order=["name", "status", "command", "gpu", "output", "log", "experiment"]):
+    def info(self,
+             output="print",
+             order=["name", "status", "command", "gpu", "output", "log", "experiment"]):
         banner(f"Queue: {self.name}")
 
         data = self.to_list()
@@ -622,7 +624,7 @@ class Queue:
             "jobs": {}
         }
         for job in self.jobs:
-            result["jobs"][job] = _to_dict( self.jobs[job])
+            result["jobs"][job] = self.jobs[job]
         return result
 
     def to_json(self, indent=2):

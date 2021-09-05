@@ -25,6 +25,7 @@ import oyaml as yaml
 import re
 import time
 import getpass
+import os
 
 Benchmark.debug()
 
@@ -102,6 +103,22 @@ class TestQueue:
         banner("json")
         print(queue.to_json())
 
+    def test_save(self):
+        HEADING()
+        queue.save()
+        os.system("cat ./experiment/a-queue.yaml")
+
+
+
+class broken:
+
+    def test_load_queue(self):
+        queue = Queue(name='a')
+        print("HERE")
+        print(queue.jobs)
+
+
+
     def test_empty_queue(self):
         HEADING()
         queue = Queue(name="b",experiment="b_experiment")
@@ -110,10 +127,6 @@ class TestQueue:
         queue_str = queue_file.read()
         assert queue.to_yaml() == queue_str
 
-    def test_load_queue(self):
-        queue = Queue(name='a')
-        print("HERE")
-        print(queue.jobs)
 
 class ooo:
     def test_sync(self):
