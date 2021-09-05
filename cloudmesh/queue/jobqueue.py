@@ -444,8 +444,6 @@ class Job:
         new_job = Job(**data)
         self = new_job
 
-
-
 class Queue:
 
     def __init__(self,
@@ -466,9 +464,9 @@ class Queue:
     def __len__(self):
         return len(self.jobs.data)
 
-    def delete(self, name: str) -> Job:
+    def delete(self, name: str):
         """
-        Returns the job with the given name
+        Deletes the job with the given name
 
         :param name: name of the job
         :return: Job
@@ -519,9 +517,6 @@ class Queue:
         print ("LLL", self.jobs)
         if len(self.jobs.data) > 0:
             self.jobs.save(self.filename)
-
-    def delete(self, name: str):
-        self.jobs.delete(name)
 
     def info(self,
              output="print",
@@ -610,24 +605,108 @@ class Host:
 
 @dataclass
 class Cluster:
-    hosts: List[Host]
 
-    def add(self, host: Host):
-        """
-        Adds a host to the cluster
+    def __init__(self,
+                 name: str = "TBD",
+                 experiment: str = None,
+                 filename: str = None,
+                 hosts: List = None)
+        self.name = name
+        self.experiment = experiment or "./experiment"
+        self.filename = filename or f"{self.experiment}/{self.name}-cluster.yaml"
+        if not os.path.exists(self.experiment):
+            os.makedirs(self.experiment)
+        self.hosts = YamlDB(filename=self.filename)
+        if hosts:
+            self.add_hosts(hosts)
 
-        :param host: the HOst
-        """
-        pass
 
-    def remove(self, name: str):
+    def __len__(self):
+        return len(self.hosts.data)
+
+    def delete(self, name: str):
         """
-        Removes a host from the cluster
+        Deletes the host with the given name
 
         :param name: name of the host
-        :return:
         """
+        try:
+            self.hosts.delete(name)
+        except:
+            pass
+
+    def get(self, name: str) -> Host:
+        """
+        Returns the host with the given name
+
+        :param name: name of the host
+        :return: Host
+        """
+        return self.hosts[name]
+
+    def set(self, host: Host):
+        """
+        Overwrites the contents of the host. If the host
+        does not exist, it will be updated.
+
+        :param host: the host
+        """
+        self.hosts[host.name] = host.to_dict()
+
+    def search(self, query):
+        return self.hosts.search(query)
+
+    def load(self, filename=None):
+        filename = filename or self.filename
+        self.hosts = YamlDB(filename=filename)
+
+    def add_hosts(self, hosts):
+        for host in hosts:
+            self.hosts[host.name] = host.to_dict()
+            self.save()
+
+    def add(self, host: Host):
+        self.hosts[host.name] = host.to_dict()
+        self.save()
+
+    def save(self):
+        print ("LLL", self.hosts)
+        if len(self.hosts.data) > 0:
+            self.hosts.save(self.filename)
+
+    def info(self,
+             output="print",
+             order=["name", "status", "command", "gpu", "output", "log", "experiment"]):
+        banner(f"Queue: {self.name}")
+
+        data = self.to_dict()
+        print(Printer.write(data, order=order))
+
+    def add_policy(self, policy):
         pass
+
+    def to_dict(self):
+        result = {
+            "config": {
+                "name": self.name,
+                "experiment": self.experiment,
+                "filename": self.filename,
+            },
+            "hosts": {}
+        }
+        for host in self.hosts:
+            result["hosts"][host] = self.hosts[host]
+        return result
+
+    def to_json(self, indent=2):
+        return json.dumps(self.to_dict(), indent=indent)
+
+    def to_yaml(self):
+        return yaml.dump(self.to_dict())
+
+    def __str__(self):
+        result = self.to_dict()
+        return str(result)
 
     def activate(self, name: str, status: bool = True):
         """
@@ -640,7 +719,10 @@ class Cluster:
         :param name: Name of the host to activate or deactivate
         :param status: If True the host is active
         """
-        pass
+        if status:
+            self.hosts.data[name]["status"] = "active"
+        else:
+            self.hosts.data[name]["status"] = "inactive"
 
     def add_policy(self, policy):
         """
