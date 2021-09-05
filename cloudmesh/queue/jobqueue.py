@@ -1,49 +1,43 @@
+import json
 import multiprocessing
 import os
-from posixpath import basename
+import platform
 import random
+import shlex
+import socket
 import sys
 import time
+import uuid
+from dataclasses import dataclass
 from pathlib import Path
 from textwrap import dedent
 from typing import List
-import shlex
-import json
-import oyaml as yaml
-
-import socket
-import platform
-
-
-from yamldb.YamlDB import YamlDB
 
 import oyaml as yaml
-from cloudmesh.common.Shell import Shell
-from cloudmesh.common.util import banner
-from cloudmesh.common.util import str_banner
 from cloudmesh.common.Printer import Printer
 from cloudmesh.common.Shell import Shell
 from cloudmesh.common.console import Console
 from cloudmesh.common.parameter import Parameter
+from cloudmesh.common.util import banner
 from cloudmesh.common.util import path_expand
+from cloudmesh.common.util import readfile
+from cloudmesh.common.util import str_banner
 from cloudmesh.common.variables import Variables
 from cloudmesh.configuration.Configuration import Configuration
-from cloudmesh.common.debug import VERBOSE
-from dataclasses import dataclass
-from cloudmesh.common.util import readfile
 
-import uuid
+from yamldb.YamlDB import YamlDB
 
 Console.init()
 
+
 def is_local(host):
     return host in ["127.0.0.1",
-             "localhost",
-             socket.gethostname(),
-             # just in case socket.gethostname() does not work  we also try the following:
-             platform.node(),
-             socket.gethostbyaddr(socket.gethostname())[0]
-             ]
+                    "localhost",
+                    socket.gethostname(),
+                    # just in case socket.gethostname() does not work  we also try the following:
+                    platform.node(),
+                    socket.gethostbyaddr(socket.gethostname())[0]
+                    ]
 
 
 def sysinfo():
@@ -107,7 +101,7 @@ class Host:
             command = f"rsync -r {experiment}/* {user}@{host}:{experiment}"
             r = os.system(command)
         else:
-            r=0
+            r = 0
         return r == 0
 
     def info(self, output="print"):
@@ -168,7 +162,6 @@ class Host:
 
     def __str__(self):
         return _to_string(self, f"{self.user}@{self.name}")
-
 
 
 @dataclass
@@ -232,9 +225,9 @@ class Job:
     scriptname: str = None
     remote_command: str = None
     # placement
-    pid: str =None
-    host: str =None
-    user: str =None
+    pid: str = None
+    host: str = None
+    user: str = None
 
     def __post_init__(self):
         print(self.info())
@@ -256,16 +249,16 @@ class Job:
         self.generate_script(shell=self.shell)
 
     def ps(self):
-        keys = ["pid","user","ppid","sz","tty","%cpu","%mem","cmd"]
+        keys = ["pid", "user", "ppid", "sz", "tty", "%cpu", "%mem", "cmd"]
         keys_str = ",".join(keys)
         command = f"ps --format {keys_str} {self.pid}"
         if not is_local(self.host):
             command = f"ssh {self.user}@{self.host} \"{command}\""
         try:
             lines = Shell.run(command).splitlines()
-            lines = ' '.join(lines[1].split()).split(" ", len(keys)-1)
+            lines = ' '.join(lines[1].split()).split(" ", len(keys) - 1)
             i = -1
-            entry= {}
+            entry = {}
             for key in keys:
                 i = i + 1
                 entry[key] = lines[i]
@@ -298,7 +291,6 @@ class Job:
         :return:
         """
         return self.__dataclass_fields__
-
 
     def info(self):
         """
@@ -509,7 +501,7 @@ class Job:
         run the script on the remote host
         """
         banner(f"Run: {self.name}")
-        print ("Command:", self.remote_command)
+        print("Command:", self.remote_command)
         r = os.system(self.remote_command)
         self.pid = self.rpid
         return self.pid
@@ -518,7 +510,7 @@ class Job:
         result = []
         result.append(f'{self.name}:')
         for argument in ["name", "id", "experiment", "directory", "input", "output",
-                         "status", "gpu","command", "shell", "pid", "host", "user"]:
+                         "status", "gpu", "command", "shell", "pid", "host", "user"]:
             values = self.to_dict()
             result.append(f"  {argument}: {values[argument]}")
         return ("\n".join(result))
@@ -545,7 +537,7 @@ class Queue:
                  jobs: List = None):
 
         self.name = name
-        self.experiment=experiment or "./experiment"
+        self.experiment = experiment or "./experiment"
         self.filename = filename or f"{self.experiment}/{self.name}-queue.yaml"
         if not os.path.exists(self.experiment):
             os.makedirs(self.experiment)
@@ -635,6 +627,7 @@ class Queue:
     def __str__(self):
         result = self.to_dict()
         return str(result)
+
 
 @dataclass
 class Cluster:
