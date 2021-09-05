@@ -541,8 +541,12 @@ class Queue:
         self.filename = filename or f"{self.experiment}/{self.name}-queue.yaml"
         if not os.path.exists(self.experiment):
             os.makedirs(self.experiment)
-
         self.jobs = YamlDB(filename=self.filename)
+        if jobs:
+            self.add_jobs(jobs)
+
+    def __len__(self):
+        return len(self.jobs.data)
 
     def delete(self, name: str) -> Job:
         """
@@ -584,12 +588,19 @@ class Queue:
         filename = filename or self.filename
         self.jobs = YamlDB(filename=filename)
 
+    def add_jobs(self, jobs):
+        for job in jobs:
+            self.jobs[job.name] = job.to_dict()
+            self.save()
+
     def add(self, job: Job):
         self.jobs[job.name] = job.to_dict()
         self.save()
 
     def save(self):
-        self.jobs.flush()
+        print ("LLL", self.jobs)
+        if len(self.jobs.data) > 0:
+            self.jobs.save(self.filename)
 
     def delete(self, name: str):
         self.jobs.delete(name)
