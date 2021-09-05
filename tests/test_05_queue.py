@@ -165,7 +165,7 @@ class broken:
         empty = Queue(name="b", experiment="b_experiment")
         empty.save()
         content = readfile("./b_experiment/b-queue.yaml")
-        print("COntent", content)
+        print("Content", content)
         queue_str = queue_file.read()
         assert queue.to_yaml() == queue_str
 
