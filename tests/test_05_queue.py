@@ -20,7 +20,7 @@ from cloudmesh.queue.jobqueue import Queue
 from cloudmesh.queue.jobqueue import Job
 from cloudmesh.queue.jobqueue import Host
 from pprint import pprint
-
+from cloudmesh.common.util import readfile
 import oyaml as yaml
 import re
 import time
@@ -106,19 +106,25 @@ class TestQueue:
     def test_save(self):
         HEADING()
         queue.save()
-        os.system("cat ./experiment/a-queue.yaml")
+        content = readfile("./experiment/a-queue.yaml")
+        assert "job3:" in content
+        assert "name: job3" in content
 
+    def test_load(self):
+        HEADING()
+        q = Queue(name="c")
+        q.load(filename="./experiment/a-queue.yaml")
+        print(q.to_yaml())
+        assert "filename: ./experiment/c-queue.yaml" in q.to_yaml()
+
+    def test_load_queue(self):
+        HEADING()
+        queue = Queue(name='a')
+        banner("Jobs")
+        print(queue.to_yaml())
 
 
 class broken:
-
-    def test_load_queue(self):
-        queue = Queue(name='a')
-        print("HERE")
-        print(queue.jobs)
-
-
-
     def test_empty_queue(self):
         HEADING()
         queue = Queue(name="b",experiment="b_experiment")
