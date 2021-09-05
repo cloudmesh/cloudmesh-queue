@@ -528,7 +528,7 @@ class Queue:
              order=["name", "status", "command", "gpu", "output", "log", "experiment"]):
         banner(f"Queue: {self.name}")
 
-        data = self.to_list()
+        data = self.to_dict()
         print(Printer.write(data, order=order))
 
     def add_policy(self, policy):
@@ -590,23 +590,22 @@ class Host:
             r = 0
         return r == 0
 
+    def to_dict(self):
+        """
+        Returns a dict of the Job
+
+        :return: dict
+        """
+        return _to_dict(self)
+
     def info(self,
              output="print",
              order=["name", "status", "ip", "job_counter", "max_jobs_allowed",
                 "cores", "threads", "gpus"]):
         banner(f"Host: {self.name}")
+        data = self.to_dict()
+        print(Printer.attribute(data, order=order))
 
-        data = self.to_list()
-        # we could use the attribute writer instead
-        print(Printer.write(data, order=order))
-
-    def to_dict(self):
-        """
-        Returns the dict of the Host
-
-        :return: dict
-        """
-        return _to_dict(self)
 
 
 @dataclass
