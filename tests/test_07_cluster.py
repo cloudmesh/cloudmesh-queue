@@ -126,6 +126,17 @@ class TestCluster:
         print(cluster.to_yaml())
         Benchmark.Stop()
 
+    def test_info(self):
+        HEADING()
+        Benchmark.Start()
+        cluster = Cluster(name='a')
+        print(cluster.info())
+        print(cluster.info(banner="Host by name host0", host="host0"))
+        print(cluster.info(banner="Host by id 0", host=0))
+        print(cluster.info(banner="Host by id 0 in yaml", host=0, output="yaml"))
+
+        Benchmark.Stop()
+
     def test_benchmark(self):
         HEADING()
         Benchmark.print(sysinfo=sysinfo, csv=True)

@@ -689,6 +689,15 @@ class Cluster:
             self.add_hosts(hosts)
 
 
+    def __getitem__(self, item):
+        if type(item) == int:
+            print (self.hosts.keys())
+            key = list(self.hosts.keys())[item]
+        else:
+            key = str(item)
+        data = self.get(key)
+        return data
+
     def __len__(self):
         return len(self.hosts.data)
 
@@ -742,12 +751,34 @@ class Cluster:
             self.hosts.save(self.filename)
 
     def info(self,
-             output="print",
-             order=["name", "status", "command", "gpu", "output", "log", "experiment"]):
-        banner(f"Queue: {self.name}")
+             kind="hosts",
+             banner=None,
+             output="table",
+             host=None,
+             order=None):
+
+        if banner is not None:
+            result = str_banner(banner)
+        else:
+            result = ""
 
         data = self.to_dict()
-        print(Printer.write(data, order=order))
+        if host is None:
+            if order is None and kind in ["hosts"]:
+                # order = order
+                result = result + str(Printer.write(data[kind], order=order, output=output))
+            elif order is None and kind in ["cluster", "config"]:
+                order = ["name", "experiment", "filename"]
+                kind = "cluster"
+                data = {
+                    data[kind]["name"]: data[kind]
+                }
+                result = result + str(Printer.write(data, order=order, output=output))
+        else:
+            host = self.__getitem__(host)
+            result = result + str(Printer.attribute(host, output=output))
+        return result
+
 
     def add_policy(self, policy):
         pass
@@ -799,11 +830,6 @@ class Cluster:
         :return:
         """
         pass
-
-    def info(self, output="table"):
-        for host in self.hosts:
-            data = host.info(output=output)
-            print(data)
 
     def ping(self, parallelism=1):
         """
