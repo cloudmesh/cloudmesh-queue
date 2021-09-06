@@ -2,9 +2,9 @@
 # cms set host='juliet.futuresystems.org'
 # cms set user=$USER
 #
-# pytest -v --capture=no tests/test_04_job_ssh.py
-# pytest -v  tests/test_04_job_ssh.py
-# pytest -v --capture=no  tests/test_04_job_ssh.py::TestSSHJob::<METHODNAME>
+# pytest -v --capture=no tests/test_01_job_ssh.py
+# pytest -v  tests/test_01_job_ssh.py
+# pytest -v --capture=no  tests/test_01_job_ssh.py::TestSSHJob::<METHODNAME>
 ###############################################################
 import pytest
 from cloudmesh.common.Shell import Shell

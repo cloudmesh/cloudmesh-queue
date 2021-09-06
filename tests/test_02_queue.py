@@ -2,9 +2,9 @@
 # cms set host='juliet.futuresystems.org'
 # cms set user=$USER
 #
-# pytest -v --capture=no tests/test_05_queue.py
-# pytest -v  tests/test_05_queue.py
-# pytest -v --capture=no  tests/test_05_queue.py::TestSSHJob::<METHODNAME>
+# pytest -v --capture=no tests/test_02_queue.py
+# pytest -v  tests/test_02_queue.py
+# pytest -v --capture=no  tests/test_02_queue.py::TestSSHJob::<METHODNAME>
 ###############################################################
 import getpass
 from pprint import pprint

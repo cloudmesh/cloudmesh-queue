@@ -2,9 +2,9 @@
 # cms set host='juliet.futuresystems.org'
 # cms set user=$USER
 #
-# pytest -v --capture=no tests/test_06_cluster.py
-# pytest -v  tests/test_06_cluster.py
-# pytest -v --capture=no  tests/test_06_cluster.py::TestSSHHost::<METHODNAME>
+# pytest -v --capture=no tests/test_04_cluster.py
+# pytest -v  tests/test_04_cluster.py
+# pytest -v --capture=no  tests/test_04_cluster.py::TestSSHHost::<METHODNAME>
 ###############################################################
 import getpass
 from pprint import pprint
