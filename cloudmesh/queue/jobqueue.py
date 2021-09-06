@@ -209,6 +209,15 @@ class Job:
         """
         return self.__dataclass_fields__
 
+    def info(self, banner=None, output="table"):
+        """
+        Returns an information of the job
+
+        :return: str
+        """
+        return str(Printer.write(self, output=output))
+
+    '''
     def info(self):
         """
         Returns an information string of the job
@@ -221,6 +230,7 @@ class Job:
             entry = f"{key} = {keys[key]}"
             result.append(entry)
         return "\n".join(result)
+    '''
 
     def __str__(self):
         """
@@ -479,6 +489,18 @@ class Queue:
         except:
             pass
 
+    def __getitem__(self, item):
+        if type(item) == int:
+            print (self.jobs.keys())
+            key = list(self.jobs.keys())[item]
+        else:
+            key = str(item)
+        data = self.get(key)
+        return data
+        #job = Job(data)
+        #return job
+
+
     def get(self, name: str) -> Job:
         """
         Returns the job with the given name
@@ -521,6 +543,7 @@ class Queue:
              kind="jobs",
              banner=None,
              output="table",
+             job=None,
              order=None):
 
         if banner is not None:
@@ -529,17 +552,20 @@ class Queue:
             result = ""
 
         data = self.to_dict()
-
-        if order is None and kind in ["jobs"]:
-            order = ["name", "status", "command", "gpu", "output", "log", "experiment"]
-            result = result + str(Printer.write(data[kind], order=order, output=output))
-        elif order is None and kind in ["queue", "config"]:
-            order = ["name", "experiment", "filename"]
-            kind = "config"
-            data = {
-                data[kind]["name"]: data[kind]
-            }
-            result = result + str(Printer.write(data, order=order, output=output))
+        if job is None:
+            if order is None and kind in ["jobs"]:
+                order = ["name", "status", "command", "gpu", "output", "log", "experiment"]
+                result = result + str(Printer.write(data[kind], order=order, output=output))
+            elif order is None and kind in ["queue", "config"]:
+                order = ["name", "experiment", "filename"]
+                kind = "config"
+                data = {
+                    data[kind]["name"]: data[kind]
+                }
+                result = result + str(Printer.write(data, order=order, output=output))
+        else:
+            job = self.__getitem__(job)
+            result = result + str(Printer.attribute(job, output=output))
         return result
 
     def add_policy(self, policy):

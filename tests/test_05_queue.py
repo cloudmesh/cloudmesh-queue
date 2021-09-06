@@ -101,6 +101,14 @@ class TestQueue:
         banner("print")
         print(queue)
 
+    def test_get_info(self):
+        HEADING()
+        global jobs
+        Benchmark.Start()
+        print(queue.info(banner="info by id 0", job=0))
+        print(queue.info(banner="info by name job0", job="job0"))
+        Benchmark.Stop()
+
 class rest:
     def test_converters(self):
         HEADING()
