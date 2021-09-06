@@ -76,7 +76,7 @@ class TestHost:
 
         host = hosts[0]
 
-        host.info()
+        print(host.info())
 
         Benchmark.Stop()
 

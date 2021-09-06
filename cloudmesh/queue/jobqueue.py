@@ -656,13 +656,19 @@ class Host:
         return _to_dict(self)
 
     def info(self,
-             output="print",
+             banner = None,
+             output="table",
              order=["name", "status", "ip", "job_counter", "max_jobs_allowed",
                 "cores", "threads", "gpus"]):
-        banner(f"Host: {self.name}")
-        data = self.to_dict()
-        print(Printer.attribute(data, order=order))
 
+        if banner is not None:
+            result = str_banner(banner)
+        else:
+            result = ""
+
+        data = self.to_dict()
+        result = result + str(Printer.attribute(data, order=order, output=output))
+        return result
 
 
 @dataclass
