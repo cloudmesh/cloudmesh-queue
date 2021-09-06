@@ -518,12 +518,29 @@ class Queue:
             self.jobs.save(self.filename)
 
     def info(self,
-             output="print",
-             order=["name", "status", "command", "gpu", "output", "log", "experiment"]):
-        banner(f"Queue: {self.name}")
+             kind="jobs",
+             banner=None,
+             output="table",
+             order=None):
+
+        if banner is not None:
+            result = str_banner(banner)
+        else:
+            result = ""
 
         data = self.to_dict()
-        print(Printer.write(data, order=order))
+
+        if order is None and kind in ["jobs"]:
+            order = ["name", "status", "command", "gpu", "output", "log", "experiment"]
+            result = result + str(Printer.write(data[kind], order=order, output=output))
+        elif order is None and kind in ["queue", "config"]:
+            order = ["name", "experiment", "filename"]
+            kind = "config"
+            data = {
+                data[kind]["name"]: data[kind]
+            }
+            result = result + str(Printer.write(data, order=order, output=output))
+        return result
 
     def add_policy(self, policy):
         pass
@@ -563,10 +580,10 @@ class Host:
     cores: int = 1
     threads: int = 1
     gpus: str = ""
-    probe_status: boolean = False
-    probe_time: date = None
-    ping_status: boolean = False
-    ping_time: date = None
+    probe_status: bool = False
+    probe_time: str = None
+    ping_status: bool = False
+    ping_time: str = None
 
 
     # see also cloudmesh.common.Host.ping/check and so on. we can reuse that

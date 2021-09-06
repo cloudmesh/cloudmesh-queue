@@ -93,11 +93,15 @@ class TestQueue:
         for job in jobs:
             queue.add(job)
         queue.save()
+        print(queue.info(banner="Jobs"))
+        print(queue.info(banner="Queue", kind="queue"))
+
         Benchmark.Stop()
 
         banner("print")
         print(queue)
 
+class rest:
     def test_converters(self):
         HEADING()
         Benchmark.Start()
