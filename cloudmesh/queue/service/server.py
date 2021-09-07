@@ -1,6 +1,10 @@
 from fastapi import FastAPI
-from cloudmesh.queue.jobqueue import JobQueue
+from cloudmesh.queue.jobqueue import Job
 from cloudmesh.common.variables import Variables
+
+#
+# BUG: THis does not work for multiple queues
+#
 
 app = FastAPI(
     title="Cloudmesh Job: A job queue scheduler for remote/local servers.",
@@ -20,25 +24,49 @@ async def root():
     return {"message": "Cloudmesh Job Queue Server"}
 
 
-@app.get("/print")
-async def print(status=None, job_name=None):
+@app.queue_get("/queue/{queue}")
+def queue_get(queue: str):
+    # just a dummy value so we can define the methods
+    return {"queue": queue}
+
+@app.queue_list("/queue/")
+def queue_list():
+    # just a dummy value so we can define the methods
+    return {"queue": "list all queues"}
+
+@app.job_get("/queue/{queue}/job/{job}")
+def queue_get(queue: str, job: str):
+    # just a dummy value so we can define the methods
+    return {"queue": queue, "job": job}
+
+@app.job_list("/queue/{queue}/job")
+def job_list():
+    # just a dummy value so we can define the methods
+    return {"queue": queue}
+
+
+
+
+
+@app.get("/info")
+async def info(status=None, name=None):
     variables = Variables()
 
-    name = variables["jobset"]
+    queue_name = variables["jobset"]
 
-    jobqueue = JobQueue(name=name)
-    if status is None and job_name is None:
-        out = jobqueue.print_jobs()
+    jobqueue = JobQueue(name=queue_name)
+    if status is None and name is None:
+        result = jobqueue.print_jobs()
     elif status is not None:
-        out = jobqueue.print_jobs(
+        result = jobqueue.print_jobs(
             filter_name="status", filter_value=status
         )
-    elif job_name is not None:
-        out = jobqueue.print_jobs(
-            filter_name="name", filter_value=job_name
+    elif name is not None:
+        result = jobqueue.print_jobs(
+            filter_name="name", filter_value=name
         )
 
-    return out
+    return result
 
 
 @app.get("/ps")
@@ -46,11 +74,11 @@ async def ps():
     variables = Variables()
     jobqueue = JobQueue(variables["jobset"])
 
-    out = jobqueue.print_jobs(
+    result = jobqueue.print_jobs(
         filter_name="status", filter_value="submitted"
     )
 
-    return out
+    return result
 
 
 @app.get("/run")
@@ -58,9 +86,9 @@ async def run(job_name=None):
     variables = Variables()
     jobqueue = JobQueue(variables["jobset"])
 
-    out = jobqueue.run_job(job_name)
+    result = jobqueue.run_job(job_name)
 
-    return out
+    return result
 
 
 @app.get("/kill")
@@ -68,6 +96,6 @@ async def kill(job_name=None):
     variables = Variables()
     jobqueue = JobQueue(variables["jobset"])
 
-    out = jobqueue.kill_job(job_name)
+    result = jobqueue.kill_job(job_name)
 
-    return out
+    return result

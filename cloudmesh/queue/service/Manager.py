@@ -1,10 +1,12 @@
 import os
 from cloudmesh.common.Shell import Shell
 
-from cloudmesh.job.service.server import app
+#
+# This manager does not ues DELETE for kill
+# This should be more REST like
+#
 
-
-class Manager():
+class Manager:
 
     @staticmethod
     def start():
@@ -16,39 +18,30 @@ class Manager():
         Shell.browser(url)
 
     @staticmethod
-    def show(port=8000, status=None, job_name=None):
+    def job(port=8000, status=None, name=None):
         if status is not None:
-            url = f"http://127.0.0.1:{port}/print/?status={status}"
-        elif job_name is not None:
-            url = f"http://127.0.0.1:{port}/print/?job_name={job_name}"
+            url = f"http://127.0.0.1:{port}/job/?status={status}"
+        elif name is not None:
+            url = f"http://127.0.0.1:{port}/job/?name={name}"
         else:
-            url = f"http://127.0.0.1:{port}/print"
+            url = f"http://127.0.0.1:{port}/job"
 
         Shell.browser(url)
 
     @staticmethod
-    def ps(port=8000, status=None, job_name=None):
-        if status is not None:
-            url = f"http://127.0.0.1:{port}/print/?status={status}"
+    def run(port=8000, name=None):
+        if name is not None:
+            url = f"http://127.0.0.1:{port}/job/run/?name={name}"
         else:
-            url = f"http://127.0.0.1:{port}/print"
+            url = f"http://127.0.0.1:{port}/job/run"
 
         Shell.browser(url)
 
     @staticmethod
-    def run(port=8000, job_name=None):
-        if job_name is not None:
-            url = f"http://127.0.0.1:{port}/run/?job_name={job_name}"
+    def kill(port=8000, name=None):
+        if name is not None:
+            url = f"http://127.0.0.1:{port}/kill/?name={name}"
         else:
-            url = f"http://127.0.0.1:{port}/run"
-
-        Shell.browser(url)
-
-    @staticmethod
-    def kill(port=8000, job_name=None):
-        if job_name is not None:
-            url = f"http://127.0.0.1:{port}/run/?job_name={job_name}"
-        else:
-            url = f"http://127.0.0.1:{port}/run"
+            url = f"http://127.0.0.1:{port}/kill"
 
         Shell.browser(url)

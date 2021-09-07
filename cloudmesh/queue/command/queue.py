@@ -1,19 +1,19 @@
 import os
 from pathlib import Path
-from pprint import pprint
+# from pprint import pprint
 import shutil
 
 from cloudmesh.common.util import banner
 from cloudmesh.common.console import Console
-from cloudmesh.common.debug import VERBOSE
+# from cloudmesh.common.debug import VERBOSE
 from cloudmesh.common.parameter import Parameter
 from cloudmesh.common.variables import Variables
 from cloudmesh.shell.command import PluginCommand
 from cloudmesh.shell.command import command
 from cloudmesh.shell.command import map_parameters
-from cloudmesh.common.Printer import Printer
+# from cloudmesh.common.Printer import Printer
 from cloudmesh.common.util import backup_name
-from cloudmesh.configuration.Config import Config
+# from cloudmesh.configuration.Config import Config
 from cloudmesh.configuration.Configuration import Configuration
 import oyaml as yaml
 from cloudmesh.common.util import yn_choice
@@ -220,7 +220,7 @@ class JobCommand(PluginCommand):
                 Creates the jobs b0 and b1 as templates in the jobset.
 
             cms queue add --name=z[0-1] --command='uname -u'
-                       .--input='..\data' --output='a,b'
+                       .--input='../data' --output='a,b'
                 Creates entries in jobset for jobs z0 and z1 with provided
                 arguments.
 
@@ -301,7 +301,7 @@ class JobCommand(PluginCommand):
         """
 
         # do the import here to avoid long loading times for other commands
-        from cloudmesh.queue.jobqueue import JobQueue
+        from cloudmesh.queue.jobqueue import Job
 
         map_parameters(
             arguments,
@@ -550,6 +550,7 @@ class JobCommand(PluginCommand):
             """
             # Path.expanduser needed as windows can't interpret "~"
             file = Path.expanduser(Path(arguments.file))
+            # BUG: possible bug as we could use cloudmesh path_expand
             jobqueue = JobQueue()
             _name, _directory, _basename = jobqueue.location(file)
 

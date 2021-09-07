@@ -140,6 +140,9 @@ class Job:
     shell_path: str = None
     scriptname: str = None
     remote_command: str = None
+    nohup_command: str = None  # BUG: should this just be remote command?
+                               #      we may not need to store the nohubcommand as it is
+                               #      just internal
     # placement
     pid: str = None
     host: str = None
@@ -214,6 +217,7 @@ class Job:
 
         :return: str
         """
+        # BUG: see other info commands as banner is not defined
         return str(Printer.write(self, output=output))
 
     '''
@@ -655,14 +659,16 @@ class Host:
     def info(self,
              banner=None,
              output="table",
-             order=["name", 
-                    "status", 
-                    "ip", 
-                    "job_counter", 
-                    "max_jobs_allowed",
-                    "cores", 
-                    "threads", 
-                    "gpus"]):
+             order=None):
+
+        order = order or ["name",
+                 "status",
+                 "ip",
+                 "job_counter",
+                 "max_jobs_allowed",
+                 "cores",
+                 "threads",
+                 "gpus"]
 
         if banner is not None:
             result = str_banner(banner)
@@ -780,9 +786,6 @@ class Cluster:
             host = self.__getitem__(host)
             result = result + str(Printer.attribute(host, output=output))
         return result
-
-    def add_policy(self, policy):
-        pass
 
     def to_dict(self):
         result = {
