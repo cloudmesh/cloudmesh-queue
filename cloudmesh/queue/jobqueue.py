@@ -511,9 +511,14 @@ class Queue:
             # check if job is running
             # if it is running kill job (not yet implemented in Job class to do)
             # finally delete from queue
+            job = Job(**self.jobs[name])
+            if job.state == 'start':
+                job.kill()
             self.jobs.delete(name)
+            self.save()
+            return job
         except:
-            pass
+            Console.error(f"Could not delete job:{name}")
 
     def __getitem__(self, item):
         if type(item) == int:

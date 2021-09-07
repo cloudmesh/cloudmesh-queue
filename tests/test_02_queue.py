@@ -17,6 +17,7 @@ from cloudmesh.common.util import readfile
 
 from cloudmesh.queue.jobqueue import Job
 from cloudmesh.queue.jobqueue import Queue
+from cloudmesh.queue.jobqueue import Host
 
 Benchmark.debug()
 
@@ -86,6 +87,10 @@ class TestQueue:
         self.create_command("which python")
         Benchmark.Stop()
 
+    def test_sleep_infinity(self):
+        HEADING()
+        self.create_command("/usr/bin/sleep infinity")
+
     def test_add_to_queue(self):
         HEADING()
         global jobs
@@ -108,6 +113,16 @@ class TestQueue:
         print(queue.info(banner="info by id 0", job=0))
         print(queue.info(banner="info by name job0", job="job0"))
         Benchmark.Stop()
+
+    def test_delete_job(self):
+        HEADING()
+        Host.sync(user, host, "experiment")
+        job = jobs[4]
+        job.run()
+        queue.set(job)
+        job = queue.delete(job.name)
+        assert job.status == 'kill'
+        assert job.name not in queue.to_dict()['jobs'].keys()
 
 class rest:
     def test_converters(self):
