@@ -29,6 +29,7 @@ def readfile(filename):
 #
 requiers = """
 cloudmesh-cmd5
+oyaml
 yamldb
 fastapi[all]
 uvicorn[standard]

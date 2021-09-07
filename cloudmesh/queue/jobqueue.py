@@ -438,7 +438,7 @@ class Job:
                          "status", "gpu", "command", "shell", "pid", "host", "user"]:
             values = self.to_dict()
             result.append(f"  {argument}: {values[argument]}")
-        return ("\n".join(result))
+        return "\n".join(result)
 
     def load_from_yaml(self, content, with_key=True):
         """
