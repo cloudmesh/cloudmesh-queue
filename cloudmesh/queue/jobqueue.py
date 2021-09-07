@@ -80,7 +80,6 @@ def _to_dict(obj):
     return result
 
 
-
 @dataclass
 class Job:
     """
@@ -454,6 +453,7 @@ class Job:
         new_job = Job(**data)
         self = new_job
 
+
 class Queue:
 
     def __init__(self,
@@ -491,15 +491,14 @@ class Queue:
 
     def __getitem__(self, item):
         if type(item) == int:
-            print (self.jobs.keys())
+            print(self.jobs.keys())
             key = list(self.jobs.keys())[item]
         else:
             key = str(item)
         data = self.get(key)
         return data
-        #job = Job(data)
-        #return job
-
+        # job = Job(data)
+        # return job
 
     def get(self, name: str) -> Job:
         """
@@ -611,7 +610,6 @@ class Host:
     ping_status: bool = False
     ping_time: str = None
 
-
     # see also cloudmesh.common.Host.ping/check and so on. we can reuse that
     def ping(self):
         """
@@ -656,10 +654,10 @@ class Host:
         return _to_dict(self)
 
     def info(self,
-             banner = None,
+             banner=None,
              output="table",
              order=["name", "status", "ip", "job_counter", "max_jobs_allowed",
-                "cores", "threads", "gpus"]):
+                    "cores", "threads", "gpus"]):
 
         if banner is not None:
             result = str_banner(banner)
@@ -688,10 +686,9 @@ class Cluster:
         if hosts:
             self.add_hosts(hosts)
 
-
     def __getitem__(self, item):
         if type(item) == int:
-            print (self.hosts.keys())
+            print(self.hosts.keys())
             key = list(self.hosts.keys())[item]
         else:
             key = str(item)
@@ -779,7 +776,6 @@ class Cluster:
             result = result + str(Printer.attribute(host, output=output))
         return result
 
-
     def add_policy(self, policy):
         pass
 
@@ -847,6 +843,7 @@ class Cluster:
         :param parallelism:
         :return:
         """
+
     def probe(self, parallelism=1):
         """
 
