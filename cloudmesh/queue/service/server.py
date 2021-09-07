@@ -12,11 +12,13 @@ app = FastAPI(
             as 'hosts' in a configuration file along with the list of jobs to be 
             executed. Then, based on the scheduler policy, user can schedule 
             these jobs on configured hosts. """,
-    )
+)
+
 
 @app.get("/")
 async def root():
     return {"message": "Cloudmesh Job Queue Server"}
+
 
 @app.get("/print")
 async def print(status=None, job_name=None):
@@ -25,18 +27,19 @@ async def print(status=None, job_name=None):
     name = variables["jobset"]
 
     jobqueue = JobQueue(name=name)
-    if status == None and job_name == None:
+    if status is None and job_name is None:
         out = jobqueue.print_jobs()
     elif status is not None:
         out = jobqueue.print_jobs(
-                filter_name="status", filter_value=status
-            )
+            filter_name="status", filter_value=status
+        )
     elif job_name is not None:
         out = jobqueue.print_jobs(
-                filter_name="name", filter_value=job_name
-            )
+            filter_name="name", filter_value=job_name
+        )
 
-    return out 
+    return out
+
 
 @app.get("/ps")
 async def ps():
@@ -44,10 +47,11 @@ async def ps():
     jobqueue = JobQueue(variables["jobset"])
 
     out = jobqueue.print_jobs(
-                filter_name="status", filter_value="submitted"
-            )
+        filter_name="status", filter_value="submitted"
+    )
 
-    return out 
+    return out
+
 
 @app.get("/run")
 async def run(job_name=None):
@@ -56,7 +60,7 @@ async def run(job_name=None):
 
     out = jobqueue.run_job(job_name)
 
-    return out 
+    return out
 
 
 @app.get("/kill")
@@ -66,4 +70,4 @@ async def kill(job_name=None):
 
     out = jobqueue.kill_job(job_name)
 
-    return out 
+    return out

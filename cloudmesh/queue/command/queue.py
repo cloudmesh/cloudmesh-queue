@@ -302,7 +302,7 @@ class JobCommand(PluginCommand):
 
         # do the import here to avoid long loading times for other commands
         from cloudmesh.queue.jobqueue import JobQueue
-        
+
         map_parameters(
             arguments,
             "name",
@@ -351,11 +351,11 @@ class JobCommand(PluginCommand):
             hostname = arguments.HOST
             jobname = arguments.JOB
 
-            print (hostname, jobname)
+            print(hostname, jobname)
 
         elif arguments.set and arguments["ATTRIBUTE=VALUE"]:
             # queue set --config=jobs --name=job7 gpu=9
-            
+
             attribute, value = arguments["ATTRIBUTE=VALUE"].split("=")
             name = arguments.name
             config = arguments.config
@@ -367,7 +367,7 @@ class JobCommand(PluginCommand):
             jobqueue = JobQueue()
             jobqueue.set_attribute(config, name, attribute, value)
 
-            Console.ok(f"Updated {attribute} to {value} for {name} in config {config}.") 
+            Console.ok(f"Updated {attribute} to {value} for {name} in config {config}.")
 
         elif arguments.service:
 
@@ -402,18 +402,18 @@ class JobCommand(PluginCommand):
                 from cloudmesh.queue.service.Manager import Manager
 
                 port = arguments.port or "8000"
-                service = Manager.ps(port=port, 
-                                         status='submitted', 
-                                         job_name=None)
+                service = Manager.ps(port=port,
+                                     status='submitted',
+                                     job_name=None)
 
             elif arguments.list:
-                
+
                 from cloudmesh.queue.service.Manager import Manager
 
                 port = arguments.port or "8000"
                 service = Manager.show(port=port,
-                                         status=arguments["--status"], 
-                                         job_name=arguments["--name"])
+                                       status=arguments["--status"],
+                                       job_name=arguments["--name"])
 
             elif arguments.run:
 
@@ -421,7 +421,7 @@ class JobCommand(PluginCommand):
 
                 port = arguments.port or "8000"
                 service = Manager.show(port=port,
-                                         job_name=arguments["--name"])
+                                       job_name=arguments["--name"])
 
             elif arguments.kill:
 
@@ -429,7 +429,7 @@ class JobCommand(PluginCommand):
 
                 port = arguments.port or "8000"
                 service = Manager.show(port=port,
-                                         job_name=arguments["--name"])
+                                       job_name=arguments["--name"])
 
             elif arguments.view:
 
@@ -511,7 +511,7 @@ class JobCommand(PluginCommand):
             jobqueue = JobQueue(variables["jobset"])
             _name, _directory, _basename = jobqueue.location(
                 variables["jobset"]
-            )        
+            )
             arguments.names = names
 
             # Variable arguments
@@ -705,6 +705,5 @@ class JobCommand(PluginCommand):
             jobqueue = JobQueue(variables["jobset"])
             print()
             jobqueue.update_policy(arguments.policy)
-
 
         return ""

@@ -6,10 +6,10 @@ import random
 import shlex
 import socket
 import sys
-import time
+# import time
 import uuid
 from dataclasses import dataclass
-from pathlib import Path
+# from pathlib import Path
 from textwrap import dedent
 from typing import List
 
@@ -17,13 +17,13 @@ import oyaml as yaml
 from cloudmesh.common.Printer import Printer
 from cloudmesh.common.Shell import Shell
 from cloudmesh.common.console import Console
-from cloudmesh.common.parameter import Parameter
+# from cloudmesh.common.parameter import Parameter
 from cloudmesh.common.util import banner
-from cloudmesh.common.util import path_expand
+# from cloudmesh.common.util import path_expand
 from cloudmesh.common.util import readfile
 from cloudmesh.common.util import str_banner
-from cloudmesh.common.variables import Variables
-from cloudmesh.configuration.Configuration import Configuration
+# from cloudmesh.common.variables import Variables
+# from cloudmesh.configuration.Configuration import Configuration
 
 from yamldb.YamlDB import YamlDB
 
@@ -41,7 +41,7 @@ def is_local(host):
 
 
 def sysinfo():
-    # this may alredy axist in common, if not it should be updated or integrated.
+    # this may already exist in common, if not it should be updated or integrated.
 
     """
     Returns value of system user from environment variables
@@ -433,8 +433,7 @@ class Job:
         return self.pid
 
     def to_yaml(self):
-        result = []
-        result.append(f'{self.name}:')
+        result = [f'{self.name}:']
         for argument in ["name", "id", "experiment", "directory", "input", "output",
                          "status", "gpu", "command", "shell", "pid", "host", "user"]:
             values = self.to_dict()
@@ -656,8 +655,14 @@ class Host:
     def info(self,
              banner=None,
              output="table",
-             order=["name", "status", "ip", "job_counter", "max_jobs_allowed",
-                    "cores", "threads", "gpus"]):
+             order=["name", 
+                    "status", 
+                    "ip", 
+                    "job_counter", 
+                    "max_jobs_allowed",
+                    "cores", 
+                    "threads", 
+                    "gpus"]):
 
         if banner is not None:
             result = str_banner(banner)
@@ -901,7 +906,8 @@ class Cluster:
         try:
             if job_counter > 0:
                 Console.error(
-                    f"Host {self.name} is running {job_counter} jobs. Please kill those jobs before deleting this Host.")
+                    f"Host {self.name} is running {job_counter} jobs. "
+                    "Please kill those jobs before deleting this Host.")
 
             del spec["cloudmesh.jobset.hosts"][self.name]
 

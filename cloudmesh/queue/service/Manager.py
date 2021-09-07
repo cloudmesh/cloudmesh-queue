@@ -3,6 +3,7 @@ from cloudmesh.common.Shell import Shell
 
 from cloudmesh.job.service.server import app
 
+
 class Manager():
 
     @staticmethod
