@@ -34,11 +34,11 @@ Benchmark.debug()
 #remote_host_ip = variables['host'] or 'juliet.futuresystems.org'
 #remote_host_user = variables['user'] or getpass.getuser()
 
-remote = False
+remote = True
 
 if remote:
-    host = "dgx"
-    user = "gregor"
+    host = "red"
+    user = "pi"
 else:
     host = "localhost"
     user = getpass.getuser()
@@ -81,6 +81,10 @@ class TestJob:
         HEADING()
         self.create_command("which python")
 
+    def test_sleep_infinity(self):
+        HEADING()
+        self.create_command("/usr/bin/sleep infinity")
+
     def test_sync(self):
         HEADING()
         Benchmark.Start()
@@ -104,7 +108,7 @@ class TestJob:
 
         Benchmark.Start()
         result = "undefined"
-        while result not in ["end"]:
+        while result not in ["end", "kill"]:
             result = job.state
             print ("Job info:", job.pid, result, job.ps())
             time.sleep(1)
@@ -127,6 +131,14 @@ class TestJob:
         HEADING()
         self.run_job(0)
         self.monitor_job_state(0)
+
+    def test_kill_job(self):
+        HEADING()
+        self.run_job(4)
+        r = jobs[4].kill()
+        self.monitor_job_state(4)
+        assert r == 0
+        assert jobs[4].status == 'kill'
 
 
 class gg:

@@ -452,6 +452,29 @@ class Job:
         new_job = Job(**data)
         self = new_job
 
+    def kill(self):
+        banner(f"Kill: {self.name}")
+
+        if is_local(self.host):
+            command = \
+                f"cd {self.directory}/{self.name}; " + \
+                f"{self.logging(msg='kill')};" + \
+                f'kill -9 "-$(ps -o pgid= {self.pid} | xargs)"'
+        else:
+            command = \
+                f"ssh {self.user}@{self.host} " + \
+                f"'" + \
+                f"cd {self.directory}/{self.name}; " + \
+                f"{self.logging(msg='kill')};" + \
+                f'kill -9 "-$(ps -o pgid= {self.pid} | xargs)"' + \
+                f"'"
+
+        print("Command:", command)
+        r = os.system(command)
+        print(f"Return code was: {r}")
+        self.status = "kill"
+        return r
+
 
 class Queue:
 
