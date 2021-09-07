@@ -301,7 +301,7 @@ class JobCommand(PluginCommand):
         """
 
         # do the import here to avoid long loading times for other commands
-        from cloudmesh.queue.jobqueue import Job
+        from cloudmesh.queue.jobqueue import Queue
 
         map_parameters(
             arguments,
@@ -334,13 +334,14 @@ class JobCommand(PluginCommand):
             arguments["file"] = None
 
         variables = Variables()
-
+        
+        que_name= variables["queue"]
         # VERBOSE(arguments)
 
         names = Parameter.expand(arguments.name)
 
         # Instantiate JobQueue without filename to get default filename
-        jobqueue = JobQueue()
+        jobqueue = Queue()
         default_location = jobqueue.filename
 
         #
@@ -364,7 +365,7 @@ class JobCommand(PluginCommand):
                 Console.error("Please use `queue scheduler --policy=random`")
                 return ""
 
-            jobqueue = JobQueue()
+            jobqueue = Queue()
             jobqueue.set_attribute(config, name, attribute, value)
 
             Console.ok(f"Updated {attribute} to {value} for {name} in config {config}.")
@@ -442,7 +443,7 @@ class JobCommand(PluginCommand):
         elif arguments.info and not arguments.scheduler:
             # cms queue info
 
-            jobset = variables["jobset"] or default_location
+            jobset = queue_name or default_location
             Console.msg(f"Jobs are defined in: {jobset}")
 
             if not Path(jobset).expanduser().exists():
@@ -456,14 +457,14 @@ class JobCommand(PluginCommand):
             # cms queue template --name=job[1-2]
 
             names = names or ["job"]
-            jobset = variables["jobset"] or default_location
-            variables["jobset"] = jobset
+            jobset = queue_name or default_location
+            queue_name = jobset
             template = dict()
 
             backup_jobset = backup_name(jobset)
             shutil.copyfile(Path(jobset).expanduser(), backup_jobset)
 
-            jobqueue = JobQueue(jobset)
+            jobqueue = Queue(jobset)
             for name in names:
                 template.update(jobqueue.template(name=name))
                 jobqueue.add_template(template)
@@ -483,7 +484,7 @@ class JobCommand(PluginCommand):
                 )
                 return ""
 
-            variables["jobset"] = file
+            queue_name = file
 
             jobqueue = JobQueue()
             name, directory, basename = jobqueue.location(file)
@@ -507,10 +508,10 @@ class JobCommand(PluginCommand):
                     [--experiment=EXPERIMENT]
             """
 
-            jobset = variables["jobset"] or default_location
-            jobqueue = JobQueue(variables["jobset"])
+            queue_name = queue_name or default_location
+            jobqueue = Queue(name=queue_name)
             _name, _directory, _basename = jobqueue.location(
-                variables["jobset"]
+                queue_name
             )
             arguments.names = names
 
@@ -526,7 +527,7 @@ class JobCommand(PluginCommand):
 
             # VERBOSE(arguments)
 
-            jobqueue.update_spec(arguments, jobset)
+            jobqueue.update_spec(arguments, queue_name)
 
             jobqueue.show_list(hosts=False)
 
@@ -551,10 +552,10 @@ class JobCommand(PluginCommand):
             # Path.expanduser needed as windows can't interpret "~"
             file = Path.expanduser(Path(arguments.file))
             # BUG: possible bug as we could use cloudmesh path_expand
-            jobqueue = JobQueue()
+            jobqueue = Queue()
             _name, _directory, _basename = jobqueue.location(file)
 
-            if variables["jobset"] is None:
+            if queue_name is None:
                 Console.error(
                     "Jobset not defined. Please use `cms queue set "
                     "FILE` to define the jobset."
@@ -572,7 +573,7 @@ class JobCommand(PluginCommand):
                 )
                 return ""
 
-            jobqueue = JobQueue(variables["jobset"])
+            jobqueue = Queue(name=queue_name)
 
             with open(file, "r") as fi:
                 spec = yaml.load(fi, Loader=yaml.FullLoader)
@@ -583,14 +584,14 @@ class JobCommand(PluginCommand):
 
         elif arguments.status:
             # queue status
-            jobqueue = JobQueue(variables["jobset"])
+            jobqueue = Queue(name=queue_name)
             out = jobqueue.print_jobs(sort_var="status")
             banner("Jobs")
             print(out)
 
         elif arguments.list and arguments["--status"] and not arguments.host:
             # queue list --status=STATUS
-            jobqueue = JobQueue(variables["jobset"])
+            jobqueue = Queue(name=queue_name)
             out = jobqueue.print_jobs(
                 filter_name="status", filter_value=arguments["--status"]
             )
@@ -599,7 +600,7 @@ class JobCommand(PluginCommand):
 
         elif arguments.list and arguments["--name"] and not arguments.host:
             # queue list --name=NAME
-            jobqueue = JobQueue(variables["jobset"])
+            jobqueue = Queue(name=queue_name)
             out = jobqueue.print_jobs(
                 filter_name="name", filter_value=arguments["--name"]
             )
@@ -609,7 +610,7 @@ class JobCommand(PluginCommand):
         elif arguments.list and not arguments.host:
             # queue list
 
-            jobqueue = JobQueue(variables["jobset"])
+            jobqueue = Queue(name=queue_name)
             out = jobqueue.print_jobs()
             banner("Jobs")
             print(out)
@@ -617,13 +618,13 @@ class JobCommand(PluginCommand):
         elif arguments.kill:
             # queue kill --name=NAME
 
-            jobqueue = JobQueue(variables["jobset"])
+            jobqueue = Queue(name=queue_name)
             jobqueue.kill_job(names)
 
         elif arguments.reset:
             # queue reset --name=NAME
 
-            jobqueue = JobQueue(variables["jobset"])
+            jobqueue = Queue(name=queue_name)
             spec = Configuration(jobqueue.filename)
 
             if names is None:
@@ -647,7 +648,7 @@ class JobCommand(PluginCommand):
 
         elif arguments.run:
             # queue run --name=NAME
-            jobqueue = JobQueue(variables["jobset"])
+            jobqueue = Queue(name=queue_name)
             jobqueue.run_job(names)
 
             out = jobqueue.print_jobs(
@@ -658,7 +659,7 @@ class JobCommand(PluginCommand):
         elif arguments.delete and not arguments.host:
             # queue delete --name=NAME
 
-            jobqueue = JobQueue(variables["jobset"])
+            jobqueue = Queue(name=queue_name)
             jobqueue.delete_job(names)
 
             jobqueue.show_list(hosts=False)
@@ -671,7 +672,7 @@ class JobCommand(PluginCommand):
         elif arguments.add and arguments.host:
             # queue hosts add --hostname=NAME --ip=ip --cpus=n
 
-            jobqueue = JobQueue(variables["jobset"])
+            jobqueue = Queue(name=queue_name)
             jobqueue.addhost(arguments)
 
             jobqueue.show_list(jobs=False)
@@ -679,7 +680,7 @@ class JobCommand(PluginCommand):
         elif arguments.host and arguments.delete:
             # queue delete hosts --hostname=hostname
 
-            jobqueue = JobQueue(variables["jobset"])
+            jobqueue = Queue(name=queue_name)
             jobqueue.delete_host(host_name=arguments.hostname)
 
             jobqueue.show_list(jobs=False)
@@ -687,7 +688,7 @@ class JobCommand(PluginCommand):
         elif arguments.host and arguments.list:
             # queue list hosts
 
-            jobqueue = JobQueue(variables["jobset"])
+            jobqueue = Queue(name=queue_name)
             # out = jobqueue.print_hosts()
             # print(out)
             jobqueue.show_list(jobs=False)
@@ -695,7 +696,7 @@ class JobCommand(PluginCommand):
         elif arguments.scheduler and arguments.info:
             # queue scheduler info
 
-            jobqueue = JobQueue(variables["jobset"])
+            jobqueue = Queue(name=queue_name)
             policy = jobqueue.get_policy()
             print()
             Console.info(f"Configured scheduler policy: {policy}")
@@ -703,7 +704,7 @@ class JobCommand(PluginCommand):
         elif arguments.scheduler and arguments.policy:
             # queue scheduler --policy=random
 
-            jobqueue = JobQueue(variables["jobset"])
+            jobqueue = Queue(name=queue_name)
             print()
             jobqueue.update_policy(arguments.policy)
 
