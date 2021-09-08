@@ -33,6 +33,7 @@ sysinfo = False
 if remote:
     host = "dgx"
     user = "gregor"
+    ip = '192.168.1.16'
 else:
     host = "localhost"
     user = getpass.getuser()
@@ -83,4 +84,21 @@ class TestHost:
     def test_benchmark(self):
         HEADING()
         Benchmark.print(sysinfo=sysinfo, csv=True)
+
+    def test_ping(self):
+        HEADING()
+        Benchmark.Start()
+        if not remote:
+            result, time = hosts[0].ping()
+            assert hosts[0].ping_status == result
+            assert hosts[0].ping_time == time
+        else:
+            rhost = Host(name=host,ip=ip)
+            result, time = rhost.ping()
+            assert rhost.ping_status == result
+            assert rhost.ping_time == time
+        print(f"Ping success: {result}")
+        print(f"datetime: {time}")
+
+        Benchmark.Stop()
 

@@ -9,6 +9,7 @@ from dataclasses import dataclass
 # from pathlib import Path
 from textwrap import dedent
 from typing import List
+from datetime import datetime
 
 import oyaml as yaml
 
@@ -26,6 +27,13 @@ from yamldb.YamlDB import YamlDB
 # from cloudmesh.common.variables import Variables
 # from cloudmesh.configuration.Configuration import Configuration
 
+<<<<<<< HEAD
+=======
+from yamldb.YamlDB import YamlDB
+from cloudmesh.common.util import is_local
+from cloudmesh.common.Host import Host as commonHost
+
+>>>>>>> a9b627f1af12598cc76fb6d9fdd7e434f6cf7d8f
 Console.init()
 
 
@@ -451,15 +459,17 @@ class Job:
         if is_local(self.host):
             command = \
                 f"cd {self.directory}/{self.name}; " + \
-                f"{self.logging(msg='kill')};" + \
-                f'kill -9 "-$(ps -o pgid= {self.pid} | xargs)"'
+                f'kill -9 $(ps -o pid= --ppid {self.pid});' + \
+                f'kill -9 {self.pid};' + \
+                f"{self.logging(msg='kill')};"
+
         else:
             command = \
                 f"ssh {self.user}@{self.host} " + \
                 f"'" + \
                 f"cd {self.directory}/{self.name}; " + \
+                f'kill -9 "-$(ps -o pgid= {self.pid} | xargs)";' + \
                 f"{self.logging(msg='kill')};" + \
-                f'kill -9 "-$(ps -o pgid= {self.pid} | xargs)"' + \
                 f"'"
 
         print("Command:", command)
@@ -530,12 +540,16 @@ class Queue:
         # job = Job(data)
         # return job
 
+<<<<<<< HEAD
     def get(self, name: str):
+=======
+    def get(self, name: str) -> dict:
+>>>>>>> a9b627f1af12598cc76fb6d9fdd7e434f6cf7d8f
         """
         Returns the job with the given name
 
         :param name: name of the job
-        :return: Job
+        :return: dict of job
         """
         return self.jobs[name]
 
@@ -670,7 +684,11 @@ class Host:
         Conducts a ping on the host and updates the probestatus
         :return: ping_status, datetime
         """
-        raise NotImplementedError
+        now = datetime.now()
+        result = commonHost.ping(hosts=[self.ip],count=4,processors=1)
+        self.ping_status = result[0]['success']
+        self.ping_time = now.strftime("%d/%m/%Y %H:%M:%S")
+        return self.ping_status, self.ping_time
 
     def probe(self):
         """
