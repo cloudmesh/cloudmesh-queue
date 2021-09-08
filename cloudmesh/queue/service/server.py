@@ -29,23 +29,23 @@ def queue_get(queue: str):
     # just a dummy value so we can define the methods
     return {"queue": queue}
 
+
 @app.queue_list("/queue/")
 def queue_list():
     # just a dummy value so we can define the methods
     return {"queue": "list all queues"}
+
 
 @app.job_get("/queue/{queue}/job/{job}")
 def queue_get(queue: str, job: str):
     # just a dummy value so we can define the methods
     return {"queue": queue, "job": job}
 
+
 @app.job_list("/queue/{queue}/job")
 def job_list():
     # just a dummy value so we can define the methods
     return {"queue": queue}
-
-
-
 
 
 @app.get("/info")

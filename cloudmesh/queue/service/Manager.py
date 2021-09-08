@@ -6,6 +6,7 @@ from cloudmesh.common.Shell import Shell
 # This should be more REST like
 #
 
+
 class Manager:
 
     @staticmethod

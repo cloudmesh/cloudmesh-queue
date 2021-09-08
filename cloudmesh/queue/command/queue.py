@@ -334,8 +334,8 @@ class JobCommand(PluginCommand):
             arguments["file"] = None
 
         variables = Variables()
-        
-        que_name= variables["queue"]
+
+        que_name = variables["queue"]
         # VERBOSE(arguments)
 
         names = Parameter.expand(arguments.name)

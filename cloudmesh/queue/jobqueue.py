@@ -6,13 +6,14 @@ import sys
 # import time
 import uuid
 from dataclasses import dataclass
+from datetime import datetime
 # from pathlib import Path
 from textwrap import dedent
 from typing import List
-from datetime import datetime
 
 import oyaml as yaml
 
+from cloudmesh.common.Host import Host as commonHost
 from cloudmesh.common.Printer import Printer
 from cloudmesh.common.Shell import Shell
 from cloudmesh.common.console import Console
@@ -27,13 +28,6 @@ from yamldb.YamlDB import YamlDB
 # from cloudmesh.common.variables import Variables
 # from cloudmesh.configuration.Configuration import Configuration
 
-<<<<<<< HEAD
-=======
-from yamldb.YamlDB import YamlDB
-from cloudmesh.common.util import is_local
-from cloudmesh.common.Host import Host as commonHost
-
->>>>>>> a9b627f1af12598cc76fb6d9fdd7e434f6cf7d8f
 Console.init()
 
 
@@ -528,7 +522,6 @@ class Queue:
     def values(self):
         return self.jobs.__dict__["data"].values()
 
-
     def __getitem__(self, item):
         if type(item) == int:
             print(self.jobs.keys())
@@ -639,10 +632,10 @@ class SchedulerFIFO(Queue):
                  filename: str = None,
                  jobs: List = None):
         Queue.__init__(self,
-            name=name,
-            experiment=experiment,
-            filename=filename,
-            jobs=jobs)
+                       name=name,
+                       experiment=experiment,
+                       filename=filename,
+                       jobs=jobs)
         self.scheduler_N = len(self.jobs.data)
         self.scheduler_current_job = 0
 
@@ -679,7 +672,7 @@ class Host:
         :return: ping_status, datetime
         """
         now = datetime.now()
-        result = commonHost.ping(hosts=[self.ip],count=4,processors=1)
+        result = commonHost.ping(hosts=[self.ip], count=4, processors=1)
         self.ping_status = result[0]['success']
         self.ping_time = now.strftime("%d/%m/%Y %H:%M:%S")
         return self.ping_status, self.ping_time
