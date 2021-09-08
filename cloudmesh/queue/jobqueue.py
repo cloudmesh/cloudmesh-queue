@@ -4,7 +4,7 @@ import os
 import platform
 import random
 import shlex
-import socket
+
 import sys
 # import time
 import uuid
@@ -26,18 +26,9 @@ from cloudmesh.common.util import str_banner
 # from cloudmesh.configuration.Configuration import Configuration
 
 from yamldb.YamlDB import YamlDB
+from cloudmesh.common.util import is_local
 
 Console.init()
-
-
-def is_local(host):
-    return host in ["127.0.0.1",
-                    "localhost",
-                    socket.gethostname(),
-                    # just in case socket.gethostname() does not work  we also try the following:
-                    platform.node(),
-                    socket.gethostbyaddr(socket.gethostname())[0]
-                    ]
 
 
 def sysinfo():
