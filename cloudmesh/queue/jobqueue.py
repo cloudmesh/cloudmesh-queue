@@ -623,7 +623,7 @@ class Queue:
 
 
 
-class SchedulerById(Queue):
+class SchedulerFIFO(Queue):
 
     def __init__(self,
                  name: str = "TBD",
@@ -639,8 +639,6 @@ class SchedulerById(Queue):
         self.scheduler_current_job = 0
 
     def __iter__(self):
-        print (type(self.jobs.data))
-        print("Job items", self.jobs.__dict__["data"].items())
         return self.jobs.__dict__["data"].items()
 
     def __next__(self):
@@ -648,10 +646,6 @@ class SchedulerById(Queue):
         result = self.jobs.data[key]
         self.scheduler_current_job += 1
         return result
-
-    #def __getitem__(self, item):
-    #    key = list(self.jobs.keys())[item]
-    #    return self.jobs.data[key]
 
 
 @dataclass
