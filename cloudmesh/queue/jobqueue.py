@@ -1,10 +1,7 @@
 import json
 import multiprocessing
 import os
-import platform
-import random
 import shlex
-
 import sys
 # import time
 import uuid
@@ -14,19 +11,20 @@ from textwrap import dedent
 from typing import List
 
 import oyaml as yaml
+
 from cloudmesh.common.Printer import Printer
 from cloudmesh.common.Shell import Shell
 from cloudmesh.common.console import Console
 # from cloudmesh.common.parameter import Parameter
 from cloudmesh.common.util import banner
+from cloudmesh.common.util import is_local
 # from cloudmesh.common.util import path_expand
 from cloudmesh.common.util import readfile
 from cloudmesh.common.util import str_banner
+from yamldb.YamlDB import YamlDB
+
 # from cloudmesh.common.variables import Variables
 # from cloudmesh.configuration.Configuration import Configuration
-
-from yamldb.YamlDB import YamlDB
-from cloudmesh.common.util import is_local
 
 Console.init()
 
@@ -132,8 +130,8 @@ class Job:
     scriptname: str = None
     remote_command: str = None
     nohup_command: str = None  # BUG: should this just be remote command?
-                               #      we may not need to store the nohubcommand as it is
-                               #      just internal
+    #      we may not need to store the nohubcommand as it is
+    #      just internal
     # placement
     pid: str = None
     host: str = None
@@ -511,6 +509,16 @@ class Queue:
         except:
             Console.error(f"Could not delete job:{name}")
 
+    def keys(self):
+        return self.jobs.keys()
+
+    def items(self):
+        return self.jobs.__dict__["data"].items()
+
+    def values(self):
+        return self.jobs.__dict__["data"].values()
+
+
     def __getitem__(self, item):
         if type(item) == int:
             print(self.jobs.keys())
@@ -518,11 +526,11 @@ class Queue:
         else:
             key = str(item)
         data = self.get(key)
-        return data
+        return dict(data)
         # job = Job(data)
         # return job
 
-    def get(self, name: str) -> Job:
+    def get(self, name: str):
         """
         Returns the job with the given name
 
@@ -612,33 +620,38 @@ class Queue:
         result = self.to_dict()
         return str(result)
 
-    def __iter__(self):
-        pass
 
-    def __next__(self):
-        pass
 
-    def add_scheduler(self, Scheduler):
-        self.scheduler= Scheduler(self.jobs)
-        self.__iter__ = self.scheduler.__iter__
-        self.__next__ = self.scheduler.__next__
 
-class ScheduleById:
+class SchedulerById(Queue):
 
-    def __init__(self, db):
-        self.db = db
-        self.scheduler_len = len(self.db)
+    def __init__(self,
+                 name: str = "TBD",
+                 experiment: str = None,
+                 filename: str = None,
+                 jobs: List = None):
+        Queue.__init__(self,
+            name=name,
+            experiment=experiment,
+            filename=filename,
+            jobs=jobs)
+        self.scheduler_N = len(self.jobs.data)
         self.scheduler_current_job = 0
 
     def __iter__(self):
-        return self.db
+        print (type(self.jobs.data))
+        print("Job items", self.jobs.__dict__["data"].items())
+        return self.jobs.__dict__["data"].items()
 
     def __next__(self):
-        result = self.db[self.scheduler_current_job]
+        key = self.jobs.keys()[self.scheduler_current_job]
+        result = self.jobs.data[key]
         self.scheduler_current_job += 1
         return result
 
-
+    #def __getitem__(self, item):
+    #    key = list(self.jobs.keys())[item]
+    #    return self.jobs.data[key]
 
 
 @dataclass
@@ -706,13 +719,13 @@ class Host:
              order=None):
 
         order = order or ["name",
-                 "status",
-                 "ip",
-                 "job_counter",
-                 "max_jobs_allowed",
-                 "cores",
-                 "threads",
-                 "gpus"]
+                          "status",
+                          "ip",
+                          "job_counter",
+                          "max_jobs_allowed",
+                          "cores",
+                          "threads",
+                          "gpus"]
 
         if banner is not None:
             result = str_banner(banner)
