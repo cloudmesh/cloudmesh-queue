@@ -12,6 +12,7 @@ from dataclasses import dataclass
 # from pathlib import Path
 from textwrap import dedent
 from typing import List
+from datetime import datetime
 
 import oyaml as yaml
 from cloudmesh.common.Printer import Printer
@@ -27,6 +28,7 @@ from cloudmesh.common.util import str_banner
 
 from yamldb.YamlDB import YamlDB
 from cloudmesh.common.util import is_local
+from cloudmesh.common.Host import Host as commonHost
 
 Console.init()
 
@@ -453,15 +455,17 @@ class Job:
         if is_local(self.host):
             command = \
                 f"cd {self.directory}/{self.name}; " + \
-                f"{self.logging(msg='kill')};" + \
-                f'kill -9 "-$(ps -o pgid= {self.pid} | xargs)"'
+                f'kill -9 $(ps -o pid= --ppid {self.pid});' + \
+                f'kill -9 {self.pid};' + \
+                f"{self.logging(msg='kill')};"
+
         else:
             command = \
                 f"ssh {self.user}@{self.host} " + \
                 f"'" + \
                 f"cd {self.directory}/{self.name}; " + \
+                f'kill -9 "-$(ps -o pgid= {self.pid} | xargs)";' + \
                 f"{self.logging(msg='kill')};" + \
-                f'kill -9 "-$(ps -o pgid= {self.pid} | xargs)"' + \
                 f"'"
 
         print("Command:", command)
@@ -522,12 +526,12 @@ class Queue:
         # job = Job(data)
         # return job
 
-    def get(self, name: str) -> Job:
+    def get(self, name: str) -> dict:
         """
         Returns the job with the given name
 
         :param name: name of the job
-        :return: Job
+        :return: dict of job
         """
         return self.jobs[name]
 
@@ -663,7 +667,11 @@ class Host:
         Conducts a ping on the host and updates the probestatus
         :return: ping_status, datetime
         """
-        raise NotImplementedError
+        now = datetime.now()
+        result = commonHost.ping(hosts=[self.ip],count=4,processors=1)
+        self.ping_status = result[0]['success']
+        self.ping_time = now.strftime("%d/%m/%Y %H:%M:%S")
+        return self.ping_status, self.ping_time
 
     def probe(self):
         """
