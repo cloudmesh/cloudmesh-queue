@@ -540,11 +540,7 @@ class Queue:
         # job = Job(data)
         # return job
 
-<<<<<<< HEAD
-    def get(self, name: str):
-=======
     def get(self, name: str) -> dict:
->>>>>>> a9b627f1af12598cc76fb6d9fdd7e434f6cf7d8f
         """
         Returns the job with the given name
 
@@ -633,8 +629,6 @@ class Queue:
     def __str__(self):
         result = self.to_dict()
         return str(result)
-
-
 
 
 class SchedulerFIFO(Queue):
