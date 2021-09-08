@@ -589,9 +589,6 @@ class Queue:
             result = result + str(Printer.attribute(job, output=output))
         return result
 
-    def add_policy(self, policy):
-        pass
-
     def to_dict(self):
         result = {
             "config": {
@@ -614,6 +611,34 @@ class Queue:
     def __str__(self):
         result = self.to_dict()
         return str(result)
+
+    def __iter__(self):
+        pass
+
+    def __next__(self):
+        pass
+
+    def add_scheduler(self, Scheduler):
+        self.scheduler= Scheduler(self.jobs)
+        self.__iter__ = self.scheduler.__iter__
+        self.__next__ = self.scheduler.__next__
+
+class ScheduleById:
+
+    def __init__(self, db):
+        self.db = db
+        self.scheduler_len = len(self.db)
+        self.scheduler_current_job = 0
+
+    def __iter__(self):
+        return self.db
+
+    def __next__(self):
+        result = self.db[self.scheduler_current_job]
+        self.scheduler_current_job += 1
+        return result
+
+
 
 
 @dataclass
