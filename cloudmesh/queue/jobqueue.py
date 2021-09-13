@@ -320,11 +320,12 @@ class Job:
 
             result = Shell.find_lines_with(lines=lines, what="cloudmesh state:")
             if len(result) == 0:
-                self.status = "unkown"
+                self.status = "unknown"
             else:
                 self.status = result[-1].split(":", 1)[1].strip()
         else:
-            self.status = "unkown"
+            pass
+            self.status = "unknown"
         return self.status
 
     @property
@@ -363,6 +364,9 @@ class Job:
                     lines = Shell.run(f"ssh {self.user}@{self.host} \"cat {self.directory}/{self.name}/{name}\"")
                 found = True
             except:
+                if 'log' in name:
+                    # file does not exist until command run
+                    return ''
                 pass
         return lines
 
@@ -449,7 +453,9 @@ class Job:
 
     def kill(self):
         banner(f"Kill: {self.name}")
-
+        if self.pid is None:
+            # job has not been started nothing to kill
+            return None
         if is_local(self.host):
             command = \
                 f"cd {self.directory}/{self.name}; " + \
@@ -530,8 +536,8 @@ class Queue:
             key = str(item)
         data = self.get(key)
         return dict(data)
-        # job = Job(data)
-        # return job
+        #job = Job(**data)
+        #return job
 
     def get(self, name: str) -> dict:
         """
@@ -550,6 +556,7 @@ class Queue:
         :param job: the job
         """
         self.jobs[job.name] = job.to_dict()
+        self.save()
 
     def search(self, query):
         return self.jobs.search(query)
@@ -570,6 +577,18 @@ class Queue:
     def save(self):
         if len(self.jobs.data) > 0:
             self.jobs.save(self.filename)
+
+    def refresh(self):
+        updates = False
+        for key in self.keys():
+            job = Job(**self.get(key))
+            old_state = job.status
+            new_state = job.state
+            if old_state != new_state:
+                updates = True
+                self.set(job)
+        if updates:
+            self.save()
 
     def info(self,
              kind="jobs",
@@ -630,19 +649,62 @@ class SchedulerFIFO(Queue):
                  name: str = "TBD",
                  experiment: str = None,
                  filename: str = None,
-                 jobs: List = None):
+                 jobs: List = None,
+                 max_parallel: int = 1):
         Queue.__init__(self,
                        name=name,
                        experiment=experiment,
                        filename=filename,
                        jobs=jobs)
+        self.running = 0
+        # when a job starts we need to increment running
         self.scheduler_N = len(self.jobs.data)
         self.scheduler_current_job = 0
 
     def __iter__(self):
+        # get an update from all hosts in the queue
+        # get from all host the current status (a function to be added to queue)
+        # def refresh: called _
         return self.jobs.__dict__["data"].items()
 
     def __next__(self):
+        # def refresh: called
+        # needs to filter out unqualified jobs, jobs such as inative host, finished job, killed job,
+        # status: undefined(no host assigned to job), defined (with host associated), running, killed, end
+        key = self.jobs.keys()[self.scheduler_current_job]
+        result = self.jobs.data[key]
+        self.scheduler_current_job += 1
+        return result
+
+
+class SchedulerTestFIFO(Queue):
+
+    def __init__(self,
+                 name: str = "TBD",
+                 experiment: str = None,
+                 filename: str = None,
+                 jobs: List = None,
+                 max_parallel: int = 1):
+        Queue.__init__(self,
+                       name=name,
+                       experiment=experiment,
+                       filename=filename,
+                       jobs=jobs)
+        self.running = 0
+        # when a job starts we need to increment running only if running <= max_parallel
+        self.scheduler_N = len(self.jobs.data)
+        self.scheduler_current_job = 0
+
+    def __iter__(self):
+        # get an update from all hosts in the queue
+        # get from all host the current status (a function to be added to queue)
+        # def refresh: called _
+        return self.jobs.__dict__["data"].items()
+
+    def __next__(self):
+        # def refresh: called
+        # needs to filter out unqualified jobs, jobs such as inative host, finished job, killed job,
+        # status: undefined(no host assigned to job), defined (with host associated), running, killed, end
         key = self.jobs.keys()[self.scheduler_current_job]
         result = self.jobs.data[key]
         self.scheduler_current_job += 1

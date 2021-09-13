@@ -124,6 +124,19 @@ class TestQueue:
         assert job.status == 'kill'
         assert job.name not in queue.to_dict()['jobs'].keys()
 
+    def test_refresh(self):
+        HEADING()
+        job = jobs[0]
+        job.run()
+        job = jobs[1]
+        job.run()
+        queue.refresh()
+        result = queue.info(banner="Queue", kind="jobs")
+        print(result)
+        assert 'job0 | end ' in result
+        assert 'job1 | end ' in result
+
+
 class rest:
     def test_converters(self):
         HEADING()
