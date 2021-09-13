@@ -122,7 +122,7 @@ class Job:
     input: str = None
     output: str = None
     log: str = None
-    status: str = "ready"
+    status: str = "undefined"
     gpu: str = ""
     arguments: str = ""
     executable: str = ""
@@ -153,6 +153,8 @@ class Job:
             self.shell_path = f"/usr/bin/{self.shell}"
         if self.command:
             self.set(self.command)
+        if self.host and self.user:
+            self.status = 'ready'
 
         self.scriptname = f"{self.experiment}/{self.name}/{self.name}.{self.shell}"
         self.generate_command()
@@ -319,13 +321,9 @@ class Job:
             lines = lines.splitlines()
 
             result = Shell.find_lines_with(lines=lines, what="cloudmesh state:")
-            if len(result) == 0:
-                self.status = "ready"
-            else:
+            if len(result) != 0:
                 self.status = result[-1].split(":", 1)[1].strip()
-        else:
-            pass
-            self.status = "ready"
+
         return self.status
 
     @property
@@ -663,13 +661,7 @@ class SchedulerFIFO(Queue):
         self.max_parallel = max_parallel
         self.running_jobs = []
         self.completed_jobs = []
-
-    def __iter__(self):
-        # get an update from all hosts in the queue
-        # get from all host the current status (a function to be added to queue)
-        # def refresh: called _
-        self.refresh()
-        return self.jobs.__dict__["data"].items()
+        self.ran_jobs = []
 
     def __next__(self):
         # def refresh: called
@@ -678,7 +670,6 @@ class SchedulerFIFO(Queue):
         found_job = False
         self.refresh()
         while (not found_job) and (self.scheduler_current_job < len(self.jobs.data)):
-            #self.refresh()
             key = list(self.jobs.keys())[self.scheduler_current_job]
             result = self.jobs.data[key]
             if result['status'] == 'ready':
@@ -693,7 +684,7 @@ class SchedulerFIFO(Queue):
         self.refresh()
         for job in self.running_jobs:
             try:
-                if self.get(job)['status'] != 'start':
+                if self.get(job)['status'] == 'end':
                     self.running_jobs.remove(job)
                     self.completed_jobs.append(job)
                     self.running -= 1
@@ -712,15 +703,17 @@ class SchedulerFIFO(Queue):
                 self.check_if_jobs_finished()
             self.running += 1
             self.running_jobs.append(job.name)
+            self.ran_jobs.append(job.name)
             Console.info(f"Running Jobs: {self.running_jobs}")
             job.run()
             next_job = self.__next__()
+        return self.ran_jobs
 
     def wait_on_running(self):
         while len(self.running_jobs) > 0:
             time.sleep(1)
             self.check_if_jobs_finished()
-        Console.info(f"Completed Jobs: {self.completed_jobs}")
+        return self.completed_jobs
 
 
 class SchedulerTestFIFO(Queue):
