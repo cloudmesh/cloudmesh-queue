@@ -16,7 +16,7 @@ from cloudmesh.common.util import banner
 from cloudmesh.common.util import readfile
 
 from cloudmesh.queue.jobqueue import Job
-from cloudmesh.queue.jobqueue import SchedulerById
+from cloudmesh.queue.jobqueue import SchedulerFIFO
 from cloudmesh.queue.jobqueue import Host
 
 Benchmark.debug()
@@ -33,15 +33,15 @@ remote = False
 sysinfo = False
 
 if remote:
-    host = "dgx"
-    user = "gregor"
+    host = "red"
+    user = "pi"
 else:
     host = "localhost"
     user = getpass.getuser()
 
 directory = "./experiment"
 jobs = []
-queue = SchedulerFIFO(name="a")
+queue = SchedulerFIFO(name="a",max_parallel=4)
 i = -1
 
 
@@ -91,6 +91,32 @@ class TestQueue:
         HEADING()
         self.create_command("/usr/bin/sleep infinity")
 
+    def test_sleep1(self):
+        HEADING()
+        Benchmark.Start()
+        self.create_command("/usr/bin/sleep 10")
+        Benchmark.Stop()
+
+    def test_sleep2(self):
+        HEADING()
+        Benchmark.Start()
+        self.create_command("/usr/bin/sleep 10")
+        Benchmark.Stop()
+
+    def test_sleep3(self):
+        HEADING()
+        Benchmark.Start()
+        self.create_command("/usr/bin/sleep 10")
+        Benchmark.Stop()
+
+    def test_sync(self):
+        HEADING()
+        Benchmark.Start()
+        result = Host.sync(user, host, "experiment")
+        Benchmark.Stop()
+        assert result
+        print(result)
+
     def test_add_to_queue(self):
         HEADING()
         global jobs
@@ -130,7 +156,13 @@ class TestQueue:
         print("items", queue.items())
 
         for job in queue.items():
+            print()
             print (job)
+            print()
+
+        queue.run()
+        queue.delete('job4')
+        queue.wait_on_running()
         Benchmark.Stop()
 
 

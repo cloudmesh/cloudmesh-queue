@@ -3,7 +3,7 @@ import multiprocessing
 import os
 import shlex
 import sys
-# import time
+import time
 import uuid
 from dataclasses import dataclass
 from datetime import datetime
@@ -140,9 +140,9 @@ class Job:
     user: str = None
 
     def __post_init__(self):
-        print(self.info())
+        #print(self.info())
 
-        Console.ok(f"Creating: {self.name}")
+        #Console.ok(f"Creating: {self.name}")
         if self.input is None:
             self.input = f"{self.name}/input"
         if self.output is None:
@@ -320,12 +320,12 @@ class Job:
 
             result = Shell.find_lines_with(lines=lines, what="cloudmesh state:")
             if len(result) == 0:
-                self.status = "unknown"
+                self.status = "ready"
             else:
                 self.status = result[-1].split(":", 1)[1].strip()
         else:
             pass
-            self.status = "unknown"
+            self.status = "ready"
         return self.status
 
     @property
@@ -660,21 +660,67 @@ class SchedulerFIFO(Queue):
         # when a job starts we need to increment running
         self.scheduler_N = len(self.jobs.data)
         self.scheduler_current_job = 0
+        self.max_parallel = max_parallel
+        self.running_jobs = []
+        self.completed_jobs = []
 
     def __iter__(self):
         # get an update from all hosts in the queue
         # get from all host the current status (a function to be added to queue)
         # def refresh: called _
+        self.refresh()
         return self.jobs.__dict__["data"].items()
 
     def __next__(self):
         # def refresh: called
         # needs to filter out unqualified jobs, jobs such as inative host, finished job, killed job,
         # status: undefined(no host assigned to job), defined (with host associated), running, killed, end
-        key = self.jobs.keys()[self.scheduler_current_job]
-        result = self.jobs.data[key]
-        self.scheduler_current_job += 1
-        return result
+        found_job = False
+        self.refresh()
+        while (not found_job) and (self.scheduler_current_job < len(self.jobs.data)):
+            #self.refresh()
+            key = list(self.jobs.keys())[self.scheduler_current_job]
+            result = self.jobs.data[key]
+            if result['status'] == 'ready':
+                found_job = True
+            self.scheduler_current_job += 1
+        if not found_job:
+            return None
+        else:
+            return result
+
+    def check_if_jobs_finished(self):
+        self.refresh()
+        for job in self.running_jobs:
+            try:
+                if self.get(job)['status'] != 'start':
+                    self.running_jobs.remove(job)
+                    self.completed_jobs.append(job)
+                    self.running -= 1
+            except:
+                # job deleted or renamed in queue
+                self.running_jobs.remove(job)
+                self.running -= 1
+
+    def run(self):
+        next_job = self.__next__()
+        while next_job is not None:
+            job = Job(**next_job)
+            while self.running == self.max_parallel:
+                Console.info(f"Waiting. At max_parallel jobs={self.max_parallel}.")
+                time.sleep(1)
+                self.check_if_jobs_finished()
+            self.running += 1
+            self.running_jobs.append(job.name)
+            Console.info(f"Running Jobs: {self.running_jobs}")
+            job.run()
+            next_job = self.__next__()
+
+    def wait_on_running(self):
+        while len(self.running_jobs) > 0:
+            time.sleep(1)
+            self.check_if_jobs_finished()
+        Console.info(f"Completed Jobs: {self.completed_jobs}")
 
 
 class SchedulerTestFIFO(Queue):
