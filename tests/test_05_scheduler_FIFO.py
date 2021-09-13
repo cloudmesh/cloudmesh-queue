@@ -30,7 +30,7 @@ Benchmark.debug()
 # remote_host_ip = variables['host'] or 'juliet.futuresystems.org'
 # remote_host_user = variables['user'] or getpass.getuser()
 
-remote = True
+remote = False
 sysinfo = False
 
 if remote:
@@ -210,6 +210,8 @@ class TestQueue:
                 # job 4 was deleted from queue
                 # job 5 was skip because undefined
                 assert f'job{i}' not in completed_jobs
+
+        print(queue.info(banner="info by id 0"))
 
         Benchmark.Stop()
 
