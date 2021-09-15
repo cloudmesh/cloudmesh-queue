@@ -34,7 +34,7 @@ Benchmark.debug()
 #remote_host_ip = variables['host'] or 'juliet.futuresystems.org'
 #remote_host_user = variables['user'] or getpass.getuser()
 
-remote = False
+remote = True
 
 if remote:
     host = "dgx"
@@ -95,6 +95,14 @@ class TestJob:
                   )
         jobs.append(job)
 
+    def test_sleep_infinity2(self):
+        HEADING()
+        self.create_command("/usr/bin/sleep infinity")
+
+    def test_sleep_infinity3(self):
+        HEADING()
+        self.create_command("/usr/bin/sleep infinity")
+
     def test_sync(self):
         HEADING()
         Benchmark.Start()
@@ -154,6 +162,38 @@ class TestJob:
         HEADING()
         jobs[5].run()
 
+    def test_running(self):
+        HEADING()
+        jobs[6].run()
+        running = jobs[6].check_running()
+        print(f'Runningd: {running}')
+        assert running is True
+        jobs[6].kill()
+        running = jobs[6].check_running()
+        print(f'Running: {running}')
+        assert running is False
+
+    def test_crashed(self):
+        HEADING()
+        job = jobs[7]
+        job.run()
+        running = job.check_running()
+        print(f'Running: {running}')
+        assert running is True
+        crashed = job.check_crashed()
+        print(f'Crashed: {crashed}')
+        assert crashed is False
+        command = f'kill -9 $(ps -o pid= --ppid {job.pid});' + \
+                  f'kill -9 {job.pid};'
+        command = f"ssh {job.user}@{job.host} \"{command}\""
+        Shell.run(command)
+        running = job.check_running()
+        print(f'Running: {running}')
+        assert running is False
+        crashed = job.check_crashed()
+        print(f'Crashed: {crashed}')
+        assert crashed is True
+        assert job.state == 'crash'
 
 class gg:
     def test_yaml_job2(self):

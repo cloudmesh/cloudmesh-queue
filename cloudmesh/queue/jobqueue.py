@@ -179,6 +179,31 @@ class Job:
         except:
             return None
 
+    def check_running(self):
+        ps = self.ps()
+        if ps is None:
+            return False
+        return True
+
+    def check_crashed(self):
+        if self.state == 'start' and not self.check_running():
+            if self.state == 'start':
+                if is_local(self.host):
+                    command = \
+                        f"cd {self.directory}/{self.name}; " + \
+                        f"{self.logging(msg='crash')};"
+                else:
+                    command = f"ssh {self.user}@{self.host} " + \
+                              f"'" + \
+                              f"cd {self.directory}/{self.name}; " + \
+                              f"{self.logging(msg='crash')};" + \
+                              f"'"
+                os.system(command)
+                return True
+        elif self.status == 'start':
+            return False
+        return None
+
     @staticmethod
     def nohup(name=None, shell="bash"):
         """
