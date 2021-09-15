@@ -573,8 +573,8 @@ class Queue:
         self.save()
 
     def save(self):
-        if len(self.jobs.data) > 0:
-            self.jobs.save(self.filename)
+        #if len(self.jobs.data) > 0:
+        self.jobs.save(self.filename)
 
     def refresh(self):
         updates = False

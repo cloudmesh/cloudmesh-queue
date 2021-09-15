@@ -136,6 +136,21 @@ class TestQueue:
         assert 'job0 | end ' in result
         assert 'job1 | end ' in result
 
+    def test_empty_queue(self):
+        HEADING()
+        empty = Queue(name="b", experiment="b_experiment")
+        empty.save()
+        content = readfile("./b_experiment/b-queue.yaml")
+        print("Content", content)
+        print("YAML ", empty.to_yaml())
+        empty = Queue(name="b", experiment="b_experiment")
+        empty.load()
+        empty.add(jobs[0])
+        content = readfile("./b_experiment/b-queue.yaml")
+        assert content != '{}\n'
+        empty.delete(jobs[0].name)
+        content = readfile("./b_experiment/b-queue.yaml")
+        assert content == '{}\n'
 
 class rest:
     def test_converters(self):
