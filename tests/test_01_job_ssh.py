@@ -85,6 +85,16 @@ class TestJob:
         HEADING()
         self.create_command("/usr/bin/sleep infinity")
 
+    def test_env3_job(self):
+        HEADING()
+        job = Job(name=f"job{i}",
+                  command="cms help",
+                  user=user,
+                  host=host,
+                  directory=directory,
+                  )
+        jobs.append(job)
+
     def test_sync(self):
         HEADING()
         Benchmark.Start()
@@ -139,6 +149,10 @@ class TestJob:
         self.monitor_job_state(4)
         assert r == 0
         assert jobs[4].status == 'kill'
+
+    def test_state_env3_job(self):
+        HEADING()
+        jobs[5].run()
 
 
 class gg:

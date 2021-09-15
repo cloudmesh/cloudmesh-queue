@@ -138,6 +138,7 @@ class Job:
     pid: str = None
     host: str = None
     user: str = None
+    pyenv: str = None
 
     def __post_init__(self):
         #print(self.info())
@@ -289,13 +290,16 @@ class Job:
         with open(self.scriptname, "w") as f:
             start_line = self.logging("start", append=False)
             end_line = self.logging("end")
+            pyenv_cmd = ''
+            if self.pyenv is not None:
+                pyenv_cmd = f'source {self.pyenv}; '
             script = "\n".join([
                 f"#! {self.shell_path} -x",
                 f"echo $$ > {self.name}.pid",
                 f"rm -f {self.output}",
                 f"rm -f {self.log}",
                 f"{start_line}",
-                f'echo -ne "# date: " >> {self.log}; date >> {self.log}',
+                f'echo -ne "# date: " >> {self.log}; date >> {self.log}' + pyenv_cmd,
                 f"{self.command} >> {self.output}",
                 f'echo -ne "# date: " >> {self.log}; date >> {self.log}',
                 f"{end_line}",
