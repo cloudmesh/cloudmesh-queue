@@ -786,12 +786,13 @@ class Host:
         now = datetime.now()
         result = commonHost.check(hosts=f'{self.name}',username=self.user)
         # using ip incase name resolution is not setup properly
+        self.probe_status = result[0]['success']
         hostname = result[0]['stdout']
         if self.name != hostname and self.name != 'localhost':
-            Console.warning(f'Host probe returned different hostname: {hostname}'
+            Console.error(f'Host probe returned different hostname: {hostname}'
                             f' than self.name: {self.name}.'
                             f' ip used: {self.ip}')
-        self.probe_status = result[0]['success']
+            self.probe_status = False
         self.probe_time = now.strftime("%d/%m/%Y %H:%M:%S")
         return self.probe_status, self.probe_time
 
