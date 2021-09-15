@@ -211,7 +211,8 @@ class Job:
         :return: str
         """
         # BUG: see other info commands as banner is not defined
-        return str(Printer.write(self, output=output))
+        #test = {0 : self.to_dict()}
+        return Printer.attribute(self.to_dict(), output=output)
 
     '''
     def info(self):
