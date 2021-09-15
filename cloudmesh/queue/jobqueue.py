@@ -211,7 +211,6 @@ class Job:
         :return: str
         """
         # BUG: see other info commands as banner is not defined
-        #test = {0 : self.to_dict()}
         return Printer.attribute(self.to_dict(), output=output)
 
     '''
