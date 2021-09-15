@@ -783,7 +783,17 @@ class Host:
         Executes a command on the host and updates the probe_status
         :return: probestatsu, datetime
         """
-        raise NotImplementedError
+        now = datetime.now()
+        result = commonHost.check(hosts=f'{self.name}',username=self.user)
+        # using ip incase name resolution is not setup properly
+        hostname = result[0]['stdout']
+        if self.name != hostname and self.name != 'localhost':
+            Console.warning(f'Host probe returned different hostname: {hostname}'
+                            f' than self.name: {self.name}.'
+                            f' ip used: {self.ip}')
+        self.probe_status = result[0]['success']
+        self.probe_time = now.strftime("%d/%m/%Y %H:%M:%S")
+        return self.probe_status, self.probe_time
 
     @staticmethod
     def sync(user, host, experiment):

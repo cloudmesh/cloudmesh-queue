@@ -27,12 +27,12 @@ Benchmark.debug()
 # remote_host_ip = variables['host'] or 'juliet.futuresystems.org'
 # remote_host_user = variables['user'] or getpass.getuser()
 
-remote = False
+remote = True
 sysinfo = False
 
 if remote:
-    host = "dgx"
-    user = "gregor"
+    host = "red"
+    user = "pi"
     ip = '192.168.1.16'
 else:
     host = "localhost"
@@ -98,6 +98,23 @@ class TestHost:
             assert rhost.ping_status == result
             assert rhost.ping_time == time
         print(f"Ping success: {result}")
+        print(f"datetime: {time}")
+
+        Benchmark.Stop()
+
+    def test_probe(self):
+        HEADING()
+        Benchmark.Start()
+        if not remote:
+            result, time = hosts[0].probe()
+            assert hosts[0].probe_status == result
+            assert hosts[0].probe_time == time
+        else:
+            rhost = Host(name=host,ip=ip,user=user)
+            result, time = rhost.probe()
+            assert rhost.probe_status == result
+            assert rhost.probe_time == time
+        print(f"Probe result: {result}")
         print(f"datetime: {time}")
 
         Benchmark.Stop()
