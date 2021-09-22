@@ -703,6 +703,7 @@ class SchedulerFIFO(Queue):
             if result['status'] == 'ready':
                 found_job = True
             self.scheduler_current_job += 1
+            #all jobs must be defined prior to calling
         if not found_job:
             return None
         else:
@@ -777,6 +778,105 @@ class SchedulerTestFIFO(Queue):
         self.scheduler_current_job += 1
         return result
 
+
+class SchedulerFIFOMultiHost(Queue):
+
+    def __init__(self,
+                 name: str = "TBD",
+                 experiment: str = None,
+                 filename: str = None,
+                 jobs: List = None,
+                 hosts: list = []):
+        Queue.__init__(self,
+                       name=name,
+                       experiment=experiment,
+                       filename=filename,
+                       jobs=jobs)
+        self.scheduler_N = len(self.jobs.data)
+        self.scheduler_current_job = 0
+        self.hosts = hosts
+        self.running_jobs = []
+        self.job_hosts = {}
+        self.completed_jobs = []
+        self.ran_jobs = []
+        if self.hosts == [] or self.hosts is None:
+            raise ValueError('No hosts provided to scheduler.')
+
+    def __next__(self):
+        found_job = False
+        self.refresh()
+        while (not found_job) and (self.scheduler_current_job < len(self.jobs.data)):
+            key = list(self.jobs.keys())[self.scheduler_current_job]
+            result = self.jobs.data[key]
+            if result['status'] == 'undefined' or result['status'] == 'ready':
+                found_job = True
+            self.scheduler_current_job += 1
+        if not found_job:
+            return None
+        else:
+            return result
+
+    def get_host(self, name):
+        for host in self.hosts:
+            if host.name == name:
+                return host
+
+    def check_if_jobs_finished(self):
+        self.refresh()
+        for job in self.running_jobs:
+            try:
+                if self.get(job)['status'] == 'end':
+                    self.running_jobs.remove(job)
+                    self.completed_jobs.append(job)
+                    host = self.get_host(self.get(job)['host'])
+                    host.job_counter -= 1
+            except:
+                # job deleted or renamed in queue
+                self.running_jobs.remove(job)
+                host = self.job_hosts[job]
+                host.job_counter -= 1
+
+    def assign_host(self, job):
+        # finds next available host for job
+        found_host = False
+        assigned_host = None
+        while not found_host:
+            for host in self.hosts:
+                if host.job_counter < host.max_jobs_allowed:
+                    found_host = True
+                    job.host = host.name
+                    job.user = host.user
+                    job.generate_command()
+                    self.set(job)
+                    assigned_host = host
+                    return assigned_host
+            Console.info(f"Waiting. All hosts running max jobs.")
+            time.sleep(1)
+            self.check_if_jobs_finished()
+        return assigned_host
+
+    def run(self):
+        next_job = self.__next__()
+        while next_job is not None:
+            job = Job(**next_job)
+            host = self.assign_host(job)
+            host.job_counter += 1
+            Console.info(f'Starting job: {job.name} on host:{job.user}@{job.host}')
+            pid = job.run()
+            if pid is None:
+                Console.error(f'Job {job.name} failed to start.')
+            self.running_jobs.append(job.name)
+            self.job_hosts[job.name] = host
+            self.ran_jobs.append(job.name)
+            Console.info(f"Running Jobs: {self.running_jobs}")
+            next_job = self.__next__()
+        return self.ran_jobs
+
+    def wait_on_running(self):
+        while len(self.running_jobs) > 0:
+            time.sleep(1)
+            self.check_if_jobs_finished()
+        return self.completed_jobs
 
 @dataclass
 class Host:
