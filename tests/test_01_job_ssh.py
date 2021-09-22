@@ -35,10 +35,13 @@ Benchmark.debug()
 #remote_host_user = variables['user'] or getpass.getuser()
 
 remote = True
+crash_host_test = True
 
 if remote:
-    host = "dgx"
-    user = "gregor"
+    host = "red"
+    user = "pi"
+    crash_host = 'red03'
+    crash_user = 'pi'
 else:
     host = "localhost"
     user = getpass.getuser()
@@ -103,10 +106,16 @@ class TestJob:
         HEADING()
         self.create_command("/usr/bin/sleep infinity")
 
+    def test_sleep_infinity4(self):
+        HEADING()
+        self.create_command("/usr/bin/sleep infinity")
+
     def test_sync(self):
         HEADING()
         Benchmark.Start()
         result = Host.sync(user, host, "experiment")
+        if crash_host_test:
+            result = Host.sync(crash_user,crash_host, "experiment")
         Benchmark.Stop()
         assert result
         print(result)
@@ -194,6 +203,32 @@ class TestJob:
         print(f'Crashed: {crashed}')
         assert crashed is True
         assert job.state == 'crash'
+
+    def test_crashed_host(self):
+        if crash_host_test and remote:
+            HEADING()
+            job = jobs[8]
+            job.host = crash_host
+            job.user = crash_user
+            job.generate_command()
+            job.run()
+            running = job.check_running()
+            print(f'Running: {running}')
+            assert running is True
+            crashed = job.check_crashed()
+            print(f'Crashed: {crashed}')
+            assert crashed is False
+            command = f'sudo shutdown -h now'
+            command = f"ssh {job.user}@{job.host} \"{command}\""
+            Shell.run(command)
+            time.sleep(5)
+            running = job.check_running()
+            print(f'Running: {running}')
+            assert running is False
+            crashed = job.check_crashed()
+            print(f'Crashed: {crashed}')
+            assert crashed is True
+            assert job.state == 'crash'
 
 class gg:
     def test_yaml_job2(self):

@@ -19,6 +19,7 @@ from cloudmesh.queue.jobqueue import Job
 from cloudmesh.queue.jobqueue import SchedulerFIFOMultiHost
 from cloudmesh.queue.jobqueue import Host
 from cloudmesh.common.console import Console
+from cloudmesh.common.Shell import Shell
 
 Benchmark.debug()
 
@@ -30,7 +31,11 @@ Benchmark.debug()
 # remote_host_ip = variables['host'] or 'juliet.futuresystems.org'
 # remote_host_user = variables['user'] or getpass.getuser()
 
-remote = False
+# THIS TEST REQUIRES MANUAL INTERVENTION TO DETECT PROCESS AND HOST CRASHES
+# Three jobs must be manuall killed or have the host shutdown for the queue
+# to finish the run
+
+remote = True
 sysinfo = False
 
 if remote:
@@ -38,6 +43,8 @@ if remote:
     user = "pi"
     host2 = "red01"
     user2 = "pi"
+    host3 = 'red03'
+    user3 = 'pi'
 else:
     host = "localhost"
     user = getpass.getuser()
@@ -52,6 +59,10 @@ for i in range(4):
     hosts.append(ahost)
 ahost = Host(name=host2,user=user2, ip=None)
 hosts.append(ahost)
+if remote:
+    # tests down worker
+    ahost = Host(name=host3,user=user3, ip=None)
+    hosts.append(ahost)
 queue = SchedulerFIFOMultiHost(name="a",hosts=hosts)
 i = -1
 
@@ -138,6 +149,32 @@ class TestQueue:
         self.create_command("/usr/bin/sleep 10")
         Benchmark.Stop()
 
+    def test_sleep_infinity_crash1(self):
+        HEADING()
+        self.create_command("/usr/bin/sleep infinity")
+
+    def test_sleep_infinity_crash2(self):
+        HEADING()
+        self.create_command("/usr/bin/sleep infinity")
+
+    def test_sleep_infinity_crash3(self):
+        HEADING()
+        self.create_command("/usr/bin/sleep infinity")
+
+    def test_sleep_infinity_crash4(self):
+        HEADING()
+        self.create_command("/usr/bin/sleep infinity")
+
+    def test_sleep_infinity_crash5(self):
+        HEADING()
+        self.create_command("/usr/bin/sleep infinity")
+
+    def test_hostname2(self):
+        HEADING()
+        Benchmark.Start()
+        self.create_command("uname")
+        Benchmark.Stop()
+
     def test_sync(self):
         HEADING()
         Benchmark.Start()
@@ -194,9 +231,7 @@ class TestQueue:
             #skip job 4 since it never ends
             job4 = queue.get('job4')
             job4 = Job(**job4)
-            job4.host = None
-            job4.user = None
-            job4.status = 'undefined'
+            job4.status = 'skip'
             queue.set(job4)
 
         ran_jobs = queue.run()
@@ -210,15 +245,29 @@ class TestQueue:
             else:
                 assert f'job{i}' not in ran_jobs
 
+        # test deleting a job
         queue.delete('job4')
+
+        # At end the queue will fill with 5 sleep infinity jobs
+        # crash these jobs and make sure queue continues to process jobs
+
+        for i in range(9,14):
+            job = Job(**queue.get(f'job{i}'))
+            print(f'{job.name} {job.host} {job.pid}')
+            command = f'kill -9 $(ps -o pid= --ppid {job.pid});' + \
+                      f'kill -9 {job.pid};'
+            command = f"ssh {job.user}@{job.host} \"{command}\""
+            Shell.run(command)
+
         completed_jobs = queue.wait_on_running()
         Console.info(f"Completed Jobs: {completed_jobs}")
 
-        for i in range(9):
-            if i !=4:
+        for i in range(15):
+            if i !=4 and i!=9 and i!=10 and i!=11 and i!=12 and i!=13:
                 assert f'job{i}' in completed_jobs
             else:
                 # job 4 was deleted from queue
+                # job 9-13 were crashed
                 assert f'job{i}' not in completed_jobs
 
         print(queue.info(banner="info by id 0"))

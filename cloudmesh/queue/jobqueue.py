@@ -154,7 +154,7 @@ class Job:
             self.shell_path = f"/usr/bin/{self.shell}"
         if self.command:
             self.set(self.command)
-        if self.host and self.user:
+        if self.host and self.user and self.status == 'undefined':
             self.status = 'ready'
 
         self.scriptname = f"{self.experiment}/{self.name}/{self.name}.{self.shell}"
@@ -179,6 +179,14 @@ class Job:
         except:
             return None
 
+    def check_host_running(self):
+        host = Host(name=self.host,user=self.user)
+        probe_status, probe_time = host.probe()
+        if not probe_status:
+            if self.state == 'start':
+                self.status = 'crash'
+        return probe_status
+
     def check_running(self):
         ps = self.ps()
         if ps is None:
@@ -186,7 +194,9 @@ class Job:
         return True
 
     def check_crashed(self):
-        if self.state == 'start' and not self.check_running():
+        if not is_local(self.host) and self.state == 'start' and not self.check_host_running():
+            return True
+        elif self.state == 'start' and not self.check_running():
             if self.state == 'start':
                 if is_local(self.host):
                     command = \
@@ -543,7 +553,7 @@ class Queue:
             self.save()
             return job
         except:
-            Console.error(f"Could not delete job:{name}")
+            Console.warning(f"Could not delete job:{name}")
 
     def keys(self):
         return self.jobs.keys()
@@ -821,20 +831,40 @@ class SchedulerFIFOMultiHost(Queue):
             if host.name == name:
                 return host
 
+    def check_for_crashes(self):
+        for job in self.running_jobs:
+            job = Job(**self.get(job))
+            crashed = job.check_crashed()
+            if crashed:
+                Console.warning(f'Job {job.name} status:CRASH')
+                job.status = 'crash'
+                self.set(job)
+                self.running_jobs.remove(job.name)
+                host = self.get_host(self.get(job.name)['host'])
+                host.job_counter -= 1
+                break
+
     def check_if_jobs_finished(self):
         self.refresh()
+        some_finished = False
         for job in self.running_jobs:
             try:
-                if self.get(job)['status'] == 'end':
+                if self.get(job)['status'] == 'end' or \
+                self.get(job)['status'] == 'kill':
                     self.running_jobs.remove(job)
                     self.completed_jobs.append(job)
                     host = self.get_host(self.get(job)['host'])
                     host.job_counter -= 1
+                    some_finished = True
+                    return some_finished
             except:
                 # job deleted or renamed in queue
                 self.running_jobs.remove(job)
                 host = self.job_hosts[job]
                 host.job_counter -= 1
+                some_finished = True
+                return some_finished
+        return some_finished
 
     def assign_host(self, job):
         # finds next available host for job
@@ -843,16 +873,23 @@ class SchedulerFIFOMultiHost(Queue):
         while not found_host:
             for host in self.hosts:
                 if host.job_counter < host.max_jobs_allowed:
-                    found_host = True
-                    job.host = host.name
-                    job.user = host.user
-                    job.generate_command()
-                    self.set(job)
-                    assigned_host = host
-                    return assigned_host
+                    probe_status, probe_time = host.probe()
+                    if probe_status:
+                        job.host = host.name
+                        job.user = host.user
+                        job.generate_command()
+                        self.set(job)
+                        assigned_host = host
+                        return assigned_host
+                    else:
+                        Console.warning(f'Host {host.name} not responding to probe check.'
+                                        f' Not assigning jobs to {host.name}')
             Console.info(f"Waiting. All hosts running max jobs.")
             time.sleep(1)
-            self.check_if_jobs_finished()
+            some_finished = self.check_if_jobs_finished()
+            if not some_finished:
+                # only check for crashes if queue still full to reduce wait times
+                self.check_for_crashes()
         return assigned_host
 
     def run(self):
@@ -864,7 +901,12 @@ class SchedulerFIFOMultiHost(Queue):
             Console.info(f'Starting job: {job.name} on host:{job.user}@{job.host}')
             pid = job.run()
             if pid is None:
-                Console.error(f'Job {job.name} failed to start.')
+                Console.warning(f'Job {job.name} failed to start.')
+                job.status='fail_start'
+                self.set(job)
+                next_job = self.__next__()
+                continue
+            self.set(job)
             self.running_jobs.append(job.name)
             self.job_hosts[job.name] = host
             self.ran_jobs.append(job.name)
@@ -876,6 +918,7 @@ class SchedulerFIFOMultiHost(Queue):
         while len(self.running_jobs) > 0:
             time.sleep(1)
             self.check_if_jobs_finished()
+            self.check_for_crashes()
         return self.completed_jobs
 
 @dataclass
@@ -913,13 +956,11 @@ class Host:
         """
         now = datetime.now()
         result = commonHost.check(hosts=f'{self.name}',username=self.user)
-        # using ip incase name resolution is not setup properly
         self.probe_status = result[0]['success']
         hostname = result[0]['stdout']
         if self.name != hostname and self.name != 'localhost':
-            Console.error(f'Host probe returned different hostname: {hostname}'
-                            f' than self.name: {self.name}.'
-                            f' ip used: {self.ip}')
+            Console.warning(f'Host probe returned different hostname:"{hostname}"'
+                            f' than self.name: {self.name}.')
             self.probe_status = False
         self.probe_time = now.strftime("%d/%m/%Y %H:%M:%S")
         return self.probe_status, self.probe_time
