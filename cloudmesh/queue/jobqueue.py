@@ -183,7 +183,7 @@ class Job:
         host = Host(name=self.host,user=self.user)
         probe_status, probe_time = host.probe()
         if not probe_status:
-            if self.state == 'start':
+            if self.status == 'start' or self.status =='run':
                 self.status = 'crash'
         return probe_status
 
@@ -194,7 +194,7 @@ class Job:
         return True
 
     def check_crashed(self):
-        if not is_local(self.host) and self.state == 'start' and not self.check_host_running():
+        if not is_local(self.host) and (self.status == 'start' or self.status == 'run') and not self.check_host_running():
             return True
         elif self.state == 'start' and not self.check_running():
             if self.state == 'start':
@@ -382,6 +382,11 @@ class Job:
         else:
             self.status = "no pid"
             return None
+
+        try:
+            int(self.pid)
+        except:
+            self.pid = None
         return self.pid
 
     def get_process_file(self, name):
@@ -398,6 +403,7 @@ class Job:
                     lines = readfile(f"{self.directory}/{self.name}/{name}")
                 else:
                     lines = Shell.run(f"ssh {self.user}@{self.host} \"cat {self.directory}/{self.name}/{name}\"")
+                    #BUG if host is unreachable
                 found = True
             except:
                 if 'log' in name:
@@ -465,6 +471,7 @@ class Job:
         print("Command:", self.remote_command)
         r = os.system(self.remote_command)
         self.pid = self.rpid
+        self.status='run'
         return self.pid
 
     def to_yaml(self):
@@ -614,9 +621,15 @@ class Queue:
         #if len(self.jobs.data) > 0:
         self.jobs.save(self.filename)
 
-    def refresh(self):
+    def refresh(self, keys=None):
+        if keys is None:
+            keys = self.keys()
+        else:
+            for key in keys:
+                if key not in self.keys():
+                    keys.remove(key)
         updates = False
-        for key in self.keys():
+        for key in keys:
             job = Job(**self.get(key))
             old_state = job.status
             new_state = job.state
@@ -693,7 +706,6 @@ class SchedulerFIFO(Queue):
                        filename=filename,
                        jobs=jobs)
         self.running = 0
-        # when a job starts we need to increment running
         self.scheduler_N = len(self.jobs.data)
         self.scheduler_current_job = 0
         self.max_parallel = max_parallel
@@ -702,11 +714,8 @@ class SchedulerFIFO(Queue):
         self.ran_jobs = []
 
     def __next__(self):
-        # def refresh: called
-        # needs to filter out unqualified jobs, jobs such as inative host, finished job, killed job,
-        # status: undefined(no host assigned to job), defined (with host associated), running, killed, end
         found_job = False
-        self.refresh()
+        self.refresh(keys=self.running_jobs)
         while (not found_job) and (self.scheduler_current_job < len(self.jobs.data)):
             key = list(self.jobs.keys())[self.scheduler_current_job]
             result = self.jobs.data[key]
@@ -727,9 +736,23 @@ class SchedulerFIFO(Queue):
                     self.running_jobs.remove(job)
                     self.completed_jobs.append(job)
                     self.running -= 1
+                    return True
             except:
                 # job deleted or renamed in queue
                 self.running_jobs.remove(job)
+                self.running -= 1
+                return True
+        return False
+
+    def check_for_crashes(self):
+        for job in self.running_jobs:
+            job = Job(**self.get(job))
+            crashed = job.check_crashed()
+            if crashed:
+                Console.warning(f'Job {job.name} status:CRASH')
+                job.status = 'crash'
+                self.set(job)
+                self.running_jobs.remove(job.name)
                 self.running -= 1
 
     def run(self):
@@ -739,12 +762,23 @@ class SchedulerFIFO(Queue):
             while self.running == self.max_parallel:
                 Console.info(f"Waiting. At max_parallel jobs={self.max_parallel}.")
                 time.sleep(1)
-                self.check_if_jobs_finished()
+                finished = self.check_if_jobs_finished()
+                if not finished:
+                    self.check_for_crashes()
+            Console.info(f'Running job: {job.name} on {job.user}@{job.host}')
+            pid = job.run()
+            if pid is None:
+                # pid was a shell error or none
+                Console.warning(f'Job {job.name} failed to start.')
+                job.status='fail_start'
+                self.set(job)
+                next_job = self.__next__()
+                continue
             self.running += 1
             self.running_jobs.append(job.name)
             self.ran_jobs.append(job.name)
             Console.info(f"Running Jobs: {self.running_jobs}")
-            job.run()
+            self.set(job)
             next_job = self.__next__()
         return self.ran_jobs
 
@@ -752,6 +786,7 @@ class SchedulerFIFO(Queue):
         while len(self.running_jobs) > 0:
             time.sleep(1)
             self.check_if_jobs_finished()
+            self.check_for_crashes()
         return self.completed_jobs
 
 
@@ -814,7 +849,7 @@ class SchedulerFIFOMultiHost(Queue):
 
     def __next__(self):
         found_job = False
-        self.refresh()
+        self.refresh(keys=self.running_jobs)
         while (not found_job) and (self.scheduler_current_job < len(self.jobs.data)):
             key = list(self.jobs.keys())[self.scheduler_current_job]
             result = self.jobs.data[key]
@@ -842,10 +877,9 @@ class SchedulerFIFOMultiHost(Queue):
                 self.running_jobs.remove(job.name)
                 host = self.get_host(self.get(job.name)['host'])
                 host.job_counter -= 1
-                break
 
     def check_if_jobs_finished(self):
-        self.refresh()
+        self.refresh(self.running_jobs)
         some_finished = False
         for job in self.running_jobs:
             try:
@@ -877,6 +911,7 @@ class SchedulerFIFOMultiHost(Queue):
                     if probe_status:
                         job.host = host.name
                         job.user = host.user
+                        job.status = 'ready'
                         job.generate_command()
                         self.set(job)
                         assigned_host = host
@@ -901,6 +936,7 @@ class SchedulerFIFOMultiHost(Queue):
             Console.info(f'Starting job: {job.name} on host:{job.user}@{job.host}')
             pid = job.run()
             if pid is None:
+                # pid was a shell error or None
                 Console.warning(f'Job {job.name} failed to start.')
                 job.status='fail_start'
                 self.set(job)
