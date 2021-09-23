@@ -504,9 +504,119 @@ installation documentation.
 | Command description       | <https://github.com/cloudmesh/cloudmesh-job/blob/master/README.md#command-description> |
 | Command examples          | <https://github.com/cloudmesh/cloudmesh-job/blob/main/README-example.md>               |
 
+## Start of New Documentation
+
+## Job States
+
+Jobs proceed through various states as they are created, managed by queues and schedulers, and eventually run on worker
+host.
+
+The current states are
+
+- **undefined**: this state is a created job that has not been assigned a `user` or a `host`. It is assumed by schedulers that assign jobs to hosts to be ready for execution. This state is not found in `job.log`
 
 
+- **ready**: this is a job that has been manually assigned or assigned via a scheduler a `host` and `user`. This state is not found in `job.log`
+ 
+ 
+- **run**: this is a job that has been run with the `job.run()` command. It is a transitionary state to signify the job has been started via a remote shell command, but the script on the executing host may not have logged the `start` state in the `job.log` file. This state is not found in `job.log`.
+ 
+ 
+- **start**: this is a job that is currently executing on a host. It is written by a script to the `job.log` file.
+ 
+ 
+- **end**: this is a job that has completed its execution. It is written by the script after completion of the main work. It is found in the `job.log` file.
+ 
+ 
+- **kill**: this is a job that was killed using the `cms` library. It is in the `job.log` file. Processes killed manually on a host will not exhibit this state.
 
 
+- **fail_start**: this is a job that failed to start during an execution of `job.run()`, for example a failed name resolution.
+
+
+- **crash**: this is a job that has been determined to have crashed.
+  - In the case that a host is running, the job is in state:`start`, and the pid is no located on the host, then the job can be marked `crash`. This is logged to the `job.log` file.
+  - In the case that a host is not responsive, and the job is in state:`start`, then the job can be considered in state `crash`. This case is not logged in `job.log`
+
+## Schedulers
+
+Schedulers are a tool to run and track the execution of jobs in a queue. There are various schedulers with unique behavoirs to meet various workload tasks.
+
+### SchedulerFIFO
+
+This is a simple scheduler that is designed to work on a single host. It executes jobs in a first come first server manner based on their order in the queue yaml file.
+
+#### Usage
+
+**Input:** A queue yaml file, `max_parallel=#`.
+
+`max_parallel` is the maximum number of parallel jobs that will be executed by the host.
+
+**Prerequisite:** All jobs intended to be run must be assigned a `user` and a `host`. Those jobs not assigned a `user` and `host` will be skipped. 
+
+Job assignments are not checked until the queue has reached the job, so the state can be changed after a `queue.run()`, but before a job is considered, but not after a job has already been skipped.
+
+#### Failure considerations
+
+This queue checks for and continues to function in the event of the following failures. When a failure is incurred, the job is skipped and marked with an appropriate status, so the queue can continue to process remaining jobs (if possible).
+1. A job that failed to start on a host.
+2. A job that crashed on a host.
+3. A job that was running on a host that crashed.
+
+#### Recovery from queue manager failure
+
+To recover from a crashed manager that was executing a queue with this scheduler.
+
+1. Recover the manager and determine failure cause.
+2. Execute a `queue.refresh()` to get the latest job states from worker hosts.
+3. Re-run the queue with `queue.run()`
+
+#### Recovery from queue worker failure
+
+To recover from a failed worker host. 
+
+1. Recover the worker host and determine failure cause. 
+2. After reboot this host will continue to run the next `ready` jobs assigned to that host.
+3. For any job not in an `end` state assigned to that host, change thier status to `ready` in the quueue file.
+4. Stop or let the queue finish its current run.
+5. Restart the queue with a `queue.run()`
+
+### SchedulerFIFOMultiHost
+
+This queue is designed to assign a queue of jobs to a list of available hosts in a first come first server manner. Each host can support a differant maximum number of running jobs.
+
+#### Usage
+
+**Input:** A queue yaml file, a `hosts` list of Host() objects.
+
+Jobs are not required to be assigned a 'host' or 'user'. The queue will run all `undefined` and `ready` jobs that are in the queue. `host` and `user` assignemnets in the queue file will be **ignored**. The scheduler will assigne the first available host from `hosts`. 
+
+The jobs are considered in the order they appear in the queue. Their state is not checked until they are considered. If skpped or crashed the job will not be reconsidered. 
+
+#### Failure considerations
+
+This queue checks for and continues to function in the event of the following failures. When a failure is incurred, the job is skipped and marked with an appropriate status, so the queue can continue to process remaining jobs (if possible).
+1. A job that failed to start on a host.
+2. A job that crashed on a host.
+3. A job that was running on a host that crashed.
+4. A job will not be assigned to a host that fails a `host.probe()` check.
+
+#### Recovery from queue manager failure
+
+To recover from a crashed manager that was executing a queue with this scheduler.
+
+1. Recover the manager and determine failure cause.
+2. Execute a `queue.refresh()` to get the latest job states from worker hosts.
+3. Re-run the queue with `queue.run()`
+
+#### Recovery from queue worker failure
+
+To recover from a failed worker host. 
+
+1. Recover the worker host and determine failure cause. 
+2. After reboot this host will continue to run the next jobs in the queue to that host.
+3. For any job not in an `end` state, change their status to `ready` in the quueue file.
+4. Stop or let the queue finish its current run.
+5. Restart the queue with a `queue.run()`
 
 
