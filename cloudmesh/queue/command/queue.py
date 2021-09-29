@@ -42,9 +42,9 @@ class JobCommand(PluginCommand):
                     [--log=LOG]
                     [--pyenv=PYENV]
             queue delete QUEUE [--experiment=EXPERIMENT] --name=NAME
-            queue run fifo QUEUE --max_parallel=MAX_PARALLEL
-            queue run fifo_multi QUEUE --hosts=HOSTS
-            queue reset QUEUE [--name=NAME] [--status=STATUS]
+            queue run fifo QUEUE [--experiment=EXPERIMENT] --max_parallel=MAX_PARALLEL
+            queue run fifo_multi QUEUE [--experiment=EXPERIMENT] --hosts=HOSTS
+            queue reset QUEUE [--experiment=EXPERIMENT] [--name=NAME] [--status=STATUS]
 
           This command is a job queuing and scheduling framework. It allows
           users to leverage all the available compute resources to perform
