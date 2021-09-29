@@ -20,7 +20,7 @@ from cloudmesh.common.console import Console
 # from cloudmesh.common.parameter import Parameter
 from cloudmesh.common.util import banner
 from cloudmesh.common.util import is_local
-# from cloudmesh.common.util import path_expand
+from cloudmesh.common.util import path_expand
 from cloudmesh.common.util import readfile
 from cloudmesh.common.util import str_banner
 from yamldb.YamlDB import YamlDB
@@ -197,6 +197,7 @@ class Job:
         if not is_local(self.host) and (self.status == 'start' or self.status == 'run') and not self.check_host_running():
             return True
         elif self.state == 'start' and not self.check_running():
+            time.sleep(5) # TODO make this more deterministic
             if self.state == 'start':
                 if is_local(self.host):
                     command = \
@@ -468,7 +469,7 @@ class Job:
         run the script on the remote host
         """
         banner(f"Run: {self.name}")
-        print("Command:", self.remote_command)
+        # print("Command:", self.remote_command)
         r = os.system(self.remote_command)
         self.pid = self.rpid
         self.status='run'
@@ -496,6 +497,9 @@ class Job:
 
     def kill(self):
         banner(f"Kill: {self.name}")
+        if not self.check_running():
+            Console.info(f'Job {self.name} could not be killed, not running ps {self.pid} on {self.host}')
+            return
         if self.pid is None:
             # job has not been started nothing to kill
             return None
@@ -515,9 +519,9 @@ class Job:
                 f"{self.logging(msg='kill')};" + \
                 f"'"
 
-        print("Command:", command)
+        #print("Command:", command)
         r = os.system(command)
-        print(f"Return code was: {r}")
+        Console.info(f"Job kill return code was: {r}")
         self.status = "kill"
         return r
 
@@ -532,6 +536,7 @@ class Queue:
 
         self.name = name
         self.experiment = experiment or "./experiment"
+        self.experiment = path_expand(self.experiment)
         self.filename = filename or f"{self.experiment}/{self.name}-queue.yaml"
         if not os.path.exists(self.experiment):
             os.makedirs(self.experiment)
@@ -629,6 +634,7 @@ class Queue:
                 if key not in self.keys():
                     keys.remove(key)
         updates = False
+        result = ''
         for key in keys:
             job = Job(**self.get(key))
             old_state = job.status
@@ -636,8 +642,56 @@ class Queue:
             if old_state != new_state:
                 updates = True
                 self.set(job)
+                result += f'{job.name} \t old_status:{old_state} \t new_state:{new_state}\n'
         if updates:
             self.save()
+            return result
+        else:
+            return 'No job status changes.'
+
+    def reset(self, keys=None, status=None):
+        if keys is None:
+            keys = self.keys()
+        else:
+            for key in keys:
+                if key not in self.keys():
+                    keys.remove(key)
+        updates = False
+        result = ''
+        for key in keys:
+            job = Job(**self.get(key))
+            old_state = job.status
+            if (status is None and job.status != 'end') or job.status == status:
+                if job.status == 'start' or job.status == 'run':
+                    job.kill()
+                if job.user and job.host:
+                    new_state = 'ready'
+                else:
+                    new_state = 'undefined'
+                job.status = new_state
+                if old_state != new_state:
+                    updates = True
+                    self.set(job)
+                    result += f'{job.name} \t old_status:{old_state} \t new_state:{new_state}\n'
+        if updates:
+            self.save()
+            return result
+        else:
+            return 'No job status changes.'
+
+    def get_hosts(self):
+        hosts = []
+        for key in self.keys():
+            job = Job(**self.get(key))
+            user = job.user
+            host = job.host
+            if user is not None and host is not None and (user,host) not in hosts:
+                hosts.append((user,host))
+        result = []
+        for user,host in hosts:
+            result.append(Host(user=user,name=host))
+        return result
+
 
     def info(self,
              kind="jobs",
@@ -783,10 +837,11 @@ class SchedulerFIFO(Queue):
         return self.ran_jobs
 
     def wait_on_running(self):
+        time.sleep(1)
         while len(self.running_jobs) > 0:
-            time.sleep(1)
-            self.check_if_jobs_finished()
-            self.check_for_crashes()
+            finished = self.check_if_jobs_finished()
+            if not finished:
+                self.check_for_crashes()
         return self.completed_jobs
 
 
@@ -951,10 +1006,11 @@ class SchedulerFIFOMultiHost(Queue):
         return self.ran_jobs
 
     def wait_on_running(self):
+        time.sleep(1)
         while len(self.running_jobs) > 0:
-            time.sleep(1)
-            self.check_if_jobs_finished()
-            self.check_for_crashes()
+            finished = self.check_if_jobs_finished()
+            if not finished:
+                self.check_for_crashes()
         return self.completed_jobs
 
 @dataclass
