@@ -123,7 +123,7 @@ class Job:
     output: str = None
     log: str = None
     status: str = "undefined"
-    gpu: str = ""
+    gpu: str = None
     arguments: str = ""
     executable: str = ""
     command: str = None
@@ -214,6 +214,21 @@ class Job:
         elif self.status == 'start':
             return False
         return None
+
+    def remove_dir(self):
+        if is_local(self.host):
+            command = \
+                f"cd {self.directory}; " + \
+                f"rm -rf ./{self.name};"
+        else:
+            command = f"ssh {self.user}@{self.host} " + \
+                      f"'" + \
+                      f"cd {self.directory}; " + \
+                      f"rm -rf ./{self.name} ;" + \
+                      f"'"
+        r = os.system(command)
+        if r != 0:
+            Console.warning(f'Could not delete {self.name} dir on {self.user}@{self.host}')
 
     @staticmethod
     def nohup(name=None, shell="bash"):
@@ -329,13 +344,16 @@ class Job:
             pyenv_cmd = ''
             if self.pyenv is not None:
                 pyenv_cmd = f'source {self.pyenv}; '
+            gpu_cmd = ''
+            if self.gpu is not None:
+                gpu_cmd = f'export CUDA_VISIBLE_DEVICES={self.gpu}'
             script = "\n".join([
                 f"#! {self.shell_path} -x",
                 f"echo $$ > {self.name}.pid",
                 f"rm -f {self.output}",
                 f"rm -f {self.log}",
                 f"{start_line}",
-                f'echo -ne "# date: " >> {self.log}; date >> {self.log}' + pyenv_cmd,
+                f'echo -ne "# date: " >> {self.log}; date >> {self.log}' + pyenv_cmd + gpu_cmd,
                 f"{self.command} >> {self.output}",
                 f'echo -ne "# date: " >> {self.log}; date >> {self.log}',
                 f"{end_line}",
@@ -664,6 +682,7 @@ class Queue:
             if (status is None and job.status != 'end') or job.status == status:
                 if job.status == 'start' or job.status == 'run':
                     job.kill()
+                job.remove_dir()
                 if job.user and job.host:
                     new_state = 'ready'
                 else:
