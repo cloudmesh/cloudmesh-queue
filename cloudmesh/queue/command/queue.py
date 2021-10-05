@@ -43,7 +43,7 @@ class JobCommand(PluginCommand):
                     [--pyenv=PYENV]
             queue delete QUEUE [--experiment=EXPERIMENT] --name=NAME
             queue run fifo QUEUE [--experiment=EXPERIMENT] --max_parallel=MAX_PARALLEL
-            queue run fifo_multi QUEUE [--experiment=EXPERIMENT] --hosts=HOSTS
+            queue run fifo_multi QUEUE [--experiment=EXPERIMENT] [--hosts=HOSTS] [--hostfile=HOSTFILE]
             queue reset QUEUE [--experiment=EXPERIMENT] [--name=NAME] [--status=STATUS]
 
           This command is a job queuing and scheduling framework. It allows
@@ -89,6 +89,7 @@ class JobCommand(PluginCommand):
         from cloudmesh.queue.jobqueue import SchedulerFIFO
         from cloudmesh.queue.jobqueue import SchedulerFIFOMultiHost
         from cloudmesh.queue.jobqueue import Host
+        from cloudmesh.queue.jobqueue import Cluster
 
         map_parameters(
             arguments,
@@ -114,6 +115,7 @@ class JobCommand(PluginCommand):
             "experiment",
             "config",
             "pyenv",
+            "hostfile",
             "max_parallel"
         )
 
@@ -198,13 +200,36 @@ class JobCommand(PluginCommand):
             completed_jobs = scheduler.wait_on_running()
             Console.info(f"Completed Jobs: {completed_jobs}")
         elif arguments.run and arguments.fifo_multi:
-            args = arguments['--hosts'].split(',')
-            hosts = []
-            for pair in args:
-                user,host = pair.split('@')
-                hosts.append(Host(user=user,name=host))
+
+            if arguments['--hosts'] is None and arguments.hostfile is None:
+                Console.warning("Please provide a --hosts or --hostfile argument")
+                return
+
+            if arguments['--hosts']:
+                args = arguments['--hosts'].split(',')
+                hosts = []
+                for pair in args:
+                    user,host = pair.split('@')
+                    hosts.append(Host(user=user,name=host))
+            else:
+                if not "-cluster.yaml" in arguments.hostfile:
+                   name = arguments.hostfile
+                   filename = arguments.hostfile + '-cluster.yaml'
+                   filepath = arguments.experiment + "/" + filename
+                else:
+                    name = arguments.hostfile.replace("-cluster.yaml", "")
+                    filename = arguments.hostfile
+                    filepath = arguments.experiment + "/" + filename
+
+                cluster = Cluster(name=name, filename=filepath)
+                hosts = cluster.get_free_hosts()
+                if hosts == []:
+                    Console.warning(f"No free hosts found in cluster {filename}")
+                    return
+
             for host in hosts:
-                Host.sync(user=host.user,host=host.name,experiment=arguments.experiment)
+                Host.sync(user=host.user, host=host.name, experiment=arguments.experiment)
+
             scheduler = SchedulerFIFOMultiHost(name=arguments.QUEUE, experiment=arguments.experiment,hosts=hosts)
             ran_jobs = scheduler.run()
             Console.info(f"Ran Jobs: {ran_jobs}")

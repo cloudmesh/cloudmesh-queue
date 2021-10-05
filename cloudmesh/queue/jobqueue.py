@@ -1157,6 +1157,15 @@ class Cluster:
     def __len__(self):
         return len(self.hosts.data)
 
+    def keys(self):
+        return self.hosts.keys()
+
+    def items(self):
+        return self.hosts.__dict__["data"].items()
+
+    def values(self):
+        return self.hosts.__dict__["data"].values()
+
     def delete(self, name: str):
         """
         Deletes the host with the given name
@@ -1176,6 +1185,14 @@ class Cluster:
         :return: Host
         """
         return self.hosts[name]
+
+    def get_free_hosts(self):
+        hosts = []
+        for key in self.keys():
+            host = Host(**self.get(key))
+            if host.status =='free':
+                hosts.append(host)
+        return hosts
 
     def set(self, host: Host):
         """
