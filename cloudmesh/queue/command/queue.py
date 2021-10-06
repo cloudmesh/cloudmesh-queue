@@ -197,9 +197,7 @@ class JobCommand(PluginCommand):
 
             scheduler = SchedulerFIFO(name=arguments.QUEUE, experiment=arguments.experiment,
                                       max_parallel=int(arguments.max_parallel),timeout_min=timeout)
-            hosts = queue.get_hosts()
-            for host in hosts:
-                Host.sync(user=host.user,host=host.name,experiment=arguments.experiment)
+
             ran_jobs = scheduler.run()
             Console.info(f"Ran Jobs: {ran_jobs}")
             completed_jobs = scheduler.wait_on_running()
@@ -236,9 +234,6 @@ class JobCommand(PluginCommand):
                 if hosts == []:
                     Console.warning(f"No free hosts found in cluster {filename}")
                     return
-
-            for host in hosts:
-                Host.sync(user=host.user, host=host.name, experiment=arguments.experiment)
 
             scheduler = SchedulerFIFOMultiHost(name=arguments.QUEUE, experiment=arguments.experiment,
                                                hosts=hosts, timeout_min=timeout)

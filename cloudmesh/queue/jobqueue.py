@@ -362,10 +362,10 @@ class Job:
             end_line = self.logging("end")
             pyenv_cmd = ''
             if self.pyenv is not None:
-                pyenv_cmd = f'source {self.pyenv}; '
+                pyenv_cmd = f'\nsource {self.pyenv}; '
             gpu_cmd = ''
             if self.gpu is not None:
-                gpu_cmd = f'export CUDA_VISIBLE_DEVICES={self.gpu}'
+                gpu_cmd = f'\nexport CUDA_VISIBLE_DEVICES={self.gpu};'
             script = "\n".join([
                 f"#! {self.shell_path} -x",
                 f"echo $$ > {self.name}.pid",
@@ -486,7 +486,21 @@ class Job:
         except:
             pass
 
-    def sync(self, user: str, host: str):
+    def warn_if_job_dir_present(self):
+        if not is_local(self.host):
+            command = f"ssh {self.user}@{self.host} ls {self.experiment}"
+            r = Shell.run(command)
+            if self.name in r:
+                Console.warning(f"Job directory {self.experiment}/{self.name} already present on host.\n"
+                                f"Use `cms reset` prior to re-running jobs to ensure dir is deleted.")
+        else:
+            command = f'ls {self.experiment}/{self.name}'
+            r = Shell.run(command)
+            if f'{self.name}.pid' in r:
+                Console.warning(f"Job directory {self.experiment}/{self.name} already present on host.\n"
+                                f"Use `cms reset` prior to re-running jobs to ensure dir is deleted.")
+
+    def sync(self, user: str, host: str, job_name: str=''):
         """
         sync the experiment directory with the host. Only sync if the host
         is not the localhost.
@@ -496,9 +510,10 @@ class Job:
 
         @return: None
         """
-        # only sync if host is not local
+        self.warn_if_job_dir_present()
+
         if not is_local(host):
-            command = f"rsync -r {self.experiment} {user}@{host}:{self.experiment}"
+            command = f"rsync -r {self.experiment}/{job_name} {user}@{host}:{self.experiment}"
             os.system(command)
 
     def run(self):
@@ -862,10 +877,12 @@ class SchedulerFIFO(Queue):
                 if not finished:
                     self.check_for_crashes()
             Console.info(f'Running job: {job.name} on {job.user}@{job.host}')
-            pid = job.run()
             host = Host(name=job.host, user=job.user)
             probe_status, probe_time = host.probe()
             job.last_probe_check = probe_time
+            #host.sync(user=host.user,host=host.name,experiment=job.experiment)
+            job.sync(user=job.user,host=job.host,job_name=job.name)
+            pid = job.run()
             if pid is None:
                 # pid was a shell error or none
                 Console.warning(f'Job {job.name} failed to start.')
@@ -1013,9 +1030,13 @@ class SchedulerFIFOMultiHost(Queue):
                     if probe_status:
                         job.host = host.name
                         job.user = host.user
+                        job.gpu = host.gpu
                         job.status = 'ready'
                         job.last_probe_check = probe_time
+                        job.generate_script()
                         job.generate_command()
+                        #Host.sync(user=job.user,host=job.host,experiment=job.experiment)
+                        job.sync(user=job.user, host=job.host, job_name=job.name)
                         self.set(job)
                         assigned_host = host
                         return assigned_host
@@ -1071,7 +1092,7 @@ class Host:
     max_jobs_allowed: int = 1
     cores: int = 1
     threads: int = 1
-    gpus: str = ""
+    gpu: str = ""
     probe_status: bool = False
     probe_time: str = None
     ping_status: bool = False
@@ -1145,7 +1166,7 @@ class Host:
                           "max_jobs_allowed",
                           "cores",
                           "threads",
-                          "gpus"]
+                          "gpu"]
 
         if banner is not None:
             result = str_banner(banner)
