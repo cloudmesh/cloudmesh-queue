@@ -1031,6 +1031,8 @@ class SchedulerFIFOMultiHost(Queue):
                         job.host = host.name
                         job.user = host.user
                         job.gpu = host.gpu
+                        if job.pyenv is None or job.pyenv == '':
+                            job.pyenv=host.pyenv
                         job.status = 'ready'
                         job.last_probe_check = probe_time
                         job.generate_script()
@@ -1086,13 +1088,15 @@ class SchedulerFIFOMultiHost(Queue):
 class Host:
     user: str = sysinfo()[0]
     name: str = "localhost"
-    ip: str = "127.0.0.1"
-    status: str = "free"
+    id: str = ''
+    ip: str = None
+    status: str = "active"
     job_counter: int = 0
     max_jobs_allowed: int = 1
     cores: int = 1
     threads: int = 1
     gpu: str = ""
+    pyenv: str = ""
     probe_status: bool = False
     probe_time: str = None
     ping_status: bool = False
@@ -1216,31 +1220,32 @@ class Cluster:
     def values(self):
         return self.hosts.__dict__["data"].values()
 
-    def delete(self, name: str):
+    def delete(self, id: str):
         """
-        Deletes the host with the given name
+        Deletes the host with the given id
 
-        :param name: name of the host
+        :param id: id of the host
         """
         try:
-            self.hosts.delete(name)
+            self.hosts.delete(id)
+            self.save()
         except:
             pass
 
-    def get(self, name: str) -> Host:
+    def get(self, id: str) -> Host:
         """
         Returns the host with the given name
 
         :param name: name of the host
         :return: Host
         """
-        return self.hosts[name]
+        return self.hosts[id]
 
     def get_free_hosts(self):
         hosts = []
         for key in self.keys():
             host = Host(**self.get(key))
-            if host.status =='free':
+            if host.status =='active':
                 hosts.append(host)
         return hosts
 
@@ -1251,7 +1256,7 @@ class Cluster:
 
         :param host: the host
         """
-        self.hosts[host.name] = host.to_dict()
+        self.hosts[host.id] = host.to_dict()
 
     def search(self, query):
         return self.hosts.search(query)
@@ -1262,11 +1267,11 @@ class Cluster:
 
     def add_hosts(self, hosts):
         for host in hosts:
-            self.hosts[host.name] = host.to_dict()
+            self.hosts[host.id] = host.to_dict()
             self.save()
 
     def add(self, host: Host):
-        self.hosts[host.name] = host.to_dict()
+        self.hosts[host.id] = host.to_dict()
         self.save()
 
     def save(self):
@@ -1297,6 +1302,8 @@ class Cluster:
                     data[kind]["name"]: data[kind]
                 }
                 result = result + str(Printer.write(data, order=order, output=output))
+            elif order is not None and kind in ["hosts"]:
+                result = result + str(Printer.write(data[kind], order=order, output=output))
         else:
             host = self.__getitem__(host)
             result = result + str(Printer.attribute(host, output=output))
@@ -1325,7 +1332,7 @@ class Cluster:
         result = self.to_dict()
         return str(result)
 
-    def activate(self, name: str, status: bool = True):
+    def activate(self, id: str, status: bool = True):
         """
         Activates the host. A host can be disabled with the status set to False.
         Only acive hosts are used.
@@ -1337,9 +1344,9 @@ class Cluster:
         :param status: If True the host is active
         """
         if status:
-            self.hosts.data[name]["status"] = "active"
+            self.hosts.data[id]["status"] = "active"
         else:
-            self.hosts.data[name]["status"] = "inactive"
+            self.hosts.data[id]["status"] = "inactive"
 
     def add_policy(self, policy):
         """

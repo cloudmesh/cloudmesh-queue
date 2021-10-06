@@ -878,3 +878,119 @@ job1 	 old_status:start 	 new_state:end
 job2 	 old_status:start 	 new_state:end
 job3 	 old_status:start 	 new_state:end
 ```
+
+## Typical Workflow Example
+
+```
+cms cluster create a
+
+cms cluster add a --id=host1 --name=red --user=pi --gpu=0
+INFO: Adding host host1 to cluster a
+
+cms cluster add a --id=host2 --name=red01 --user=pi --gpu=0
+INFO: Adding host host2 to cluster a
+
+cms cluster add a --id=host3 --name=red01 --user=pi --gpu=1
+INFO: Adding host host3 to cluster a
+
+cms cluster add a --id=host[4-6] --name=red02 --user=pi
+INFO: Adding host host4 to cluster a
+INFO: Adding host host5 to cluster a
+INFO: Adding host host6 to cluster a
+
+
+ENV3) anthony@anthony-ubuntu:~/cm/cloudmesh-queue$ cms cluster list a
+cluster list a
++-------+-------+------+--------+-----+-------+----+------------------+
+| id    | name  | user | status | gpu | pyenv | ip | max_jobs_allowed |
++-------+-------+------+--------+-----+-------+----+------------------+
+| host1 | red   | pi   | active | 0   |       |    | 1                |
+| host2 | red01 | pi   | active | 0   |       |    | 1                |
+| host3 | red01 | pi   | active | 1   |       |    | 1                |
+| host4 | red02 | pi   | active |     |       |    | 1                |
+| host5 | red02 | pi   | active |     |       |    | 1                |
+| host6 | red02 | pi   | active |     |       |    | 1                |
++-------+-------+------+--------+-----+-------+----+------------------+
+
+cms queue create a
+
+cms queue add a --name=job[0-10] --command="'hostname'"
+INFO: Adding job job0 to queue a
+INFO: Adding job job1 to queue a
+INFO: Adding job job2 to queue a
+INFO: Adding job job3 to queue a
+INFO: Adding job job4 to queue a
+INFO: Adding job job5 to queue a
+INFO: Adding job job6 to queue a
+INFO: Adding job job7 to queue a
+INFO: Adding job job8 to queue a
+INFO: Adding job job9 to queue a
+INFO: Adding job job10 to queue a
+
+cms queue list a
++-------+-----------+----------+-----+-----------+-----------+------------+
+| name  | status    | command  | gpu | output    | log       | experiment |
++-------+-----------+----------+-----+-----------+-----------+------------+
+| job0  | undefined | hostname |     | job0.out  | job0.log  | experiment |
+| job1  | undefined | hostname |     | job1.out  | job1.log  | experiment |
+| job2  | undefined | hostname |     | job2.out  | job2.log  | experiment |
+| job3  | undefined | hostname |     | job3.out  | job3.log  | experiment |
+| job4  | undefined | hostname |     | job4.out  | job4.log  | experiment |
+| job5  | undefined | hostname |     | job5.out  | job5.log  | experiment |
+| job6  | undefined | hostname |     | job6.out  | job6.log  | experiment |
+| job7  | undefined | hostname |     | job7.out  | job7.log  | experiment |
+| job8  | undefined | hostname |     | job8.out  | job8.log  | experiment |
+| job9  | undefined | hostname |     | job9.out  | job9.log  | experiment |
+| job10 | undefined | hostname |     | job10.out | job10.log | experiment |
++-------+-----------+----------+-----+-----------+-----------+------------+
+
+cms queue run fifo_multi a --hostfile=a
+queue run fifo_multi a --hostfile=a
+INFO: Starting job: job0 on host:pi@red
+
+# ----------------------------------------------------------------------
+# Run: job0
+# ----------------------------------------------------------------------
+
+INFO: Running Jobs: ['job0']
+INFO: Starting job: job1 on host:pi@red01
+
+# ----------------------------------------------------------------------
+# Run: job1
+# ----------------------------------------------------------------------
+
+INFO: Running Jobs: ['job0', 'job1']
+INFO: Starting job: job2 on host:pi@red01
+
+# ----------------------------------------------------------------------
+# Run: job2
+# ----------------------------------------------------------------------
+
+INFO: Running Jobs: ['job0', 'job1', 'job2']
+INFO: Starting job: job3 on host:pi@red02
+
+# ----------------------------------------------------------------------
+# Run: job3
+# ----------------------------------------------------------------------
+
+INFO: Running Jobs: ['job0', 'job1', 'job2', 'job3']
+INFO: Starting job: job4 on host:pi@red02
+
+# ----------------------------------------------------------------------
+# Run: job4
+# ----------------------------------------------------------------------
+
+INFO: Running Jobs: ['job0', 'job1', 'job2', 'job3', 'job4']
+INFO: Starting job: job5 on host:pi@red02
+
+# ----------------------------------------------------------------------
+# Run: job5
+# ----------------------------------------------------------------------
+
+INFO: Running Jobs: ['job0', 'job1', 'job2', 'job3', 'job4', 'job5']
+INFO: Waiting. All hosts running max jobs.
+...OUTPUT TRIMMED FOR READABILITY...
+INFO: Running Jobs: ['job5', 'job6', 'job7', 'job8', 'job9', 'job10']
+INFO: Ran Jobs: ['job0', 'job1', 'job2', 'job3', 'job4', 'job5', 'job6', 'job7', 'job8', 'job9', 'job10']
+INFO: Completed Jobs: ['job0', 'job1', 'job2', 'job3', 'job4', 'job5', 'job6', 'job7', 'job8', 'job9', 'job10']
+```
