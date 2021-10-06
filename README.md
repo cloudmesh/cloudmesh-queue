@@ -506,6 +506,141 @@ installation documentation.
 
 ## Start of New Documentation
 
+## Cluster
+
+We have the following cluster commands implemented.
+
+```
+            cluster create CLUSTER [--experiment=EXPERIMENT]
+            cluster list CLUSTER [--experiment=EXPERIMENT]
+            cluster add CLUSTER [--experiment=EXPERIMENT] --id=ID --name=NAME --user=USER
+                                [--ip=IP]
+                                [--status=STATUS]
+                                [--gpu=GPU]
+                                [--pyenv=PYENV]
+            cluster delete CLUSTER [--experiment=EXPERIMENT] --id=ID
+            cluster activate CLUSTER [--experiment=EXPERIMENT] --id=ID
+            cluster deactivate CLUSTER [--experiment=EXPERIMENT] --id=ID
+            cluster set CLUSTER [--experiment=EXPERIMENT] --id=ID --key=KEY --value=VALUE
+```
+
+## Create a Cluster
+
+To create an empty cluster run:
+
+```
+cluster create CLUSTER [--experiment=EXPERIMENT]
+```
+
+Here `CLUSTER` is the name of your cluster and `experiment` is the path of the directory that it should be stored in. If you do not include the string `-cluster.yaml` in your `CLUSTER` argument, it wil be automatically added for you. If you do not include an `experiment` argument, the directory `./experiment` will be assumed.
+
+Example:
+
+```
+cluster create a 
+```
+
+## Add Hosts to a Cluster
+
+Add hosts to a cluster with:
+
+```
+cluster add CLUSTER [--experiment=EXPERIMENT] --id=ID --name=NAME --user=USER
+                                [--ip=IP]
+                                [--status=STATUS]
+                                [--gpu=GPU]
+                                [--pyenv=PYENV]
+```
+The `id` argument takes a single or expandable name. For example host[1-10] will create 10 hosts with the same parameters, but different ids.
+
+The `name` argument is the target hostname.
+
+The `user` argument is the target user.
+
+The `ip` argument is the target ip.
+
+The `status` argument is the target status. A default of `active` is assumed. All others will not be assigned jobs.
+
+The `gpu` is the GPUs to be set with the environment variable `CUDA_VISIBLE_DEVICES=`. Only include the numbers, i.e. `0,1` and not the environment variable name.
+
+The `pyenv` is the argument to the `source` command and will be executed before running the job to activate a python environment.
+
+Example:
+
+```
+cms cluster add a --id=host[1-4] --name=red --user=pi --gpu=0 --pyenv="'~/ENV3/bin/activate'"
+cluster add a --id=host[1-4] --name=red --user=pi --gpu=0 --pyenv='~/ENV3/bin/activate'
+INFO: Adding host host1 to cluster a
+INFO: Adding host host2 to cluster a
+INFO: Adding host host3 to cluster a
+INFO: Adding host host4 to cluster a
+```
+
+## List Hosts in a Cluster
+
+Lists Hosts in a cluster with 
+
+```
+cluster list CLUSTER [--experiment=EXPERIMENT]
+```
+
+Example:
+
+```
+cms cluster list a
+
++-------+------+------+--------+-----+---------------------+----+------------------+
+| id    | name | user | status | gpu | pyenv               | ip | max_jobs_allowed |
++-------+------+------+--------+-----+---------------------+----+------------------+
+| host1 | red  | pi   | active | 0   | ~/ENV3/bin/activate |    | 1                |
+| host2 | red  | pi   | active | 0   | ~/ENV3/bin/activate |    | 1                |
+| host3 | red  | pi   | active | 0   | ~/ENV3/bin/activate |    | 1                |
+| host4 | red  | pi   | active | 0   | ~/ENV3/bin/activate |    | 1                |
++-------+------+------+--------+-----+---------------------+----+------------------+
+```
+
+## Delete Hosts in a Cluster
+
+Delete Hosts in a Cluster with
+
+```
+cluster delete CLUSTER [--experiment=EXPERIMENT] --id=ID
+```
+
+Example:
+
+```
+cms cluster delete a --id=host[3-4]
+INFO: Deleting hosts: ['host3', 'host4']
+```
+
+## Activate or Deactivate Hosts in a Cluster
+
+Activate or deactivate hsots in a cluster with
+
+```
+cluster activate CLUSTER [--experiment=EXPERIMENT] --id=ID
+cluster deactivate CLUSTER [--experiment=EXPERIMENT] --id=ID
+```
+
+Some schedulers will only consider hosts in an `active` status. Other statuses will not be scheduled.
+
+## Set Host Attributes in a Cluster
+
+To set any host attribute in a cluster use.
+
+```
+cluster set CLUSTER [--experiment=EXPERIMENT] --id=ID --key=KEY --value=VALUE
+```
+
+Example:
+```
+cms cluster set a --id=host1 --key=name --value=red02
+INFO: Setting host: host1 key: name value: red02 in cluster a
+```
+## Queue
+
+
 We have the following queue commands implemented.
 
 ```

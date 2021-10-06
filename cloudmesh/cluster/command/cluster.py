@@ -38,6 +38,7 @@ class JobCommand(PluginCommand):
             cluster delete CLUSTER [--experiment=EXPERIMENT] --id=ID
             cluster activate CLUSTER [--experiment=EXPERIMENT] --id=ID
             cluster deactivate CLUSTER [--experiment=EXPERIMENT] --id=ID
+            cluster set CLUSTER [--experiment=EXPERIMENT] --id=ID --key=KEY --value=VALUE
 
 
           This command is used to create a yaml file representation of a group of hosts
@@ -112,7 +113,9 @@ class JobCommand(PluginCommand):
             "pyenv",
             "hostfile",
             "max_parallel",
-            "timeout"
+            "timeout",
+            "key",
+            "value"
         )
 
         variables = Variables()
@@ -189,5 +192,13 @@ class JobCommand(PluginCommand):
                 host.status = 'inactive'
                 cluster.set(host=host)
                 Console.info(f'Activating host {host.id} in cluster {cluster.name}')
+
+        elif arguments.set:
+            for host_id in ids:
+                host_dict = cluster.get(id=host_id)
+                host_dict[arguments.key] = arguments.value
+                host = Host(**host_dict)
+                cluster.set(host=host)
+                Console.info(f'Setting host: {host.id} key: {arguments.key} value: {arguments.value} in cluster {cluster.name}')
 
         return ""
