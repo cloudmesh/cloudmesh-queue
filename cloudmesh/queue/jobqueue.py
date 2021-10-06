@@ -7,6 +7,7 @@ import time
 import uuid
 from dataclasses import dataclass
 from datetime import datetime
+from datetime import timedelta
 # from pathlib import Path
 from textwrap import dedent
 from typing import List
@@ -139,6 +140,7 @@ class Job:
     host: str = None
     user: str = None
     pyenv: str = None
+    last_probe_check: str = None
 
     def __post_init__(self):
         #print(self.info())
@@ -187,14 +189,31 @@ class Job:
                 self.status = 'crash'
         return probe_status
 
+    def check_host_running2(self,timeout_min=10):
+        if self.last_probe_check is None:
+            raise ValueError ('Job last_probe_time is None')
+
+        last_probe_time = datetime.strptime(self.last_probe_check, "%d/%m/%Y %H:%M:%S")
+
+        if datetime.now() > last_probe_time + timedelta(minutes=timeout_min):
+            host = Host(name=self.host, user=self.user)
+            probe_status, probe_time = host.probe()
+            self.last_probe_check = probe_time
+            if not probe_status:
+                if self.status == 'start' or self.status == 'run':
+                    self.status = 'crash'
+                return False
+        return True
+
     def check_running(self):
         ps = self.ps()
         if ps is None:
             return False
         return True
 
-    def check_crashed(self):
-        if not is_local(self.host) and (self.status == 'start' or self.status == 'run') and not self.check_host_running():
+    def check_crashed(self,timeout_min=10):
+        if not is_local(self.host) and (self.status == 'start' or self.status == 'run') \
+                and not self.check_host_running2():
             return True
         elif self.state == 'start' and not self.check_running():
             time.sleep(5) # TODO make this more deterministic
@@ -688,6 +707,7 @@ class Queue:
                 else:
                     new_state = 'undefined'
                 job.status = new_state
+                job.pid=None
                 if old_state != new_state:
                     updates = True
                     self.set(job)
@@ -772,7 +792,8 @@ class SchedulerFIFO(Queue):
                  experiment: str = None,
                  filename: str = None,
                  jobs: List = None,
-                 max_parallel: int = 1):
+                 max_parallel: int = 1,
+                 timeout_min: int = 10):
         Queue.__init__(self,
                        name=name,
                        experiment=experiment,
@@ -785,6 +806,7 @@ class SchedulerFIFO(Queue):
         self.running_jobs = []
         self.completed_jobs = []
         self.ran_jobs = []
+        self.timeout_min = timeout_min
 
     def __next__(self):
         found_job = False
@@ -820,7 +842,8 @@ class SchedulerFIFO(Queue):
     def check_for_crashes(self):
         for job in self.running_jobs:
             job = Job(**self.get(job))
-            crashed = job.check_crashed()
+            crashed = job.check_crashed(timeout_min=self.timeout_min)
+            self.set(job)
             if crashed:
                 Console.warning(f'Job {job.name} status:CRASH')
                 job.status = 'crash'
@@ -840,6 +863,9 @@ class SchedulerFIFO(Queue):
                     self.check_for_crashes()
             Console.info(f'Running job: {job.name} on {job.user}@{job.host}')
             pid = job.run()
+            host = Host(name=job.host, user=job.user)
+            probe_status, probe_time = host.probe()
+            job.last_probe_check = probe_time
             if pid is None:
                 # pid was a shell error or none
                 Console.warning(f'Job {job.name} failed to start.')
@@ -905,7 +931,8 @@ class SchedulerFIFOMultiHost(Queue):
                  experiment: str = None,
                  filename: str = None,
                  jobs: List = None,
-                 hosts: list = []):
+                 hosts: list = [],
+                 timeout_min: int = 10):
         Queue.__init__(self,
                        name=name,
                        experiment=experiment,
@@ -944,6 +971,7 @@ class SchedulerFIFOMultiHost(Queue):
         for job in self.running_jobs:
             job = Job(**self.get(job))
             crashed = job.check_crashed()
+            self.set(job)
             if crashed:
                 Console.warning(f'Job {job.name} status:CRASH')
                 job.status = 'crash'
@@ -986,6 +1014,7 @@ class SchedulerFIFOMultiHost(Queue):
                         job.host = host.name
                         job.user = host.user
                         job.status = 'ready'
+                        job.last_probe_check = probe_time
                         job.generate_command()
                         self.set(job)
                         assigned_host = host

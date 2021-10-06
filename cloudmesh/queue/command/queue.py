@@ -42,8 +42,8 @@ class JobCommand(PluginCommand):
                     [--log=LOG]
                     [--pyenv=PYENV]
             queue delete QUEUE [--experiment=EXPERIMENT] --name=NAME
-            queue run fifo QUEUE [--experiment=EXPERIMENT] --max_parallel=MAX_PARALLEL
-            queue run fifo_multi QUEUE [--experiment=EXPERIMENT] [--hosts=HOSTS] [--hostfile=HOSTFILE]
+            queue run fifo QUEUE [--experiment=EXPERIMENT] --max_parallel=MAX_PARALLEL [--timeout=TIMEOUT]
+            queue run fifo_multi QUEUE [--experiment=EXPERIMENT] [--hosts=HOSTS] [--hostfile=HOSTFILE] [--timeout=TIMEOUT]
             queue reset QUEUE [--experiment=EXPERIMENT] [--name=NAME] [--status=STATUS]
 
           This command is a job queuing and scheduling framework. It allows
@@ -116,7 +116,8 @@ class JobCommand(PluginCommand):
             "config",
             "pyenv",
             "hostfile",
-            "max_parallel"
+            "max_parallel",
+            "timeout"
         )
 
         variables = Variables()
@@ -189,9 +190,13 @@ class JobCommand(PluginCommand):
                 Console.info(f'Adding job {job.name} to queue {queue.name}')
                 queue.add(job)
         elif arguments.run and arguments.fifo:
+            if arguments.timeout:
+                timeout=int(arguments.timeout)
+            else:
+                timeout=10
 
             scheduler = SchedulerFIFO(name=arguments.QUEUE, experiment=arguments.experiment,
-                                      max_parallel=int(arguments.max_parallel))
+                                      max_parallel=int(arguments.max_parallel),timeout_min=timeout)
             hosts = queue.get_hosts()
             for host in hosts:
                 Host.sync(user=host.user,host=host.name,experiment=arguments.experiment)
@@ -204,6 +209,11 @@ class JobCommand(PluginCommand):
             if arguments['--hosts'] is None and arguments.hostfile is None:
                 Console.warning("Please provide a --hosts or --hostfile argument")
                 return
+
+            if arguments.timeout:
+                timeout=int(arguments.timeout)
+            else:
+                timeout=10
 
             if arguments['--hosts']:
                 args = arguments['--hosts'].split(',')
@@ -230,7 +240,8 @@ class JobCommand(PluginCommand):
             for host in hosts:
                 Host.sync(user=host.user, host=host.name, experiment=arguments.experiment)
 
-            scheduler = SchedulerFIFOMultiHost(name=arguments.QUEUE, experiment=arguments.experiment,hosts=hosts)
+            scheduler = SchedulerFIFOMultiHost(name=arguments.QUEUE, experiment=arguments.experiment,
+                                               hosts=hosts, timeout_min=timeout)
             ran_jobs = scheduler.run()
             Console.info(f"Ran Jobs: {ran_jobs}")
             completed_jobs = scheduler.wait_on_running()
