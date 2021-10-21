@@ -11,7 +11,7 @@ class Manager:
 
     @staticmethod
     def start():
-        os.system("uvicorn cloudmesh.job.service.server:app --reload")
+        os.system("uvicorn cloudmesh.queue.service.server:app --reload")
 
     @staticmethod
     def docs(port=8000):

@@ -182,7 +182,7 @@ class JobCommand(PluginCommand):
             for host_id in ids:
                 host_dict = cluster.get(id=host_id)
                 host = Host(**host_dict)
-                host.status = 'activate'
+                host.status = 'active'
                 cluster.set(host=host)
                 Console.info(f'Activating host {host.id} in cluster {cluster.name}')
         elif arguments.deactivate:

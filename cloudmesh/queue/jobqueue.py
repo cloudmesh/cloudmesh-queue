@@ -1230,7 +1230,7 @@ class Cluster:
             self.hosts.delete(id)
             self.save()
         except:
-            pass
+            Console.error(f'Could not delete host {id}')
 
     def get(self, id: str) -> Host:
         """
@@ -1275,8 +1275,7 @@ class Cluster:
         self.save()
 
     def save(self):
-        if len(self.hosts.data) > 0:
-            self.hosts.save(self.filename)
+        self.hosts.save(self.filename)
 
     def info(self,
              kind="hosts",
