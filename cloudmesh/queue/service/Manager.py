@@ -13,6 +13,7 @@ class Manager:
     def start():
         os.system("uvicorn cloudmesh.queue.service.server:app --reload")
 
+    '''
     @staticmethod
     def docs(port=8000):
         url = f"http://127.0.0.1:{port}/docs"
@@ -46,3 +47,4 @@ class Manager:
             url = f"http://127.0.0.1:{port}/kill"
 
         Shell.browser(url)
+    '''

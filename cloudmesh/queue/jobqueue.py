@@ -762,7 +762,7 @@ class Queue:
         data = self.to_dict()
         if job is None:
             if order is None and kind in ["jobs"]:
-                order = ["name", "status", "command", "gpu", "output", "log", "experiment"]
+                order = ["name", "status", "command","host","user", "gpu", "output", "log", "experiment"]
                 result = result + str(Printer.write(data[kind], order=order, output=output))
             elif order is None and kind in ["queue", "config"]:
                 order = ["name", "experiment", "filename"]
@@ -1182,7 +1182,6 @@ class Host:
         return result
 
 
-@dataclass
 class Cluster:
 
     def __init__(self,
@@ -1292,7 +1291,7 @@ class Cluster:
         data = self.to_dict()
         if host is None:
             if order is None and kind in ["hosts"]:
-                # order = order
+                order = ["id", "name", "user", "status", "gpu", "pyenv", "ip", "max_jobs_allowed"]
                 result = result + str(Printer.write(data[kind], order=order, output=output))
             elif order is None and kind in ["cluster", "config"]:
                 order = ["name", "experiment", "filename"]

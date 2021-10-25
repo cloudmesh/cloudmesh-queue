@@ -1,6 +1,7 @@
 import subprocess
 
 from fastapi import FastAPI
+from fastapi.responses import PlainTextResponse
 from cloudmesh.queue.jobqueue import Queue
 from cloudmesh.queue.jobqueue import Cluster
 from cloudmesh.queue.jobqueue import Job
@@ -12,7 +13,7 @@ from cloudmesh.common.parameter import Parameter
 from cloudmesh.common.console import Console
 
 app = FastAPI(
-    title="Cloudmesh Job: A job queue scheduler for remote/local servers.",
+    title="Cloudmesh Queue: A job queue scheduler for remote/local servers.",
     description="""The `cloudmesh-queue` provides a job queuing and scheduling 
             framework. It includes a library as well as a commandline interface. 
             Both allow users to leverage registered and available compute resources to 
@@ -33,10 +34,10 @@ def queue_create(name: str,experiment:str=None):
     if name is None:
         result = "Please provide a queue name"
     queue = Queue(name=name,experiment=experiment)
-    return {"queue": queue}
+    return queue
 
 @app.get("/queue/")
-def queue_list():
+def list_queues():
     r = Shell.run('ls ./experiment | grep queue.yaml')
     r = r.splitlines()
     return {"queues": r}
@@ -44,21 +45,27 @@ def queue_list():
 @app.get("/queue/{queue}")
 def queue_get(queue: str, experiment: str=None):
     queue = Queue(name=queue)
-    return {"queue": queue}
+    return queue
+
+@app.get("/queue/{queue}/info",response_class=PlainTextResponse)
+def queue_info(queue: str, experiment: str=None):
+    queue = Queue(name=queue)
+    return queue.info()
+
 
 @app.get("/queue/{queue}/job/{job}")
 def queue_get_job(queue: str, job: str):
     queue = Queue(name=queue)
     job = queue.get(job)
-    return {"job": job}
+    return job
 
-@app.put("/queue/{queue}/refresh")
+@app.put("/queue/{queue}/refresh", response_class=PlainTextResponse)
 def queue_refresh(queue: str):
     queue = Queue(name=queue)
     queue.refresh()
-    return {"queue": queue}
+    return queue.info()
 
-@app.post("/queue/{queue}")
+@app.post("/queue/{queue}",response_class=PlainTextResponse)
 def queue_add_job(queue: str, name: str, command: str,input: str=None,output: str=None, \
                   status: str=None, gpu: str=None, user: str=None, host: str=None, \
                   shell: str=None, log: str=None, pyenv: str =None):
@@ -80,15 +87,15 @@ def queue_add_job(queue: str, name: str, command: str,input: str=None,output: st
         job_args['name'] = name
         job = Job(**job_args)
         queue.add(job)
-    return {"queue": queue}
+    return queue.info()
 
-@app.delete("/queue/{queue}/job/{job}")
+@app.delete("/queue/{queue}/job/{job}",response_class=PlainTextResponse)
 def queue_delete_job(queue: str, name: str):
     queue = Queue(name=queue)
     names = Parameter.expand(name)
     for name in names:
         queue.delete(name=name)
-    return {"queue": queue}
+    return queue.info()
 
 @app.put("/queue/{queue}/run_fifo")
 def queue_run_fifo(queue: str, max_parallel: int, timeout:int=10):
@@ -105,20 +112,22 @@ def queue_run_fifo_multi(queue: str, cluster: str, timeout:int=10):
     p = subprocess.Popen([f'cms queue run fifo_multi {queue} --hostfile={cluster} --timeout={timeout}'], shell=True)
     return {'result': f'started fifo scheduler: pid {p.pid}'}
 
-@app.put("/queue/{queue}/reset")
+@app.put("/queue/{queue}/reset",response_class=PlainTextResponse)
 def queue_reset(queue: str, name: str=None, status:str=None):
     #queue reset QUEUE [--experiment=EXPERIMENT] [--name=NAME] [--status=STATUS]
     queue = Queue(name=queue)
     names = Parameter.expand(name)
     result = queue.reset(keys=names, status=status)
-    return {"result": result.splitlines()}
+    #return {"result": result.splitlines()}
+    return result
 
 @app.post("/cluster/")
 def cluster_create(name: str,experiment:str=None):
     if name is None:
         result = "Please provide a cluster name"
     cluster = Cluster(name=name,experiment=experiment)
-    return {"cluster": cluster.to_dict()}
+    #return {"cluster": cluster.to_dict()}
+    return cluster
 
 @app.get("/cluster/")
 def cluster_list():
@@ -126,7 +135,7 @@ def cluster_list():
     r = r.splitlines()
     return {"clusters": r}
 
-@app.post("/cluster/{cluster}")
+@app.post("/cluster/{cluster}", response_class=PlainTextResponse)
 def cluster_add_host(cluster: str, id: str, name: str,user: str,ip: str=None, \
                   status: str=None, gpu: int=None, pyenv: str=None):
     cluster = Cluster(name=cluster)
@@ -144,22 +153,34 @@ def cluster_add_host(cluster: str, id: str, name: str,user: str,ip: str=None, \
         host = Host(**host_args)
         Console.info(f'Adding host {host.id} to cluster {cluster.name}')
         cluster.add(host)
-    return {"cluster": cluster.to_dict()}
+    return cluster.info()
 
 @app.get("/cluster/{cluster}")
 def cluster_get(cluster: str, experiment: str=None):
     cluster = Cluster(name=cluster)
-    return {"cluster": cluster.to_dict()}
+    #return {"cluster": cluster.to_dict()}
+    return cluster
 
-@app.delete("/cluster/{cluster}/id/{id}")
+@app.get("/cluster/{cluster}/info", response_class=PlainTextResponse)
+def cluster_info(cluster: str, experiment: str=None):
+    cluster = Cluster(name=cluster)
+    return cluster.info()
+
+@app.get("/cluster/{cluster}/id/{id}")
+def cluster_get_host(cluster: str, id: str):
+    cluster = Cluster(name=cluster)
+    host = cluster.get(id)
+    return host
+
+@app.delete("/cluster/{cluster}/id/{id}", response_class=PlainTextResponse)
 def cluster_delete_host(cluster: str, id: str):
     cluster = Cluster(name=cluster)
     ids = Parameter.expand(id)
     for host_id in ids:
         cluster.delete(id=host_id)
-    return {"cluster": cluster.to_dict()}
+    return cluster.info()
 
-@app.put("/cluster/{cluster}/id/{id}/activate")
+@app.put("/cluster/{cluster}/id/{id}/activate", response_class=PlainTextResponse)
 def cluster_activate_host(cluster: str, id: str):
     cluster = Cluster(name=cluster)
     ids = Parameter.expand(id)
@@ -169,9 +190,9 @@ def cluster_activate_host(cluster: str, id: str):
         host.status = 'active'
         cluster.set(host=host)
         Console.info(f'Activating host {host.id} in cluster {cluster.name}')
-    return {"cluster": cluster.to_dict()}
+    return cluster.info()
 
-@app.put("/cluster/{cluster}/id/{id}/deactivate")
+@app.put("/cluster/{cluster}/id/{id}/deactivate", response_class=PlainTextResponse)
 def cluster_deactivate_host(cluster: str, id: str):
     cluster = Cluster(name=cluster)
     ids = Parameter.expand(id)
@@ -181,9 +202,9 @@ def cluster_deactivate_host(cluster: str, id: str):
         host.status = 'inactive'
         cluster.set(host=host)
         Console.info(f'Deactivating host {host.id} in cluster {cluster.name}')
-    return {"cluster": cluster.to_dict()}
+    return cluster.info()
 
-@app.put("/cluster/{cluster}/id/{id}/set")
+@app.put("/cluster/{cluster}/id/{id}/set", response_class=PlainTextResponse)
 def cluster_set_host(cluster: str, id: str, key: str, value: str):
     cluster = Cluster(name=cluster)
     ids = Parameter.expand(id)
@@ -193,4 +214,4 @@ def cluster_set_host(cluster: str, id: str, key: str, value: str):
         host = Host(**host_dict)
         cluster.set(host=host)
         Console.info(f'Setting host: {host.id} key: {key} value: {value} in cluster {cluster.name}')
-    return {"cluster": cluster.to_dict()}
+    return cluster.info()

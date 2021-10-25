@@ -29,7 +29,7 @@ class JobCommand(PluginCommand):
 
           Usage:
             queue create QUEUE [--experiment=EXPERIMENT]
-            queue list QUEUE [--experiment=EXPERIMENT]
+            queue info QUEUE [--experiment=EXPERIMENT]
             queue refresh QUEUE [--experiment=EXPERIMENT]
             queue add QUEUE [--experiment=EXPERIMENT] --name=NAME --command=COMMAND
                     [--input=INPUT]
@@ -45,6 +45,8 @@ class JobCommand(PluginCommand):
             queue run fifo QUEUE [--experiment=EXPERIMENT] --max_parallel=MAX_PARALLEL [--timeout=TIMEOUT]
             queue run fifo_multi QUEUE [--experiment=EXPERIMENT] [--hosts=HOSTS] [--hostfile=HOSTFILE] [--timeout=TIMEOUT]
             queue reset QUEUE [--experiment=EXPERIMENT] [--name=NAME] [--status=STATUS]
+            queue --service start [--port=PORT]
+            queue --service info [--port=PORT]
 
           This command is a job queuing and scheduling framework. It allows
           users to leverage all the available compute resources to perform
@@ -90,6 +92,7 @@ class JobCommand(PluginCommand):
         from cloudmesh.queue.jobqueue import SchedulerFIFOMultiHost
         from cloudmesh.queue.jobqueue import Host
         from cloudmesh.queue.jobqueue import Cluster
+        from cloudmesh.common.Shell import Shell
 
         map_parameters(
             arguments,
@@ -117,7 +120,8 @@ class JobCommand(PluginCommand):
             "pyenv",
             "hostfile",
             "max_parallel",
-            "timeout"
+            "timeout",
+            "port"
         )
 
         variables = Variables()
@@ -130,7 +134,7 @@ class JobCommand(PluginCommand):
         #print(f'EXPERIMENT is {arguments.experiment}')
         #print(f'QUEUE is {arguments.QUEUE}')
 
-        if not arguments.create:
+        if not arguments.create and not arguments["--service"]:
             queue_file_name = arguments.QUEUE
             if '-queue.yaml' not in queue_file_name:
                 queue_file_name = arguments.QUEUE + '-queue.yaml'
@@ -161,7 +165,7 @@ class JobCommand(PluginCommand):
                 queue = Queue(name=arguments.QUEUE,experiment=arguments.experiment)
             else:
                 queue = Queue(name=arguments.QUEUE)
-        elif arguments.list:
+        elif arguments.info:
             print(queue.info())
         elif arguments.refresh:
             Console.info(f'Refreshing Queue: {queue.name}')
@@ -246,5 +250,20 @@ class JobCommand(PluginCommand):
             status = arguments['--status'] if arguments['--status'] else None
             keys = names if arguments.name else None
             print(queue.reset(keys=keys,status=status))
+
+        elif arguments["--service"] and arguments.start:
+            if arguments.port is None:
+                # TODO remove --reload when no longer in development
+                os.system("uvicorn cloudmesh.queue.service.server:app --reload")
+            else:
+                # TODO remove --reload when no longer in development
+                os.system(f"uvicorn cloudmesh.queue.service.server:app --reload --port={arguments.port}")
+        elif arguments["--service"] and arguments.info:
+            if arguments.port is not None:
+                port =":" + arguments.port
+            else:
+                port = ':8000'
+            url = f"http://127.0.0.1{port}/docs"
+            Shell.browser(url)
 
         return ""
