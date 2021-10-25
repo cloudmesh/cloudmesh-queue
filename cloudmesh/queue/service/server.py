@@ -1,7 +1,12 @@
 import subprocess
+import secrets
+
 
 from fastapi import FastAPI
 from fastapi.responses import PlainTextResponse
+from fastapi.security import HTTPBasic, HTTPBasicCredentials
+from fastapi import Depends, HTTPException, status
+
 from cloudmesh.queue.jobqueue import Queue
 from cloudmesh.queue.jobqueue import Cluster
 from cloudmesh.queue.jobqueue import Job
@@ -24,43 +29,56 @@ app = FastAPI(
             these jobs on configured hosts. """,
 )
 
+security = HTTPBasic()
+
+def get_current_username(credentials: HTTPBasicCredentials = Depends(security)):
+    correct_username = secrets.compare_digest(credentials.username, "user")
+    correct_password = secrets.compare_digest(credentials.password, "password")
+    if not (correct_username and correct_password):
+        raise HTTPException(
+            status_code=status.HTTP_401_UNAUTHORIZED,
+            detail="Incorrect email or password",
+            headers={"WWW-Authenticate": "Basic"},
+        )
+    return credentials.username
+
 
 @app.get("/")
-async def root():
+async def root(credentials: HTTPBasicCredentials = Depends(security)):
     return {"message": "Cloudmesh Job Queue Server"}
 
 @app.post("/queue/")
-def queue_create(name: str,experiment:str=None):
+def queue_create(name: str,experiment:str=None,credentials: HTTPBasicCredentials = Depends(security)):
     if name is None:
         result = "Please provide a queue name"
     queue = Queue(name=name,experiment=experiment)
     return queue
 
 @app.get("/queue/")
-def list_queues():
+def list_queues(credentials: HTTPBasicCredentials = Depends(security)):
     r = Shell.run('ls ./experiment | grep queue.yaml')
     r = r.splitlines()
     return {"queues": r}
 
 @app.get("/queue/{queue}")
-def queue_get(queue: str, experiment: str=None):
+def queue_get(queue: str, experiment: str=None, credentials: HTTPBasicCredentials = Depends(security)):
     queue = Queue(name=queue)
     return queue
 
 @app.get("/queue/{queue}/info",response_class=PlainTextResponse)
-def queue_info(queue: str, experiment: str=None):
+def queue_info(queue: str, experiment: str=None, credentials: HTTPBasicCredentials = Depends(security)):
     queue = Queue(name=queue)
     return queue.info()
 
 
 @app.get("/queue/{queue}/job/{job}")
-def queue_get_job(queue: str, job: str):
+def queue_get_job(queue: str, job: str, credentials: HTTPBasicCredentials = Depends(security)):
     queue = Queue(name=queue)
     job = queue.get(job)
     return job
 
 @app.put("/queue/{queue}/refresh", response_class=PlainTextResponse)
-def queue_refresh(queue: str):
+def queue_refresh(queue: str, credentials: HTTPBasicCredentials = Depends(security)):
     queue = Queue(name=queue)
     queue.refresh()
     return queue.info()
@@ -68,7 +86,8 @@ def queue_refresh(queue: str):
 @app.post("/queue/{queue}",response_class=PlainTextResponse)
 def queue_add_job(queue: str, name: str, command: str,input: str=None,output: str=None, \
                   status: str=None, gpu: str=None, user: str=None, host: str=None, \
-                  shell: str=None, log: str=None, pyenv: str =None):
+                  shell: str=None, log: str=None, pyenv: str =None,
+                  credentials: HTTPBasicCredentials = Depends(security)):
     queue = Queue(name=queue)
     names = Parameter.expand(name)
     job_args = {}
@@ -90,7 +109,7 @@ def queue_add_job(queue: str, name: str, command: str,input: str=None,output: st
     return queue.info()
 
 @app.delete("/queue/{queue}/job/{job}",response_class=PlainTextResponse)
-def queue_delete_job(queue: str, name: str):
+def queue_delete_job(queue: str, name: str, credentials: HTTPBasicCredentials = Depends(security)):
     queue = Queue(name=queue)
     names = Parameter.expand(name)
     for name in names:
@@ -98,7 +117,8 @@ def queue_delete_job(queue: str, name: str):
     return queue.info()
 
 @app.put("/queue/{queue}/run_fifo")
-def queue_run_fifo(queue: str, max_parallel: int, timeout:int=10):
+def queue_run_fifo(queue: str, max_parallel: int, timeout:int=10,
+                   credentials: HTTPBasicCredentials = Depends(security)):
     #queue run fifo QUEUE [--experiment=EXPERIMENT] --max_parallel=MAX_PARALLEL [--timeout=TIMEOUT]
     #p = subprocess.Popen(['cms', 'queue', 'run', 'fifo', queue,
     #                      f'--max_parallel={max_parallel}',f'--timeout={timeout}'], shell=True)
@@ -107,13 +127,15 @@ def queue_run_fifo(queue: str, max_parallel: int, timeout:int=10):
     return {'result': f'started fifo scheduler: pid {p.pid}'}
 
 @app.put("/queue/{queue}/run_fifo_multi")
-def queue_run_fifo_multi(queue: str, cluster: str, timeout:int=10):
+def queue_run_fifo_multi(queue: str, cluster: str, timeout:int=10,
+                         credentials: HTTPBasicCredentials = Depends(security)):
     # queue run fifo_multi QUEUE [--experiment=EXPERIMENT] [--hosts=HOSTS] [--hostfile=HOSTFILE] [--timeout=TIMEOUT]
     p = subprocess.Popen([f'cms queue run fifo_multi {queue} --hostfile={cluster} --timeout={timeout}'], shell=True)
-    return {'result': f'started fifo scheduler: pid {p.pid}'}
+    return {'result': f'started fifo_multi scheduler: pid {p.pid}'}
 
 @app.put("/queue/{queue}/reset",response_class=PlainTextResponse)
-def queue_reset(queue: str, name: str=None, status:str=None):
+def queue_reset(queue: str, name: str=None, status:str=None,
+                credentials: HTTPBasicCredentials = Depends(security)):
     #queue reset QUEUE [--experiment=EXPERIMENT] [--name=NAME] [--status=STATUS]
     queue = Queue(name=queue)
     names = Parameter.expand(name)
@@ -122,7 +144,8 @@ def queue_reset(queue: str, name: str=None, status:str=None):
     return result
 
 @app.post("/cluster/")
-def cluster_create(name: str,experiment:str=None):
+def cluster_create(name: str,experiment:str=None,
+                   credentials: HTTPBasicCredentials = Depends(security)):
     if name is None:
         result = "Please provide a cluster name"
     cluster = Cluster(name=name,experiment=experiment)
@@ -130,14 +153,15 @@ def cluster_create(name: str,experiment:str=None):
     return cluster
 
 @app.get("/cluster/")
-def cluster_list():
+def cluster_list(credentials: HTTPBasicCredentials = Depends(security)):
     r = Shell.run('ls ./experiment | grep cluster.yaml')
     r = r.splitlines()
     return {"clusters": r}
 
 @app.post("/cluster/{cluster}", response_class=PlainTextResponse)
 def cluster_add_host(cluster: str, id: str, name: str,user: str,ip: str=None, \
-                  status: str=None, gpu: int=None, pyenv: str=None):
+                  status: str=None, gpu: int=None, pyenv: str=None,
+                     credentials: HTTPBasicCredentials = Depends(security)):
     cluster = Cluster(name=cluster)
     ids = Parameter.expand(id)
     host_args = {}
@@ -156,24 +180,28 @@ def cluster_add_host(cluster: str, id: str, name: str,user: str,ip: str=None, \
     return cluster.info()
 
 @app.get("/cluster/{cluster}")
-def cluster_get(cluster: str, experiment: str=None):
+def cluster_get(cluster: str, experiment: str=None,
+                credentials: HTTPBasicCredentials = Depends(security)):
     cluster = Cluster(name=cluster)
     #return {"cluster": cluster.to_dict()}
     return cluster
 
 @app.get("/cluster/{cluster}/info", response_class=PlainTextResponse)
-def cluster_info(cluster: str, experiment: str=None):
+def cluster_info(cluster: str, experiment: str=None,
+                 credentials: HTTPBasicCredentials = Depends(security)):
     cluster = Cluster(name=cluster)
     return cluster.info()
 
 @app.get("/cluster/{cluster}/id/{id}")
-def cluster_get_host(cluster: str, id: str):
+def cluster_get_host(cluster: str, id: str,
+                     credentials: HTTPBasicCredentials = Depends(security)):
     cluster = Cluster(name=cluster)
     host = cluster.get(id)
     return host
 
 @app.delete("/cluster/{cluster}/id/{id}", response_class=PlainTextResponse)
-def cluster_delete_host(cluster: str, id: str):
+def cluster_delete_host(cluster: str, id: str,
+                        credentials: HTTPBasicCredentials = Depends(security)):
     cluster = Cluster(name=cluster)
     ids = Parameter.expand(id)
     for host_id in ids:
@@ -181,7 +209,8 @@ def cluster_delete_host(cluster: str, id: str):
     return cluster.info()
 
 @app.put("/cluster/{cluster}/id/{id}/activate", response_class=PlainTextResponse)
-def cluster_activate_host(cluster: str, id: str):
+def cluster_activate_host(cluster: str, id: str,
+                          credentials: HTTPBasicCredentials = Depends(security)):
     cluster = Cluster(name=cluster)
     ids = Parameter.expand(id)
     for host_id in ids:
@@ -193,7 +222,8 @@ def cluster_activate_host(cluster: str, id: str):
     return cluster.info()
 
 @app.put("/cluster/{cluster}/id/{id}/deactivate", response_class=PlainTextResponse)
-def cluster_deactivate_host(cluster: str, id: str):
+def cluster_deactivate_host(cluster: str, id: str,
+                            credentials: HTTPBasicCredentials = Depends(security)):
     cluster = Cluster(name=cluster)
     ids = Parameter.expand(id)
     for host_id in ids:
@@ -205,7 +235,8 @@ def cluster_deactivate_host(cluster: str, id: str):
     return cluster.info()
 
 @app.put("/cluster/{cluster}/id/{id}/set", response_class=PlainTextResponse)
-def cluster_set_host(cluster: str, id: str, key: str, value: str):
+def cluster_set_host(cluster: str, id: str, key: str, value: str,
+                     credentials: HTTPBasicCredentials = Depends(security)):
     cluster = Cluster(name=cluster)
     ids = Parameter.expand(id)
     for host_id in ids:
