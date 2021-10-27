@@ -115,7 +115,8 @@ class JobCommand(PluginCommand):
             "max_parallel",
             "timeout",
             "key",
-            "value"
+            "value",
+            "cluster"
         )
 
         variables = Variables()
@@ -126,27 +127,27 @@ class JobCommand(PluginCommand):
         ids = Parameter.expand(arguments['--id'])
         #print(f'ids is {ids}')
         #print(f'EXPERIMENT is {arguments.experiment}')
-        #print(f'CLUSTER is {arguments.CLUSTER}')
+        #print(f'CLUSTER is {arguments.cluster}')
 
-        if arguments.CLUSTER is None:
-            arguments.CLUSTER = 'default'
+        if arguments.cluster is None:
+            arguments.cluster = 'default'
 
         if not arguments.create:
-            cluster_file_name = arguments.CLUSTER
+            cluster_file_name = arguments.cluster
             if '-cluster.yaml' not in cluster_file_name:
-                cluster_file_name = arguments.CLUSTER + '-cluster.yaml'
+                cluster_file_name = arguments.cluster + '-cluster.yaml'
 
-            if arguments.CLUSTER and arguments.experiment is not None:
+            if arguments.cluster and arguments.experiment is not None:
                 file = os.path.join(arguments.experiment, cluster_file_name)
                 if os.path.exists(file):
-                    cluster = Cluster(name=arguments.CLUSTER,experiment=arguments.experiment)
+                    cluster = Cluster(name=arguments.cluster,experiment=arguments.experiment)
                 else:
                     Console.error(f'Cluster: {file} does not exist')
                     return
-            elif arguments.CLUSTER:
+            elif arguments.cluster:
                 file = os.path.join('./experiment', cluster_file_name)
                 if os.path.exists(file):
-                    cluster = Cluster(name=arguments.CLUSTER)
+                    cluster = Cluster(name=arguments.cluster)
                 else:
                     Console.error(f'Cluster: {file} does not exist')
                     return
@@ -158,9 +159,9 @@ class JobCommand(PluginCommand):
 
         if arguments.create:
             if arguments.experiment:
-                cluster = Cluster(name=arguments.CLUSTER, experiment=arguments.experiment)
+                cluster = Cluster(name=arguments.cluster, experiment=arguments.experiment)
             else:
-                cluster = Cluster(name=arguments.CLUSTER)
+                cluster = Cluster(name=arguments.cluster)
         elif arguments.list:
             print(cluster.info(order=['id','name','user','status','gpu','pyenv','ip','max_jobs_allowed']))
         elif arguments.add:

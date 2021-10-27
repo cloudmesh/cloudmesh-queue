@@ -121,7 +121,8 @@ class JobCommand(PluginCommand):
             "hostfile",
             "max_parallel",
             "timeout",
-            "port"
+            "port",
+            "queue"
         )
 
         variables = Variables()
@@ -133,26 +134,27 @@ class JobCommand(PluginCommand):
 
         #print(f'EXPERIMENT is {arguments.experiment}')
         #print(f'QUEUE is {arguments.QUEUE}')
+       # print(f'queue is {arguments.queue}')
 
-        if arguments.QUEUE is None:
-            arguments.QUEUE = 'default'
+        if arguments.queue is None:
+            arguments.queue = 'default'
 
         if not arguments.create and not arguments["--service"]:
-            queue_file_name = arguments.QUEUE
+            queue_file_name = arguments.queue
             if '-queue.yaml' not in queue_file_name:
-                queue_file_name = arguments.QUEUE + '-queue.yaml'
+                queue_file_name = arguments.queue + '-queue.yaml'
 
-            if arguments.QUEUE and arguments.experiment is not None:
+            if arguments.queue and arguments.experiment is not None:
                 file = os.path.join(arguments.experiment, queue_file_name)
                 if os.path.exists(file):
-                    queue = Queue(name=arguments.QUEUE,experiment=arguments.experiment)
+                    queue = Queue(name=arguments.queue,experiment=arguments.experiment)
                 else:
                     Console.error(f'Queue: {file} does not exist')
                     return
-            elif arguments.QUEUE:
+            elif arguments.queue:
                 file = os.path.join('./experiment', queue_file_name)
                 if os.path.exists(file):
-                    queue = Queue(name=arguments.QUEUE)
+                    queue = Queue(name=arguments.queue)
                 else:
                     Console.error(f'Queue: {file} does not exist')
                     return
@@ -165,9 +167,9 @@ class JobCommand(PluginCommand):
 
         if arguments.create:
             if arguments.experiment:
-                queue = Queue(name=arguments.QUEUE,experiment=arguments.experiment)
+                queue = Queue(name=arguments.queue,experiment=arguments.experiment)
             else:
-                queue = Queue(name=arguments.QUEUE)
+                queue = Queue(name=arguments.queue)
         elif arguments.info:
             print(queue.info())
         elif arguments.refresh:
@@ -202,7 +204,7 @@ class JobCommand(PluginCommand):
             else:
                 timeout=10
 
-            scheduler = SchedulerFIFO(name=arguments.QUEUE, experiment=arguments.experiment,
+            scheduler = SchedulerFIFO(name=arguments.queue, experiment=arguments.experiment,
                                       max_parallel=int(arguments.max_parallel),timeout_min=timeout)
 
             ran_jobs = scheduler.run()
@@ -242,7 +244,7 @@ class JobCommand(PluginCommand):
                     Console.warning(f"No free hosts found in cluster {filename}")
                     return
 
-            scheduler = SchedulerFIFOMultiHost(name=arguments.QUEUE, experiment=arguments.experiment,
+            scheduler = SchedulerFIFOMultiHost(name=arguments.queue, experiment=arguments.experiment,
                                                hosts=hosts, timeout_min=timeout)
             ran_jobs = scheduler.run()
             Console.info(f"Ran Jobs: {ran_jobs}")
@@ -256,13 +258,9 @@ class JobCommand(PluginCommand):
 
         elif arguments["--service"] and arguments.start:
             if arguments.port is None:
-                # TODO remove --reload when no longer in development
-                # TODO pass in user pass for basic auth
-                os.system("cd ~/cm/cloudmesh-queue; uvicorn cloudmesh.queue.service.server:app --reload")
+                os.system("cd ~/cm/cloudmesh-queue; uvicorn cloudmesh.queue.service.server:app")
             else:
-                # TODO remove --reload when no longer in development
-                # TODO pass in user pass for basic auth
-                os.system(f"cd ~/cm/cloudmesh-queue; uvicorn cloudmesh.queue.service.server:app --reload --port={arguments.port}")
+                os.system(f"cd ~/cm/cloudmesh-queue; uvicorn cloudmesh.queue.service.server:app --port={arguments.port}")
         elif arguments["--service"] and arguments.info:
             if arguments.port is not None:
                 port =":" + arguments.port

@@ -47,12 +47,14 @@ app = FastAPI(
 security = HTTPBasic()
 
 # comment out during dev
-user = getpass(prompt='Please enter the username for HTTP Basic Auth: ')
-password = getpass(prompt='Please enter the password for HTTP Basic Auth: ')
+#user = getpass(prompt='Please enter the username for HTTP Basic Auth: ')
+#password = getpass(prompt='Please enter the password for HTTP Basic Auth: ')
 
 # uncomment during dev
-# user = "user"
-# password = "password"
+user = "user"
+password = "password"
+
+running_queues = []
 
 def get_current_username(credentials: HTTPBasicCredentials = Depends(security)):
     correct_username = secrets.compare_digest(credentials.username, user)
@@ -111,6 +113,31 @@ def list_queues(experiment:str=None,credentials: HTTPBasicCredentials = Depends(
         raise HTTPException(status_code=404, detail=f"Directory {experiment} does not exist")
     r = r.splitlines()
     return {"queues": r}
+
+@app.put("/queue/ran",response_class=PlainTextResponse)
+def refresh_and_list_ran_queues(credentials: HTTPBasicCredentials = Depends(security)):
+    response = ""
+    for queue, experiment, pid in running_queues:
+        print(f'queue {queue} experiment {experiment} pid {pid}')
+        keys = ["pid", "cmd"]
+        keys_str = ",".join(keys)
+        command = f"ps --format {keys_str} {pid}"
+        out = Shell.run(command)
+        print(out)
+        if pid in out:
+            response += f"Queue: {queue} Experiment: {experiment} STATUS:Running\n"
+        else:
+            response += f"Queue: {queue} Experiment: {experiment} STATUS:Not Running\n"
+            running_queues.remove((queue,experiment,pid))
+        try:
+            queue = __get_queue(queue=queue, experiment=experiment)
+            queue.refresh()
+            response += queue.info() + '\n\n'
+        except:
+            response += f"Could not get info for Queue: {queue} Experiment: {experiment}. It may have been deleted."
+    if response == "":
+        response = "No ran queues."
+    return response
 
 @app.get("/queue/{queue}")
 def queue_get(queue: str, experiment: str=None, credentials: HTTPBasicCredentials = Depends(security)):
@@ -177,11 +204,11 @@ def queue_run_fifo(queue: str, max_parallel: int, experiment: str = None, timeou
     #queue run fifo QUEUE [--experiment=EXPERIMENT] --max_parallel=MAX_PARALLEL [--timeout=TIMEOUT]
     queue_obj = __get_queue(queue=queue, experiment=experiment)
     if experiment is not None:
-        p = subprocess.Popen([f'cms queue run fifo {queue} --experiment={experiment}'
+        p = subprocess.Popen([f'cms queue run fifo --queue={queue} --experiment={experiment}'
                               f' --max_parallel={max_parallel} --timeout={timeout}'],
                              shell=True)
     else:
-        p = subprocess.Popen([f'cms queue run fifo {queue} --max_parallel={max_parallel} --timeout={timeout}'], shell=True)
+        p = subprocess.Popen([f'cms queue run fifo --queue={queue} --max_parallel={max_parallel} --timeout={timeout}'], shell=True)
     return {'result': f'started fifo scheduler: pid {p.pid}'}
 
 @app.put("/queue/{queue}/run_fifo_multi")
@@ -191,10 +218,12 @@ def queue_run_fifo_multi(queue: str, cluster: str, experiment: str = None, timeo
     queue_obj = __get_queue(queue=queue, experiment=experiment)
     cluster_obj = __get_cluster(cluster=cluster, experiment=experiment)
     if experiment is not None:
-        p = subprocess.Popen([f'cms queue run fifo_multi {queue} --experiment={experiment} '
+        p = subprocess.Popen([f'cms queue run fifo_multi --queue={queue} --experiment={experiment} '
                               f'--hostfile={cluster} --timeout={timeout}'], shell=True)
+        running_queues.append((queue,experiment, str(p.pid)))
     else:
-        p = subprocess.Popen([f'cms queue run fifo_multi {queue} --hostfile={cluster} --timeout={timeout}'], shell=True)
+        p = subprocess.Popen([f'cms queue run fifo_multi --queue={queue} --hostfile={cluster} --timeout={timeout}'], shell=True)
+        running_queues.append((queue,experiment, str(p.pid)))
     return {'result': f'started fifo_multi scheduler: pid {p.pid}'}
 
 @app.put("/queue/{queue}/reset",response_class=PlainTextResponse)
