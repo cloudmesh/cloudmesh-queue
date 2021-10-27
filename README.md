@@ -7,6 +7,16 @@ and as a rest service with interactive documentation.
 
 ![](https://github.com/cloudmesh/cloudmesh-queue/raw/main/images/rest.png)
 
+## Installation
+
+You can get the cloudmesh queue package using the `cloudmesh-installer`.
+
+```
+$ mkdir cm
+$ cd cm
+$ cloudmesh-installer get queue
+```
+
 ## Cluster
 
 A cluster provides a yaml representation of a set of hosts
