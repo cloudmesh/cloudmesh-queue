@@ -47,12 +47,12 @@ app = FastAPI(
 security = HTTPBasic()
 
 # comment out during dev
-#user = getpass(prompt='Please enter the username for HTTP Basic Auth: ')
-#password = getpass(prompt='Please enter the password for HTTP Basic Auth: ')
+user = getpass(prompt='Please enter the username for HTTP Basic Auth: ')
+password = getpass(prompt='Please enter the password for HTTP Basic Auth: ')
 
 # uncomment during dev
-user = "user"
-password = "password"
+#user = "user"
+#password = "password"
 
 running_queues = []
 
