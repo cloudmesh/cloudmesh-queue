@@ -24,17 +24,17 @@ A cluster provides a yaml representation of a set of hosts
 We have the following cluster commands implemented.
 
 ```
-            cluster create CLUSTER [--experiment=EXPERIMENT]
-            cluster list CLUSTER [--experiment=EXPERIMENT]
-            cluster add CLUSTER [--experiment=EXPERIMENT] --id=ID --name=NAME --user=USER
+            cluster create [--cluster=CLUSTER]  [--experiment=EXPERIMENT]
+            cluster list [--cluster=CLUSTER]  [--experiment=EXPERIMENT]
+            cluster add [--cluster=CLUSTER]  [--experiment=EXPERIMENT] --id=ID --name=NAME --user=USER
                                 [--ip=IP]
                                 [--status=STATUS]
                                 [--gpu=GPU]
                                 [--pyenv=PYENV]
-            cluster delete CLUSTER [--experiment=EXPERIMENT] --id=ID
-            cluster activate CLUSTER [--experiment=EXPERIMENT] --id=ID
-            cluster deactivate CLUSTER [--experiment=EXPERIMENT] --id=ID
-            cluster set CLUSTER [--experiment=EXPERIMENT] --id=ID --key=KEY --value=VALUE
+            cluster delete [--cluster=CLUSTER]  [--experiment=EXPERIMENT] --id=ID
+            cluster activate [--cluster=CLUSTER]  [--experiment=EXPERIMENT] --id=ID
+            cluster deactivate [--cluster=CLUSTER]  [--experiment=EXPERIMENT] --id=ID
+            cluster set [--cluster=CLUSTER]  [--experiment=EXPERIMENT] --id=ID --key=KEY --value=VALUE
 ```
 
 ## Create a Cluster
@@ -42,10 +42,11 @@ We have the following cluster commands implemented.
 To create an empty cluster run:
 
 ```
-cluster create CLUSTER [--experiment=EXPERIMENT]
+cluster create [--cluster=CLUSTER]  [--experiment=EXPERIMENT]
 ```
 
 Here `CLUSTER` is the name of your cluster and `experiment` is the path of the directory that it should be stored in. If you do not include the string `-cluster.yaml` in your `CLUSTER` argument, it wil be automatically added for you. If you do not include an `experiment` argument, the directory `./experiment` will be assumed.
+The default name is `default`.
 
 Example:
 
@@ -60,7 +61,7 @@ Hosts are a means of execution given a host `name` and `user`. Each host represe
 Add hosts to a cluster with:
 
 ```
-cluster add CLUSTER [--experiment=EXPERIMENT] --id=ID --name=NAME --user=USER
+cluster add [--cluster=CLUSTER]  [--experiment=EXPERIMENT] --id=ID --name=NAME --user=USER
                                 [--ip=IP]
                                 [--status=STATUS]
                                 [--gpu=GPU]
@@ -96,7 +97,7 @@ INFO: Adding host host4 to cluster a
 Lists Hosts in a cluster with 
 
 ```
-cluster list CLUSTER [--experiment=EXPERIMENT]
+cluster list [--cluster=CLUSTER]  [--experiment=EXPERIMENT]
 ```
 
 Example:
@@ -119,7 +120,7 @@ cms cluster list a
 Delete Hosts in a Cluster with
 
 ```
-cluster delete CLUSTER [--experiment=EXPERIMENT] --id=ID
+cluster delete [--cluster=CLUSTER]  [--experiment=EXPERIMENT] --id=ID
 ```
 
 Example:
@@ -134,8 +135,8 @@ INFO: Deleting hosts: ['host3', 'host4']
 Activate or deactivate hsots in a cluster with
 
 ```
-cluster activate CLUSTER [--experiment=EXPERIMENT] --id=ID
-cluster deactivate CLUSTER [--experiment=EXPERIMENT] --id=ID
+cluster activate [--cluster=CLUSTER]  [--experiment=EXPERIMENT] --id=ID
+cluster deactivate [--cluster=CLUSTER]  [--experiment=EXPERIMENT] --id=ID
 ```
 
 Some schedulers will only consider hosts in an `active` status. Other statuses will not be scheduled.
@@ -145,7 +146,7 @@ Some schedulers will only consider hosts in an `active` status. Other statuses w
 To set any host attribute in a cluster use.
 
 ```
-cluster set CLUSTER [--experiment=EXPERIMENT] --id=ID --key=KEY --value=VALUE
+cluster set [--cluster=CLUSTER]  [--experiment=EXPERIMENT] --id=ID --key=KEY --value=VALUE
 ```
 
 Example:
@@ -159,10 +160,10 @@ INFO: Setting host: host1 key: name value: red02 in cluster a
 We have the following queue commands implemented.
 
 ```
-            queue create QUEUE [--experiment=EXPERIMENT]
-            queue list QUEUE [--experiment=EXPERIMENT]
-            queue refresh QUEUE [--experiment=EXPERIMENT]
-            queue add QUEUE [--experiment=EXPERIMENT] --name=NAME --command=COMMAND
+            queue create [queue=QUEUE] [--experiment=EXPERIMENT]
+            queue list [queue=QUEUE] [--experiment=EXPERIMENT]
+            queue refresh [queue=QUEUE] [--experiment=EXPERIMENT]
+            queue add [queue=QUEUE] [--experiment=EXPERIMENT] --name=NAME --command=COMMAND
                     [--input=INPUT]
                     [--output=OUTPUT]
                     [--status=STATUS]
@@ -172,10 +173,10 @@ We have the following queue commands implemented.
                     [--shell=SHELL]
                     [--log=LOG]
                     [--pyenv=PYENV]
-            queue delete QUEUE [--experiment=EXPERIMENT] --name=NAME
-            queue run fifo QUEUE [--experiment=EXPERIMENT] --max_parallel=MAX_PARALLEL [--timeout=TIMEOUT]
-            queue run fifo_multi QUEUE [--experiment=EXPERIMENT] --hosts=HOSTS [--timeout=TIMEOUT]
-            queue reset QUEUE [--experiment=EXPERIMENT] [--name=NAME] [--status=STATUS]
+            queue delete [queue=QUEUE] [--experiment=EXPERIMENT] --name=NAME
+            queue run fifo [queue=QUEUE] [--experiment=EXPERIMENT] --max_parallel=MAX_PARALLEL [--timeout=TIMEOUT]
+            queue run fifo_multi [queue=QUEUE] [--experiment=EXPERIMENT] --hosts=HOSTS [--timeout=TIMEOUT]
+            queue reset [queue=QUEUE] [--experiment=EXPERIMENT] [--name=NAME] [--status=STATUS]
 ```
 
 ## Create a Queue
@@ -183,7 +184,7 @@ We have the following queue commands implemented.
 To create an empty queue run:
 
 ```
-queue create QUEUE [--experiment=EXPERIMENT]
+queue create [queue=QUEUE] [--experiment=EXPERIMENT]
 ```
 
 Here `QUEUE` is the name of your queue and `experiment` is the path of the directory that its jobs should be stored in. If you do not include the string `-queue.yaml` in your `QUEUE` argument, it wil be automatically added for you. If you do not include an `experiment` argument, the directory `./experiment` will be assumed.
@@ -198,7 +199,7 @@ queue create a
 Add jobs to a queue with:
 
 ```
-queue add QUEUE [--experiment=EXPERIMENT] --name=NAME --command=COMMAND
+queue add [queue=QUEUE] [--experiment=EXPERIMENT] --name=NAME --command=COMMAND
                     [--input=INPUT]
                     [--output=OUTPUT]
                     [--status=STATUS]
@@ -251,7 +252,7 @@ INFO: Adding job job10 to queue a
 To see a summary of the jobs in a queue user hte list command.
 
 ```
-queue list QUEUE [--experiment=EXPERIMENT]
+queue list [queue=QUEUE] [--experiment=EXPERIMENT]
 ```
 
 Example:
@@ -280,7 +281,7 @@ queue list a
 Delete a job using delete.
 
 ```
-queue delete QUEUE [--experiment=EXPERIMENT] --name=NAME
+queue delete [queue=QUEUE] [--experiment=EXPERIMENT] --name=NAME
 ```
 
 The `name` argument is a single job or an expandable list of names. The job will be killed if still running on a host (if the host is accessible), and deleted from a queue.
@@ -490,7 +491,7 @@ If you want to rerun jobs in a queue or recover from a crash you will need to re
 >WARNING: if you simply replace a job using `queue add` or rerun a job without a `reset` you will not get the result you expect, as the files from the last run will still be present.
 
 ```
-queue reset QUEUE [--experiment=EXPERIMENT] [--name=NAME] [--status=STATUS]
+queue reset [queue=QUEUE] [--experiment=EXPERIMENT] [--name=NAME] [--status=STATUS]
 ```
 
 If you do not specify a `name` or `status`  argument. Then all jobs with a state other than `end` will be reset.
@@ -519,7 +520,7 @@ job8 	 old_status:end 	 new_state:ready
 If your manager crashed during the execution of a queue, you can get the latest status from the workers using a refresh.
 
 ```
-queue refresh QUEUE [--experiment=EXPERIMENT]
+queue refresh [queue=QUEUE] [--experiment=EXPERIMENT]
 ```
 
 Example:

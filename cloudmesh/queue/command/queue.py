@@ -28,10 +28,10 @@ class JobCommand(PluginCommand):
         ::
 
           Usage:
-            queue create QUEUE [--experiment=EXPERIMENT]
-            queue info QUEUE [--experiment=EXPERIMENT]
-            queue refresh QUEUE [--experiment=EXPERIMENT]
-            queue add QUEUE [--experiment=EXPERIMENT] --name=NAME --command=COMMAND
+            queue create [--queue=QUEUE] [--experiment=EXPERIMENT]
+            queue info [--queue=QUEUE] [--experiment=EXPERIMENT]
+            queue refresh [--queue=QUEUE] [--experiment=EXPERIMENT]
+            queue add [--queue=QUEUE] [--experiment=EXPERIMENT] --name=NAME --command=COMMAND
                     [--input=INPUT]
                     [--output=OUTPUT]
                     [--status=STATUS]
@@ -41,10 +41,10 @@ class JobCommand(PluginCommand):
                     [--shell=SHELL]
                     [--log=LOG]
                     [--pyenv=PYENV]
-            queue delete QUEUE [--experiment=EXPERIMENT] --name=NAME
-            queue run fifo QUEUE [--experiment=EXPERIMENT] --max_parallel=MAX_PARALLEL [--timeout=TIMEOUT]
-            queue run fifo_multi QUEUE [--experiment=EXPERIMENT] [--hosts=HOSTS] [--hostfile=HOSTFILE] [--timeout=TIMEOUT]
-            queue reset QUEUE [--experiment=EXPERIMENT] [--name=NAME] [--status=STATUS]
+            queue delete [--queue=QUEUE] [--experiment=EXPERIMENT] --name=NAME
+            queue run fifo [--queue=QUEUE] [--experiment=EXPERIMENT] --max_parallel=MAX_PARALLEL [--timeout=TIMEOUT]
+            queue run fifo_multi [--queue=QUEUE] [--experiment=EXPERIMENT] [--hosts=HOSTS] [--hostfile=HOSTFILE] [--timeout=TIMEOUT]
+            queue reset [--queue=QUEUE] [--experiment=EXPERIMENT] [--name=NAME] [--status=STATUS]
             queue --service start [--port=PORT]
             queue --service info [--port=PORT]
 
@@ -133,6 +133,9 @@ class JobCommand(PluginCommand):
 
         #print(f'EXPERIMENT is {arguments.experiment}')
         #print(f'QUEUE is {arguments.QUEUE}')
+
+        if arguments.QUEUE is None:
+            arguments.QUEUE = 'default'
 
         if not arguments.create and not arguments["--service"]:
             queue_file_name = arguments.QUEUE

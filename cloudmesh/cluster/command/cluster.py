@@ -28,17 +28,17 @@ class JobCommand(PluginCommand):
         ::
 
           Usage:
-            cluster create CLUSTER [--experiment=EXPERIMENT]
-            cluster list CLUSTER [--experiment=EXPERIMENT]
-            cluster add CLUSTER [--experiment=EXPERIMENT] --id=ID --name=NAME --user=USER
+            cluster create [--cluster=CLUSTER] [--experiment=EXPERIMENT]
+            cluster list [--cluster=CLUSTER]  [--experiment=EXPERIMENT]
+            cluster add [--cluster=CLUSTER]  [--experiment=EXPERIMENT] --id=ID --name=NAME --user=USER
                                 [--ip=IP]
                                 [--status=STATUS]
                                 [--gpu=GPU]
                                 [--pyenv=PYENV]
-            cluster delete CLUSTER [--experiment=EXPERIMENT] --id=ID
-            cluster activate CLUSTER [--experiment=EXPERIMENT] --id=ID
-            cluster deactivate CLUSTER [--experiment=EXPERIMENT] --id=ID
-            cluster set CLUSTER [--experiment=EXPERIMENT] --id=ID --key=KEY --value=VALUE
+            cluster delete [--cluster=CLUSTER]  [--experiment=EXPERIMENT] --id=ID
+            cluster activate [--cluster=CLUSTER]  [--experiment=EXPERIMENT] --id=ID
+            cluster deactivate [--cluster=CLUSTER]  [--experiment=EXPERIMENT] --id=ID
+            cluster set [--cluster=CLUSTER]  [--experiment=EXPERIMENT] --id=ID --key=KEY --value=VALUE
 
 
           This command is used to create a yaml file representation of a group of hosts
@@ -127,6 +127,9 @@ class JobCommand(PluginCommand):
         #print(f'ids is {ids}')
         #print(f'EXPERIMENT is {arguments.experiment}')
         #print(f'CLUSTER is {arguments.CLUSTER}')
+
+        if arguments.CLUSTER is None:
+            arguments.CLUSTER = 'default'
 
         if not arguments.create:
             cluster_file_name = arguments.CLUSTER
