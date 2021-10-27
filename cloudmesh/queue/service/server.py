@@ -118,23 +118,25 @@ def list_queues(experiment:str=None,credentials: HTTPBasicCredentials = Depends(
 def refresh_and_list_ran_queues(credentials: HTTPBasicCredentials = Depends(security)):
     response = ""
     for queue, experiment, pid in running_queues:
-        print(f'queue {queue} experiment {experiment} pid {pid}')
+        if experiment is None:
+            experiment_resolved = 'experiment'
+        else:
+            experiment_resolved = experiment
         keys = ["pid", "cmd"]
         keys_str = ",".join(keys)
         command = f"ps --format {keys_str} {pid}"
         out = Shell.run(command)
-        print(out)
-        if pid in out:
-            response += f"Queue: {queue} Experiment: {experiment} STATUS:Running\n"
+        if pid in out and f'queue={queue}' in out:
+            response += f"Queue: {queue} Experiment: {experiment_resolved} STATUS:Running\n"
         else:
-            response += f"Queue: {queue} Experiment: {experiment} STATUS:Not Running\n"
+            response += f"Queue: {queue} Experiment: {experiment_resolved} STATUS:Not Running\n"
             running_queues.remove((queue,experiment,pid))
         try:
             queue = __get_queue(queue=queue, experiment=experiment)
             queue.refresh()
             response += queue.info() + '\n\n'
         except:
-            response += f"Could not get info for Queue: {queue} Experiment: {experiment}. It may have been deleted."
+            response += f"Could not get info for Queue: {queue} Experiment: {experiment_resolved}. It may have been deleted."
     if response == "":
         response = "No ran queues."
     return response
