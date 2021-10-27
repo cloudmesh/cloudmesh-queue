@@ -2,6 +2,7 @@ import subprocess
 import secrets
 import os
 
+from getpass import getpass
 from fastapi import FastAPI
 from fastapi.responses import PlainTextResponse
 from fastapi.security import HTTPBasic, HTTPBasicCredentials
@@ -31,9 +32,17 @@ app = FastAPI(
 
 security = HTTPBasic()
 
+# comment out during dev
+user = getpass(prompt='Please enter the username for HTTP Basic Auth: ')
+password = getpass(prompt='Please enter the password for HTTP Basic Auth: ')
+
+# uncomment during dev
+# user = "user"
+# password = "password"
+
 def get_current_username(credentials: HTTPBasicCredentials = Depends(security)):
-    correct_username = secrets.compare_digest(credentials.username, "user")
-    correct_password = secrets.compare_digest(credentials.password, "password")
+    correct_username = secrets.compare_digest(credentials.username, user)
+    correct_password = secrets.compare_digest(credentials.password, password)
     if not (correct_username and correct_password):
         raise HTTPException(
             status_code=status.HTTP_401_UNAUTHORIZED,

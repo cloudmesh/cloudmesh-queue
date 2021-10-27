@@ -685,6 +685,7 @@ Successful completion of the command start the rest server on the local host at 
 ### Service Info
 
 The service info command automatically launches the interactive documentation of the REST service in your web browser.
+You will be prompted to enter a username and password that will be used for HTTP basic authentication for all rest calls.
 
 ```
 queue --service info [--port=PORT]
