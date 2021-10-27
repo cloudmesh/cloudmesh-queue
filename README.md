@@ -653,6 +653,7 @@ INFO: Completed Jobs: ['job0', 'job1', 'job2', 'job3', 'job4', 'job5', 'job6', '
 ## Service
 
 Cloudmesh Queue provides a REST service implementation of the `Queue` and `Cluster`.  The provided commands allow you to run a REST server and interact with them via interactive documentation and HTTP.
+It provides a Basic HTTP authentication scheme to authorize users.
 
 ### Commands
 
