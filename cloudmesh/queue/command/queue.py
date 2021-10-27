@@ -255,11 +255,11 @@ class JobCommand(PluginCommand):
             if arguments.port is None:
                 # TODO remove --reload when no longer in development
                 # TODO pass in user pass for basic auth
-                os.system("uvicorn cloudmesh.queue.service.server:app --reload")
+                os.system("cd ~/cm/cloudmesh-queue; uvicorn cloudmesh.queue.service.server:app --reload")
             else:
                 # TODO remove --reload when no longer in development
                 # TODO pass in user pass for basic auth
-                os.system(f"uvicorn cloudmesh.queue.service.server:app --reload --port={arguments.port}")
+                os.system(f"cd ~/cm/cloudmesh-queue; uvicorn cloudmesh.queue.service.server:app --reload --port={arguments.port}")
         elif arguments["--service"] and arguments.info:
             if arguments.port is not None:
                 port =":" + arguments.port
