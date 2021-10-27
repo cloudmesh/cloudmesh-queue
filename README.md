@@ -2,7 +2,10 @@
 
 Cloudmesh Queue is a job queuing and scheduling framework. It allows
 users to leverage all the available compute resources defined in a cluster to perform
-tasks which require maximum compute power and execution time.
+tasks which require maximum compute power and execution time. It is implemented as both as cmd line program
+and as a rest service.
+
+![](https://github.com/cloudmesh/cloudmesh-queue/raw/main/images/rest.png)
 
 ## Cluster
 
@@ -156,8 +159,8 @@ We have the following queue commands implemented.
                     [--log=LOG]
                     [--pyenv=PYENV]
             queue delete QUEUE [--experiment=EXPERIMENT] --name=NAME
-            queue run fifo QUEUE [--experiment=EXPERIMENT] --max_parallel=MAX_PARALLEL
-            queue run fifo_multi QUEUE [--experiment=EXPERIMENT] --hosts=HOSTS
+            queue run fifo QUEUE [--experiment=EXPERIMENT] --max_parallel=MAX_PARALLEL [--timeout=TIMEOUT]
+            queue run fifo_multi QUEUE [--experiment=EXPERIMENT] --hosts=HOSTS [--timeout=TIMEOUT]
             queue reset QUEUE [--experiment=EXPERIMENT] [--name=NAME] [--status=STATUS]
 ```
 
@@ -322,6 +325,8 @@ This is a simple scheduler that is designed to work on a single host. It execute
 
 `max_parallel` is the maximum number of parallel jobs that will be executed by the host.
 
+`timeout` is the time that will consider a host as dead and mark the job as crashed. The default is 10 minutes.
+
 **Prerequisite:** All jobs intended to be run must be assigned a `user` and a `host`. Those jobs not assigned a `user` and `host` will be skipped. 
 
 **Example**
@@ -397,6 +402,8 @@ This queue is designed to assign a queue of jobs to a list of available hosts in
 #### Usage
 
 **Input:** A queue yaml file, a `hosts` list of Host() objects.
+
+`timeout` is the time that will consider a host as dead and mark the job as crashed. The default is 10 minutes.
 
 **Example:**
 
@@ -627,3 +634,57 @@ INFO: Running Jobs: ['job5', 'job6', 'job7', 'job8', 'job9', 'job10']
 INFO: Ran Jobs: ['job0', 'job1', 'job2', 'job3', 'job4', 'job5', 'job6', 'job7', 'job8', 'job9', 'job10']
 INFO: Completed Jobs: ['job0', 'job1', 'job2', 'job3', 'job4', 'job5', 'job6', 'job7', 'job8', 'job9', 'job10']
 ```
+
+## Service
+
+Cloudmesh Queue provides a REST service implementation of the `Queue` and `Cluster`.  The provided commands allow you to run a REST server and interact with them via interactive documentation and HTTP.
+
+### Commands
+
+Below are the service commands.
+
+```
+            queue --service start [--port=PORT]
+            queue --service info [--port=PORT]
+```
+
+### Service Start
+
+Start the REST service wit the below command.
+
+```
+queue --service start [--port=PORT]
+```
+
+`port` Allows you to manually set the port. The default value is 8000.
+
+**Example:**
+
+```
+cms queue --service start --port=8000
+```
+
+Successful completion of the command start the rest server on the local host at 127.0.0.1:8000.
+
+### Service Info
+
+The service info command automatically launches the interactive documentation of the REST service in your web browser.
+
+```
+queue --service info [--port=PORT]
+```
+
+**Example:**
+
+```
+cms queue --service info [--port=8000]
+```
+
+`port` Allows you to manually set the port if the default was not used.
+
+At this point the interactive web documents will be opened in your web browser at the address [127.0.0.1:8000/docs](127.0.0.1:8000/docs).
+
+Below is an example image of the interactive documentation.
+
+![](https://github.com/cloudmesh/cloudmesh-queue/raw/main/images/rest.png)
+
