@@ -207,8 +207,10 @@ def queue_run_fifo(queue: str, max_parallel: int, experiment: str = None, timeou
         p = subprocess.Popen([f'cms queue run fifo --queue={queue} --experiment={experiment}'
                               f' --max_parallel={max_parallel} --timeout={timeout}'],
                              shell=True)
+        running_queues.append((queue, experiment, str(p.pid)))
     else:
         p = subprocess.Popen([f'cms queue run fifo --queue={queue} --max_parallel={max_parallel} --timeout={timeout}'], shell=True)
+        running_queues.append((queue, experiment, str(p.pid)))
     return {'result': f'started fifo scheduler: pid {p.pid}'}
 
 @app.put("/queue/{queue}/run_fifo_multi")
