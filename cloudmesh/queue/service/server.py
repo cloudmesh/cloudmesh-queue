@@ -18,6 +18,12 @@ from cloudmesh.common.Shell import Shell
 from cloudmesh.common.parameter import Parameter
 from cloudmesh.common.console import Console
 
+import json
+
+from aiofile import async_open
+from fastapi import FastAPI, Request
+
+
 app = FastAPI(
     title="Cloudmesh Queue: A job queue scheduler for remote/local servers.",
     description="""The `cloudmesh-queue` provides a job queuing and scheduling 
@@ -29,6 +35,14 @@ app = FastAPI(
             executed. Then, based on the scheduler policy, user can schedule 
             these jobs on configured hosts. """,
 )
+
+# uncomment to save json definition to support static page viewing
+# raw github link used in url in static_example.html
+# e.g url='https://raw.githubusercontent.com/cloudmesh/cloudmesh-queue/main/json_example/openapi.json''
+#@app.on_event("startup")
+#async def startup():
+#    async with async_open("./json_example/openapi.json", 'w+') as afp:
+#        await afp.write(json.dumps(app.openapi()))
 
 security = HTTPBasic()
 
