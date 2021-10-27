@@ -3,11 +3,13 @@
 Cloudmesh Queue is a job queuing and scheduling framework. It allows
 users to leverage all the available compute resources defined in a cluster to perform
 tasks which require maximum compute power and execution time. It is implemented as both as cmd line program
-and as a rest service.
+and as a rest service with interactive documentation.
 
 ![](https://github.com/cloudmesh/cloudmesh-queue/raw/main/images/rest.png)
 
 ## Cluster
+
+A cluster provides a yaml representation of a set of hosts
 
 We have the following cluster commands implemented.
 
@@ -42,6 +44,8 @@ cluster create a
 ```
 
 ## Add Hosts to a Cluster
+
+Hosts are a means of execution given a host `name` and `user`. Each host represents one allowed maximum job. To allow multiple jobs to run on the same machine, define multiple hosts for that machine. 
 
 Add hosts to a cluster with:
 
@@ -688,3 +692,8 @@ Below is an example image of the interactive documentation.
 
 ![](https://github.com/cloudmesh/cloudmesh-queue/raw/main/images/rest.png)
 
+### Differences from CMD Line Implementation
+
+When running a Queue via the REST service the rest call will start the queue as a subprocess in the background and return immediately,
+this is different from the cmd line implementation which will wait until the queue has finished executing to return. To see the latest status 
+of the queue use the `queue refresh` command.
