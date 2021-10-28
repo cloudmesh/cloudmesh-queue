@@ -244,7 +244,10 @@ def queue_stop(queue: str, experiment: str = None):
             command = f"ps --format {keys_str} {pid}"
             out = Shell.run(command)
             if pid in out and f'queue={queue}' in out:
-                os.system(f'kill -9 {pid}')
+                Console.info(f'Killing queue pid {pid}')
+                command = f'kill -9 $(ps -o pid= --ppid {pid});' + \
+                          f'kill -9 {pid};'
+                os.system(command)
         else:
             raise HTTPException(status_code=404, detail=f"Queue {queue} ps could not be found")
         queue = __get_queue(queue=queue, experiment=experiment)
