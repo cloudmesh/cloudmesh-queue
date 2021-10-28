@@ -117,7 +117,7 @@ def list_queues(experiment:str=None,credentials: HTTPBasicCredentials = Depends(
 @app.put("/queue/ran",response_class=PlainTextResponse)
 def refresh_and_list_ran_queues(credentials: HTTPBasicCredentials = Depends(security)):
     response = ""
-    for queue, experiment, pid in running_queues:
+    for queue, experiment,cluster, pid in running_queues:
         if experiment is None:
             experiment_resolved = 'experiment'
         else:
@@ -127,10 +127,10 @@ def refresh_and_list_ran_queues(credentials: HTTPBasicCredentials = Depends(secu
         command = f"ps --format {keys_str} {pid}"
         out = Shell.run(command)
         if pid in out and f'queue={queue}' in out:
-            response += f"Queue: {queue} Experiment: {experiment_resolved} STATUS:Running\n"
+            response += f"Queue: {queue} Experiment: {experiment_resolved} Cluster: {cluster} STATUS:Running\n"
         else:
-            response += f"Queue: {queue} Experiment: {experiment_resolved} STATUS:Not Running\n"
-            running_queues.remove((queue,experiment,pid))
+            response += f"Queue: {queue} Experiment: {experiment_resolved} Cluster: {cluster}  STATUS:Not Running\n"
+            running_queues.remove((queue, experiment, cluster, pid))
         try:
             queue = __get_queue(queue=queue, experiment=experiment)
             queue.refresh()
@@ -214,10 +214,12 @@ def queue_run_fifo(queue: str, max_parallel: int, experiment: str = None, timeou
         p = subprocess.Popen([f'cms queue run fifo --queue={queue} --experiment={experiment}'
                               f' --max_parallel={max_parallel} --timeout={timeout}'],
                              shell=True)
-        running_queues.append((queue, experiment, str(p.pid)))
+        cluster = 'None'
+        running_queues.append((queue, experiment, cluster, str(p.pid)))
     else:
         p = subprocess.Popen([f'cms queue run fifo --queue={queue} --max_parallel={max_parallel} --timeout={timeout}'], shell=True)
-        running_queues.append((queue, experiment, str(p.pid)))
+        cluster = 'None'
+        running_queues.append((queue, experiment, cluster, str(p.pid)))
     return {'result': f'started fifo scheduler: pid {p.pid}'}
 
 @app.put("/queue/{queue}/run_fifo_multi")
@@ -229,15 +231,15 @@ def queue_run_fifo_multi(queue: str, cluster: str, experiment: str = None, timeo
     if experiment is not None:
         p = subprocess.Popen([f'cms queue run fifo_multi --queue={queue} --experiment={experiment} '
                               f'--hostfile={cluster} --timeout={timeout}'], shell=True)
-        running_queues.append((queue,experiment, str(p.pid)))
+        running_queues.append((queue,experiment, cluster, str(p.pid)))
     else:
         p = subprocess.Popen([f'cms queue run fifo_multi --queue={queue} --hostfile={cluster} --timeout={timeout}'], shell=True)
-        running_queues.append((queue,experiment, str(p.pid)))
+        running_queues.append((queue,experiment, cluster, str(p.pid)))
     return {'result': f'started fifo_multi scheduler: pid {p.pid}'}
 
 @app.put("/queue/{queue}/stop",response_class=PlainTextResponse)
 def queue_stop(queue: str, experiment: str = None):
-    for q, exp, pid in running_queues:
+    for q, exp, cluster, pid in running_queues:
         if q == queue and exp == experiment:
             keys = ["pid", "cmd"]
             keys_str = ",".join(keys)
@@ -257,7 +259,7 @@ def queue_stop(queue: str, experiment: str = None):
             job = Job(**queue.get(key))
             if job.status == 'run' or job.status == "start":
                 job.kill()
-        running_queues.remove((q,exp,pid))
+        running_queues.remove((q, exp,cluster, pid))
         queue.refresh()
         return queue.info()
 
