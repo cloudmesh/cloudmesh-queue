@@ -151,6 +151,11 @@ def queue_info(queue: str, experiment: str=None, credentials: HTTPBasicCredentia
     queue = __get_queue(queue=queue,experiment=experiment)
     return queue.info()
 
+@app.delete("/queue/{queue}")
+def queue_delete(queue: str,experiment:str=None,credentials: HTTPBasicCredentials = Depends(security)):
+    queue = __get_queue(queue=queue,experiment=experiment)
+    os.system(f'rm {queue.filename}')
+    return True
 
 @app.get("/queue/{queue}/job/{job}")
 def queue_get_job(queue: str, job: str,experiment:str = None, credentials: HTTPBasicCredentials = Depends(security)):
@@ -230,6 +235,29 @@ def queue_run_fifo_multi(queue: str, cluster: str, experiment: str = None, timeo
         running_queues.append((queue,experiment, str(p.pid)))
     return {'result': f'started fifo_multi scheduler: pid {p.pid}'}
 
+@app.put("/queue/{queue}/stop",response_class=PlainTextResponse)
+def queue_stop(queue: str, experiment: str = None):
+    for q, exp, pid in running_queues:
+        if q == queue and exp == experiment:
+            keys = ["pid", "cmd"]
+            keys_str = ",".join(keys)
+            command = f"ps --format {keys_str} {pid}"
+            out = Shell.run(command)
+            if pid in out and f'queue={queue}' in out:
+                os.system(f'kill -9 {pid}')
+        else:
+            raise HTTPException(status_code=404, detail=f"Queue {queue} ps could not be found")
+        queue = __get_queue(queue=queue, experiment=experiment)
+        queue.refresh()
+        keys = queue.keys()
+        for key in keys:
+            job = Job(**queue.get(key))
+            if job.status == 'run' or job.status == "start":
+                job.kill()
+        running_queues.remove((q,exp,pid))
+        queue.refresh()
+        return queue.info()
+
 @app.put("/queue/{queue}/reset",response_class=PlainTextResponse)
 def queue_reset(queue: str,experiment:str = None, name: str=None, status:str=None,
                 credentials: HTTPBasicCredentials = Depends(security)):
@@ -288,6 +316,12 @@ def cluster_info(cluster: str, experiment:str = None,
                  credentials: HTTPBasicCredentials = Depends(security)):
     cluster = __get_cluster(cluster=cluster,experiment=experiment)
     return cluster.info()
+
+@app.delete("/cluster/{cluster}")
+def cluster_delete(cluster: str,experiment:str=None,credentials: HTTPBasicCredentials = Depends(security)):
+    cluster = __get_cluster(cluster=cluster,experiment=experiment)
+    os.system(f'rm {cluster.filename}')
+    return True
 
 @app.get("/cluster/{cluster}/id/{id}")
 def cluster_get_host(cluster: str, id: str,experiment:str = None,
