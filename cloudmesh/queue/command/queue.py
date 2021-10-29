@@ -170,7 +170,7 @@ class JobCommand(PluginCommand):
                 queue = Queue(name=arguments.queue,experiment=arguments.experiment)
             else:
                 queue = Queue(name=arguments.queue)
-        elif arguments.info:
+        elif arguments.info and not arguments['--service']:
             print(queue.info())
         elif arguments.refresh:
             Console.info(f'Refreshing Queue: {queue.name}')
