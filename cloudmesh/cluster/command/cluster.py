@@ -172,7 +172,6 @@ class JobCommand(PluginCommand):
             if arguments['--status']: host_args ['status'] = arguments['--status']
             if arguments.gpu: host_args ['gpu'] = int(arguments.gpu)
             if arguments.pyenv: host_args ['pyenv'] = arguments.pyenv
-            if arguments.experiment: host_args['experiment'] = arguments.experiment
 
             for host_id in ids:
                 host_args['id'] = host_id
