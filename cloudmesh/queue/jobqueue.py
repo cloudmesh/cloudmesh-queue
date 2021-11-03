@@ -119,7 +119,7 @@ class Job:
     name: str = "TBD"
     id: str = str(uuid.uuid4().hex)
     experiment: str = "experiment"
-    directory: str = "./experiment"
+    directory: str = None
     input: str = None
     output: str = None
     log: str = None
@@ -158,6 +158,8 @@ class Job:
             self.set(self.command)
         if self.host and self.user and self.status == 'undefined':
             self.status = 'ready'
+        if self.directory is None:
+            self.directory = './' + self.experiment
 
         self.scriptname = f"{self.experiment}/{self.name}/{self.name}.{self.shell}"
         self.generate_command()
@@ -235,19 +237,22 @@ class Job:
         return None
 
     def remove_dir(self):
-        if is_local(self.host):
-            command = \
-                f"cd {self.directory}; " + \
-                f"rm -rf ./{self.name};"
-        else:
+        # remove local dir
+        command = \
+            f"cd {self.directory}; " + \
+            f"rm -rf ./{self.name};"
+        r = os.system(command)
+        # remove remote dir
+        if not is_local(self.host):
             command = f"ssh {self.user}@{self.host} " + \
                       f"'" + \
                       f"cd {self.directory}; " + \
                       f"rm -rf ./{self.name} ;" + \
                       f"'"
-        r = os.system(command)
-        if r != 0:
-            Console.warning(f'Could not delete {self.name} dir on {self.user}@{self.host}')
+            r = os.system(command)
+            if r != 0:
+                return f'Could not delete {self.name} dir on {self.user}@{self.host}\n'
+        return ''
 
     @staticmethod
     def nohup(name=None, shell="bash"):
@@ -613,6 +618,7 @@ class Queue:
             job = Job(**self.jobs[name])
             if job.state == 'start':
                 job.kill()
+            job.remove_dir()
             self.jobs.delete(name)
             self.save()
             return job

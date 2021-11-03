@@ -210,14 +210,22 @@ def queue_info(queue: str, experiment:str="experiment", credentials: HTTPBasicCr
     queue = __get_queue(queue=queue,experiment=experiment)
     return queue.info()
 
-@app.delete("/queue/{queue}",tags=["queue"])
+@app.delete("/queue/{queue}",tags=["queue"],response_class=PlainTextResponse,)
 def queue_delete(queue: str,experiment: str="experiment",credentials: HTTPBasicCredentials = Depends(security)):
     """
     Deletes the queue in the provided experiment directory.
+
+    **WARNING THIS DELETES ALL JOB DIRS IN THE QUEUE**
     """
     queue = __get_queue(queue=queue,experiment=experiment)
+    result = ''
+    for key in queue.keys():
+        job = Job(**queue.get(key))
+        result += job.remove_dir()
     os.system(f'rm {queue.filename}')
-    return True
+    if result == '':
+        return "Delete Successful"
+    return result
 
 @app.get("/queue/{queue}/job/{job}",tags=["queue"])
 def queue_get_job(queue: str, job: str,experiment:str = "experiment", credentials: HTTPBasicCredentials = Depends(security)):
@@ -287,6 +295,7 @@ def queue_add_job(queue: str, name: str, command: str,experiment:str = "experime
     if shell: job_args['shell'] = shell
     if log: job_args['log'] = log
     if pyenv: job_args['pyenv'] = pyenv
+    if experiment: job_args['experiment'] = experiment
 
     for name in names:
         job_args['name'] = name

@@ -192,6 +192,7 @@ class JobCommand(PluginCommand):
             if arguments.shell: job_args['shell'] = arguments.shell
             if arguments.log: job_args['log'] = arguments.log
             if arguments.pyenv: job_args['pyenv'] = arguments.pyenv
+            if arguments.experiment: job_args['experiment'] = arguments.experiment
 
             for name in names:
                 job_args['name'] = name
