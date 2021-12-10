@@ -5,6 +5,8 @@ users to leverage all the available compute resources defined in a cluster to pe
 tasks which require maximum compute power and execution time. It is implemented as both as cmd line program
 and as a rest service with interactive documentation.
 
+You can see a view only version of the REST service interactive documentation at [https://petstore.swagger.io/?url=https://raw.githubusercontent.com/cloudmesh/cloudmesh-queue/main/json_example/openapi.json](https://petstore.swagger.io/?url=https://raw.githubusercontent.com/cloudmesh/cloudmesh-queue/main/json_example/openapi.json)
+
 ![](https://github.com/cloudmesh/cloudmesh-queue/raw/main/images/rest.png)
 
 ## Installation
@@ -654,8 +656,6 @@ INFO: Completed Jobs: ['job0', 'job1', 'job2', 'job3', 'job4', 'job5', 'job6', '
 
 Cloudmesh Queue provides a REST service implementation of the `Queue` and `Cluster`.  The provided commands allow you to run a REST server and interact with them via interactive documentation and HTTP.
 It provides a Basic HTTP authentication scheme to authorize users.
-
-You can see a view only version of the REST service interactive documentation at [https://petstore.swagger.io/?url=https://raw.githubusercontent.com/cloudmesh/cloudmesh-queue/main/json_example/openapi.json](https://petstore.swagger.io/?url=https://raw.githubusercontent.com/cloudmesh/cloudmesh-queue/main/json_example/openapi.json)
 
 ### Commands
 
