@@ -19,6 +19,12 @@ $ cd cm
 $ cloudmesh-installer get queue
 ```
 
+## Prerequisites
+
+Your cluster will need SSH access from the manager to all other nodes.
+
+For example, a cluster or Raspberry Pi's can easily be created with this feature following the tutorial found at (https://cloudmesh.github.io/pi/tutorial/raspberry-burn/)[https://cloudmesh.github.io/pi/tutorial/raspberry-burn/].
+
 ## Cluster
 
 A cluster provides a yaml representation of a set of hosts
