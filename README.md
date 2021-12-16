@@ -17,6 +17,7 @@ You can get the cloudmesh queue package using the `cloudmesh-installer`.
 $ mkdir cm
 $ cd cm
 $ cloudmesh-installer get queue
+$ pip install aiofile
 ```
 
 ## Prerequisites
