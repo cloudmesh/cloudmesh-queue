@@ -9,6 +9,12 @@ from cloudmesh.common.Shell import Shell
 
 class Manager:
 
+    ip = "127.0.0.1"
+    # replace the number with {Manager.ip}
+    # possibly convert to regular class with self, so we can have
+    # m = Manager(ip="127.0.0.1")
+
+    
     @staticmethod
     def start():
         os.system("uvicorn cloudmesh.queue.service.server:app --reload")
