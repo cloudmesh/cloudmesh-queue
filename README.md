@@ -666,11 +666,11 @@ It provides a Basic HTTP authentication scheme to authorize users.
 
 ### Commands
 
-Below are the service commands.
+The service commands are:
 
 ```
-            queue --service start [--port=PORT]
-            queue --service info [--port=PORT]
+queue --service start [--port=PORT]
+queue --service info [--port=PORT]
 ```
 
 ### Service Start
