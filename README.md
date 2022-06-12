@@ -33,17 +33,17 @@ A cluster provides a yaml representation of a set of hosts
 We have the following cluster commands implemented.
 
 ```
-            cluster create [--cluster=CLUSTER]  [--experiment=EXPERIMENT]
-            cluster list [--cluster=CLUSTER]  [--experiment=EXPERIMENT]
-            cluster add [--cluster=CLUSTER]  [--experiment=EXPERIMENT] --id=ID --name=NAME --user=USER
-                                [--ip=IP]
-                                [--status=STATUS]
-                                [--gpu=GPU]
-                                [--pyenv=PYENV]
-            cluster delete [--cluster=CLUSTER]  [--experiment=EXPERIMENT] --id=ID
-            cluster activate [--cluster=CLUSTER]  [--experiment=EXPERIMENT] --id=ID
-            cluster deactivate [--cluster=CLUSTER]  [--experiment=EXPERIMENT] --id=ID
-            cluster set [--cluster=CLUSTER]  [--experiment=EXPERIMENT] --id=ID --key=KEY --value=VALUE
+cluster create [--cluster=CLUSTER]  [--experiment=EXPERIMENT]
+cluster list [--cluster=CLUSTER]  [--experiment=EXPERIMENT]
+cluster add [--cluster=CLUSTER]  [--experiment=EXPERIMENT] --id=ID --name=NAME --user=USER
+            [--ip=IP]
+            [--status=STATUS]
+            [--gpu=GPU]
+            [--pyenv=PYENV]
+cluster delete [--cluster=CLUSTER]  [--experiment=EXPERIMENT] --id=ID
+cluster activate [--cluster=CLUSTER]  [--experiment=EXPERIMENT] --id=ID
+cluster deactivate [--cluster=CLUSTER]  [--experiment=EXPERIMENT] --id=ID
+cluster set [--cluster=CLUSTER]  [--experiment=EXPERIMENT] --id=ID --key=KEY --value=VALUE
 ```
 
 ## Create a Cluster
