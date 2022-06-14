@@ -15,6 +15,7 @@ from textwrap import dedent
 from cloudmesh.common.util import path_expand
 from cloudmesh.queue.jobqueue import Job
 from cloudmesh.queue.jobqueue import Host
+from cloudmesh.common.systeminfo import os_is_windows, os_is_mac
 
 import oyaml as yaml
 import re
@@ -75,13 +76,19 @@ class TestJob:
 
     def test_command_create(self):
         HEADING()
+        if os_is_windows():
+            raise NotImplementedError("implement me")
+        elif os_is_mac():
+            sleep = "/bin/sleep"
+        else:
+            sleep = "/usr/bin/sleep"
         self.create_command("uname")
         self.create_command("ls")
-        self.create_command("/usr/bin/sleep 10")
+        self.create_command(f"{sleep} 10")
         self.create_command("which python")
-        self.create_command("/usr/bin/sleep infinity")
-        self.create_command("/usr/bin/sleep infinity")
-        self.create_command("/usr/bin/sleep infinity")
+        self.create_command(f"{sleep} infinity")
+        self.create_command(f"{sleep} infinity")
+        self.create_command(f"{sleep} infinity")
         for job in jobs:
             print(job)
         assert len(jobs) == 7
@@ -117,7 +124,7 @@ class TestJob:
         result = "undefined"
         while result not in ["end", "kill"]:
             result = job.state
-            print("Job info:", job.pid, result, job.ps())
+            print("Job info:", job.pid, result, job.ps(), job.command)
             time.sleep(1)
         Benchmark.Stop()
         print(result)

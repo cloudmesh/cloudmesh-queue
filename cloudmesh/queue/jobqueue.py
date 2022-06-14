@@ -183,9 +183,9 @@ class Job:
         if not is_local(self.host):
             command = f"ssh {self.user}@{self.host} \"{command}\""
         try:
-            print (command)
+            # print (command)
             lines = Shell.run(command).strip()
-            print (lines)
+            # print (lines)
             lines = lines.splitlines()
             lines = ' '.join(lines[1].split()).split(" ", len(keys) - 1)
             i = -1
