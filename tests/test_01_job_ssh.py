@@ -37,6 +37,8 @@ Benchmark.debug()
 remote = False
 crash_host_test = True
 
+infinity="3600"
+
 crash_host = 'unkonwn-host'
 crash_user = 'unkonw-user'
 
@@ -76,6 +78,7 @@ class TestJob:
 
     def test_command_create(self):
         HEADING()
+        global infinity
         if os_is_windows():
             raise NotImplementedError("implement me")
         elif os_is_mac():
@@ -86,9 +89,9 @@ class TestJob:
         self.create_command("ls")
         self.create_command(f"{sleep} 10")
         self.create_command("which python")
-        self.create_command(f"{sleep} infinity")
-        self.create_command(f"{sleep} infinity")
-        self.create_command(f"{sleep} infinity")
+        self.create_command(f"{sleep} {infinity}")
+        self.create_command(f"{sleep} {infinity}")
+        self.create_command(f"{sleep} {infinity}")
         for job in jobs:
             print(job)
         assert len(jobs) == 7
@@ -147,11 +150,16 @@ class TestJob:
 
     def test_kill_job(self):
         HEADING()
-        self.run_job(4)
-        r = jobs[4].kill()
-        self.monitor_job_state(4)
+        i = 4
+        global jobs
+        job = jobs[i]
+        print (job)
+
+        self.run_job(i)
+        r = jobs[i].kill()
+        self.monitor_job_state(i)
         assert r == 0
-        assert jobs[4].status == 'kill'
+        assert jobs[i].status == 'kill'
 
     def test_state_env3_job(self):
         HEADING()
