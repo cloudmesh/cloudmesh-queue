@@ -23,6 +23,7 @@ from cloudmesh.common.util import is_local
 from cloudmesh.common.util import path_expand
 from cloudmesh.common.util import readfile
 from cloudmesh.common.util import str_banner
+from cloudmesh.common.systeminfo import os_is_mac, os_is_windows, os_is_linux
 from yamldb.YamlDB import YamlDB
 
 # from cloudmesh.common.variables import Variables
@@ -162,13 +163,26 @@ class Job:
         self.generate_script(shell=self.shell)
 
     def ps(self):
-        keys = ["pid", "user", "ppid", "sz", "tty", "%cpu", "%mem", "cmd"]
-        keys_str = ",".join(keys)
-        command = f"ps --format {keys_str} {self.pid}"
+        if os_is_mac():
+            keys = ["pid", "user", "ppid", "tty", "%cpu", "%mem", "command"]
+        elif os_is_windows():
+            raise NotImplementedError("ps command not implemented, implement me")
+        else:
+            keys = ["pid", "user", "ppid", "sz", "tty", "%cpu", "%mem", "cmd"]
+        keys_str = "'" + ",".join(keys) + "'"
+        if os_is_mac():
+            command = f"ps -O {keys_str} {self.pid}"
+        elif os_is_windows():
+            raise NotImplementedError("ps command not implemented, implement me")
+        else:
+            command = f"ps --format {keys_str} {self.pid}"
         if not is_local(self.host):
             command = f"ssh {self.user}@{self.host} \"{command}\""
         try:
-            lines = Shell.run(command).splitlines()
+            print (command)
+            lines = Shell.run(command).strip()
+            print (lines)
+            lines = lines.splitlines()
             lines = ' '.join(lines[1].split()).split(" ", len(keys) - 1)
             i = -1
             entry = {}
@@ -1091,7 +1105,10 @@ class Host:
             if "/" not in experiment:
                 experiment = f"./{experiment}"
             command = f"rsync -r {experiment}/* {user}@{host}:{experiment}"
-            r = os.system(command)
+            try:
+                r = os.system(command)
+            except:
+                r = 1
         else:
             r = 0
         return r == 0

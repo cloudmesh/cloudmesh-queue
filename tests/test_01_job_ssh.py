@@ -1,7 +1,4 @@
 ###############################################################
-# cms set host='juliet.futuresystems.org'
-# cms set user=$USER
-#
 # pytest -v --capture=no tests/test_01_job_ssh.py
 # pytest -v  tests/test_01_job_ssh.py
 # pytest -v --capture=no  tests/test_01_job_ssh.py::TestSSHJob::<METHODNAME>
@@ -23,25 +20,28 @@ import oyaml as yaml
 import re
 import time
 import getpass
+import os
+from cloudmesh.common.Printer import Printer
 
 Benchmark.debug()
 
-#variables = Variables()
-#print(variables)
-#variables["jobset"] = path_expand("./a.yaml")
+# variables = Variables()
+# print(variables)
+# variables["jobset"] = path_expand("./a.yaml")
 
-#configured_jobset = variables["jobset"]
-#remote_host_ip = variables['host'] or 'juliet.futuresystems.org'
-#remote_host_user = variables['user'] or getpass.getuser()
+# configured_jobset = variables["jobset"]
+# remote_host_ip = variables['host'] or 'juliet.futuresystems.org'
+# remote_host_user = variables['user'] or getpass.getuser()
 
-remote = True
+remote = False
 crash_host_test = True
+
+crash_host = 'unkonwn-host'
+crash_user = 'unkonw-user'
 
 if remote:
     host = "red"
     user = "pi"
-    crash_host = 'red03'
-    crash_user = 'pi'
 else:
     host = "localhost"
     user = getpass.getuser()
@@ -68,56 +68,36 @@ class TestJob:
         Benchmark.Stop()
         print(job)
 
-    def test_hostname(self):
+    def test_set_vars(self):
+        HEADING()
+        Shell.run(f"cms set host={host}")
+        Shell.run(f"cms set user={user}")
+
+    def test_command_create(self):
         HEADING()
         self.create_command("uname")
-
-    def test_ls(self):
-        HEADING()
         self.create_command("ls")
-
-    def test_sleep(self):
-        HEADING()
         self.create_command("/usr/bin/sleep 10")
-
-    def test_which_python(self):
-        HEADING()
         self.create_command("which python")
-
-    def test_sleep_infinity(self):
-        HEADING()
         self.create_command("/usr/bin/sleep infinity")
-
-    def test_env3_job(self):
-        HEADING()
-        job = Job(name=f"job{i}",
-                  command="cms help",
-                  user=user,
-                  host=host,
-                  directory=directory,
-                  )
-        jobs.append(job)
-
-    def test_sleep_infinity2(self):
-        HEADING()
         self.create_command("/usr/bin/sleep infinity")
-
-    def test_sleep_infinity3(self):
-        HEADING()
         self.create_command("/usr/bin/sleep infinity")
-
-    def test_sleep_infinity4(self):
-        HEADING()
-        self.create_command("/usr/bin/sleep infinity")
+        for job in jobs:
+            print(job)
+        assert len(jobs) == 7
 
     def test_sync(self):
         HEADING()
+        global crash_host
+        global crash_user
         Benchmark.Start()
         result = Host.sync(user, host, "experiment")
-        if crash_host_test:
-            result = Host.sync(crash_user,crash_host, "experiment")
-        Benchmark.Stop()
         assert result
+
+        if crash_host_test:
+            result = Host.sync(crash_user, crash_host, "experiment")
+        Benchmark.Stop()
+        assert not result
         print(result)
 
     def run_job(self, i):
@@ -137,7 +117,7 @@ class TestJob:
         result = "undefined"
         while result not in ["end", "kill"]:
             result = job.state
-            print ("Job info:", job.pid, result, job.ps())
+            print("Job info:", job.pid, result, job.ps())
             time.sleep(1)
         Benchmark.Stop()
         print(result)
@@ -147,7 +127,6 @@ class TestJob:
         print(job.get_log_nohup())
         banner("Out")
         print(job.get_output())
-
 
     def test_state_job2(self):
         HEADING()
@@ -230,6 +209,7 @@ class TestJob:
             assert crashed is True
             assert job.state == 'crash'
 
+
 class gg:
     def test_yaml_job2(self):
         HEADING()
@@ -241,7 +221,6 @@ class gg:
         result = job.to_yaml()
         Benchmark.Stop()
         print(result)
-
 
     def test_read_from_string(self):
         HEADING()
@@ -293,7 +272,6 @@ class gg:
         print(job_sleep)
 
 
-
 class a:
 
     def test_add_file(self):
@@ -330,7 +308,6 @@ class a:
         jobs1 = spec1['cloudmesh.jobset.jobs'].keys()
 
         assert 'pytest_job' in jobs1
-
 
     def test_benchmark(self):
         HEADING()
