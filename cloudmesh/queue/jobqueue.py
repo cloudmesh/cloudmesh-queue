@@ -7,6 +7,7 @@ import time
 import uuid
 from dataclasses import dataclass
 from datetime import datetime
+from datetime import timedelta
 # from pathlib import Path
 from textwrap import dedent
 from typing import List
@@ -119,7 +120,7 @@ class Job:
     name: str = "TBD"
     id: str = str(uuid.uuid4().hex)
     experiment: str = "experiment"
-    directory: str = "./experiment"
+    directory: str = None
     input: str = None
     output: str = None
     log: str = None
@@ -140,6 +141,7 @@ class Job:
     host: str = None
     user: str = None
     pyenv: str = None
+    last_probe_check: str = None
 
     def __post_init__(self):
         #print(self.info())
@@ -157,6 +159,8 @@ class Job:
             self.set(self.command)
         if self.host and self.user and self.status == 'undefined':
             self.status = 'ready'
+        if self.directory is None:
+            self.directory = './' + self.experiment
 
         self.scriptname = f"{self.experiment}/{self.name}/{self.name}.{self.shell}"
         self.generate_command()
@@ -201,14 +205,31 @@ class Job:
                 self.status = 'crash'
         return probe_status
 
+    def check_host_running2(self,timeout_min=10):
+        if self.last_probe_check is None:
+            raise ValueError ('Job last_probe_time is None')
+
+        last_probe_time = datetime.strptime(self.last_probe_check, "%d/%m/%Y %H:%M:%S")
+
+        if datetime.now() > last_probe_time + timedelta(minutes=timeout_min):
+            host = Host(name=self.host, user=self.user)
+            probe_status, probe_time = host.probe()
+            self.last_probe_check = probe_time
+            if not probe_status:
+                if self.status == 'start' or self.status == 'run':
+                    self.status = 'crash'
+                return False
+        return True
+
     def check_running(self):
         ps = self.ps()
         if ps is None:
             return False
         return True
 
-    def check_crashed(self):
-        if not is_local(self.host) and (self.status == 'start' or self.status == 'run') and not self.check_host_running():
+    def check_crashed(self,timeout_min=10):
+        if not is_local(self.host) and (self.status == 'start' or self.status == 'run') \
+                and not self.check_host_running2():
             return True
         elif self.state == 'start' and not self.check_running():
             time.sleep(5) # TODO make this more deterministic
@@ -230,19 +251,22 @@ class Job:
         return None
 
     def remove_dir(self):
-        if is_local(self.host):
-            command = \
-                f"cd {self.directory}; " + \
-                f"rm -rf ./{self.name};"
-        else:
+        # remove local dir
+        command = \
+            f"cd {self.directory}; " + \
+            f"rm -rf ./{self.name};"
+        r = os.system(command)
+        # remove remote dir
+        if not is_local(self.host):
             command = f"ssh {self.user}@{self.host} " + \
                       f"'" + \
                       f"cd {self.directory}; " + \
                       f"rm -rf ./{self.name} ;" + \
                       f"'"
-        r = os.system(command)
-        if r != 0:
-            Console.warning(f'Could not delete {self.name} dir on {self.user}@{self.host}')
+            r = os.system(command)
+            if r != 0:
+                return f'Could not delete {self.name} dir on {self.user}@{self.host}\n'
+        return ''
 
     @staticmethod
     def nohup(name=None, shell="bash"):
@@ -357,10 +381,10 @@ class Job:
             end_line = self.logging("end")
             pyenv_cmd = ''
             if self.pyenv is not None:
-                pyenv_cmd = f'source {self.pyenv}; '
+                pyenv_cmd = f'\nsource {self.pyenv}; '
             gpu_cmd = ''
             if self.gpu is not None:
-                gpu_cmd = f'export CUDA_VISIBLE_DEVICES={self.gpu}'
+                gpu_cmd = f'\nexport CUDA_VISIBLE_DEVICES={self.gpu};'
             script = "\n".join([
                 f"#! {self.shell_path} -x",
                 f"echo $$ > {self.name}.pid",
@@ -481,7 +505,21 @@ class Job:
         except:
             pass
 
-    def sync(self, user: str, host: str):
+    def warn_if_job_dir_present(self):
+        if not is_local(self.host):
+            command = f"ssh {self.user}@{self.host} ls {self.experiment}"
+            r = Shell.run(command)
+            if self.name in r:
+                Console.warning(f"Job directory {self.experiment}/{self.name} already present on host.\n"
+                                f"Use `cms reset` prior to re-running jobs to ensure dir is deleted.")
+        else:
+            command = f'ls {self.experiment}/{self.name}'
+            r = Shell.run(command)
+            if f'{self.name}.pid' in r:
+                Console.warning(f"Job directory {self.experiment}/{self.name} already present on host.\n"
+                                f"Use `cms reset` prior to re-running jobs to ensure dir is deleted.")
+
+    def sync(self, user: str, host: str, job_name: str=''):
         """
         sync the experiment directory with the host. Only sync if the host
         is not the localhost.
@@ -491,9 +529,10 @@ class Job:
 
         @return: None
         """
-        # only sync if host is not local
+        self.warn_if_job_dir_present()
+
         if not is_local(host):
-            command = f"rsync -r {self.experiment} {user}@{host}:{self.experiment}"
+            command = f"rsync -r {self.experiment}/{job_name} {user}@{host}:{self.experiment}"
             os.system(command)
 
     def run(self):
@@ -593,6 +632,7 @@ class Queue:
             job = Job(**self.jobs[name])
             if job.state == 'start':
                 job.kill()
+            job.remove_dir()
             self.jobs.delete(name)
             self.save()
             return job
@@ -702,6 +742,7 @@ class Queue:
                 else:
                     new_state = 'undefined'
                 job.status = new_state
+                job.pid=None
                 if old_state != new_state:
                     updates = True
                     self.set(job)
@@ -741,7 +782,7 @@ class Queue:
         data = self.to_dict()
         if job is None:
             if order is None and kind in ["jobs"]:
-                order = ["name", "status", "command", "gpu", "output", "log", "experiment"]
+                order = ["name", "status", "command","host","user", "gpu", "output", "log", "experiment"]
                 result = result + str(Printer.write(data[kind], order=order, output=output))
             elif order is None and kind in ["queue", "config"]:
                 order = ["name", "experiment", "filename"]
@@ -786,7 +827,8 @@ class SchedulerFIFO(Queue):
                  experiment: str = None,
                  filename: str = None,
                  jobs: List = None,
-                 max_parallel: int = 1):
+                 max_parallel: int = 1,
+                 timeout_min: int = 10):
         Queue.__init__(self,
                        name=name,
                        experiment=experiment,
@@ -799,6 +841,7 @@ class SchedulerFIFO(Queue):
         self.running_jobs = []
         self.completed_jobs = []
         self.ran_jobs = []
+        self.timeout_min = timeout_min
 
     def __next__(self):
         found_job = False
@@ -834,7 +877,8 @@ class SchedulerFIFO(Queue):
     def check_for_crashes(self):
         for job in self.running_jobs:
             job = Job(**self.get(job))
-            crashed = job.check_crashed()
+            crashed = job.check_crashed(timeout_min=self.timeout_min)
+            self.set(job)
             if crashed:
                 Console.warning(f'Job {job.name} status:CRASH')
                 job.status = 'crash'
@@ -853,6 +897,11 @@ class SchedulerFIFO(Queue):
                 if not finished:
                     self.check_for_crashes()
             Console.info(f'Running job: {job.name} on {job.user}@{job.host}')
+            host = Host(name=job.host, user=job.user)
+            probe_status, probe_time = host.probe()
+            job.last_probe_check = probe_time
+            #host.sync(user=host.user,host=host.name,experiment=job.experiment)
+            job.sync(user=job.user,host=job.host,job_name=job.name)
             pid = job.run()
             if pid is None:
                 # pid was a shell error or none
@@ -919,7 +968,8 @@ class SchedulerFIFOMultiHost(Queue):
                  experiment: str = None,
                  filename: str = None,
                  jobs: List = None,
-                 hosts: list = []):
+                 hosts: list = [],
+                 timeout_min: int = 10):
         Queue.__init__(self,
                        name=name,
                        experiment=experiment,
@@ -958,6 +1008,7 @@ class SchedulerFIFOMultiHost(Queue):
         for job in self.running_jobs:
             job = Job(**self.get(job))
             crashed = job.check_crashed()
+            self.set(job)
             if crashed:
                 Console.warning(f'Job {job.name} status:CRASH')
                 job.status = 'crash'
@@ -999,8 +1050,15 @@ class SchedulerFIFOMultiHost(Queue):
                     if probe_status:
                         job.host = host.name
                         job.user = host.user
+                        job.gpu = host.gpu
+                        if job.pyenv is None or job.pyenv == '':
+                            job.pyenv=host.pyenv
                         job.status = 'ready'
+                        job.last_probe_check = probe_time
+                        job.generate_script()
                         job.generate_command()
+                        #Host.sync(user=job.user,host=job.host,experiment=job.experiment)
+                        job.sync(user=job.user, host=job.host, job_name=job.name)
                         self.set(job)
                         assigned_host = host
                         return assigned_host
@@ -1050,13 +1108,15 @@ class SchedulerFIFOMultiHost(Queue):
 class Host:
     user: str = sysinfo()[0]
     name: str = "localhost"
-    ip: str = "127.0.0.1"
-    status: str = "free"
+    id: str = ''
+    ip: str = None
+    status: str = "active"
     job_counter: int = 0
     max_jobs_allowed: int = 1
     cores: int = 1
     threads: int = 1
-    gpus: str = ""
+    gpu: str = ""
+    pyenv: str = ""
     probe_status: bool = False
     probe_time: str = None
     ping_status: bool = False
@@ -1133,7 +1193,7 @@ class Host:
                           "max_jobs_allowed",
                           "cores",
                           "threads",
-                          "gpus"]
+                          "gpu"]
 
         if banner is not None:
             result = str_banner(banner)
@@ -1145,7 +1205,6 @@ class Host:
         return result
 
 
-@dataclass
 class Cluster:
 
     def __init__(self,
@@ -1174,25 +1233,43 @@ class Cluster:
     def __len__(self):
         return len(self.hosts.data)
 
-    def delete(self, name: str):
-        """
-        Deletes the host with the given name
+    def keys(self):
+        return self.hosts.keys()
 
-        :param name: name of the host
+    def items(self):
+        return self.hosts.__dict__["data"].items()
+
+    def values(self):
+        return self.hosts.__dict__["data"].values()
+
+    def delete(self, id: str):
+        """
+        Deletes the host with the given id
+
+        :param id: id of the host
         """
         try:
-            self.hosts.delete(name)
+            self.hosts.delete(id)
+            self.save()
         except:
-            pass
+            Console.error(f'Could not delete host {id}')
 
-    def get(self, name: str) -> Host:
+    def get(self, id: str) -> Host:
         """
         Returns the host with the given name
 
         :param name: name of the host
         :return: Host
         """
-        return self.hosts[name]
+        return self.hosts[id]
+
+    def get_free_hosts(self):
+        hosts = []
+        for key in self.keys():
+            host = Host(**self.get(key))
+            if host.status =='active':
+                hosts.append(host)
+        return hosts
 
     def set(self, host: Host):
         """
@@ -1201,7 +1278,7 @@ class Cluster:
 
         :param host: the host
         """
-        self.hosts[host.name] = host.to_dict()
+        self.hosts[host.id] = host.to_dict()
 
     def search(self, query):
         return self.hosts.search(query)
@@ -1212,16 +1289,15 @@ class Cluster:
 
     def add_hosts(self, hosts):
         for host in hosts:
-            self.hosts[host.name] = host.to_dict()
+            self.hosts[host.id] = host.to_dict()
             self.save()
 
     def add(self, host: Host):
-        self.hosts[host.name] = host.to_dict()
+        self.hosts[host.id] = host.to_dict()
         self.save()
 
     def save(self):
-        if len(self.hosts.data) > 0:
-            self.hosts.save(self.filename)
+        self.hosts.save(self.filename)
 
     def info(self,
              kind="hosts",
@@ -1238,7 +1314,7 @@ class Cluster:
         data = self.to_dict()
         if host is None:
             if order is None and kind in ["hosts"]:
-                # order = order
+                order = ["id", "name", "user", "status", "gpu", "pyenv", "ip", "max_jobs_allowed"]
                 result = result + str(Printer.write(data[kind], order=order, output=output))
             elif order is None and kind in ["cluster", "config"]:
                 order = ["name", "experiment", "filename"]
@@ -1247,6 +1323,8 @@ class Cluster:
                     data[kind]["name"]: data[kind]
                 }
                 result = result + str(Printer.write(data, order=order, output=output))
+            elif order is not None and kind in ["hosts"]:
+                result = result + str(Printer.write(data[kind], order=order, output=output))
         else:
             host = self.__getitem__(host)
             result = result + str(Printer.attribute(host, output=output))
@@ -1275,7 +1353,7 @@ class Cluster:
         result = self.to_dict()
         return str(result)
 
-    def activate(self, name: str, status: bool = True):
+    def activate(self, id: str, status: bool = True):
         """
         Activates the host. A host can be disabled with the status set to False.
         Only acive hosts are used.
@@ -1287,9 +1365,9 @@ class Cluster:
         :param status: If True the host is active
         """
         if status:
-            self.hosts.data[name]["status"] = "active"
+            self.hosts.data[id]["status"] = "active"
         else:
-            self.hosts.data[name]["status"] = "inactive"
+            self.hosts.data[id]["status"] = "inactive"
 
     def add_policy(self, policy):
         """

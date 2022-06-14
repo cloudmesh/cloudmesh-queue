@@ -147,4 +147,27 @@ log:
 	git commit -m "chg: dev: Update ChangeLog" ChangeLog
 	git push
 
+######################################################################
+# DOCKER
+######################################################################
+
+image:
+	docker build -t cloudmesh/cmd5:latest .
+
+shell:
+	docker run --rm -it cloudmesh/cmd5:latest  /bin/bash
+
+cms:
+	docker run --rm -it cloudmesh/cmd5:latest
+
+dockerclean:
+	-docker kill $$(docker ps -q)
+	-docker rm $$(docker ps -a -q)
+	-docker rmi $$(docker images -q)
+
+push:
+	docker push cloudmesh/cmd5:latest
+
+run:
+	docker run cloudmesh/cmd5:latest /bin/sh -c "cd technologies; git pull; make"
 

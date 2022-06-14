@@ -1,49 +1,527 @@
 # Cloudmesh Queue
 
-Cloudmesh Queue is a job queuing and scheduling framework. It allows
-users to leverage all the available compute resources defined in a cluster to perform
-tasks which require maximum compute power and execution time. It is implemented as both as cmd line program
-and as a rest service with interactive documentation.
+[![image](https://img.shields.io/travis/TankerHQ/cloudmesh-bar.svg?branch=master)](https://travis-ci.org/TankerHQ/cloudmesn-bar)
+[![image](https://img.shields.io/pypi/pyversions/cloudmesh-bar.svg)](https://pypi.org/project/cloudmesh-bar)
+[![image](https://img.shields.io/pypi/v/cloudmesh-bar.svg)](https://pypi.org/project/cloudmesh-bar/)
+[![image](https://img.shields.io/github/license/TankerHQ/python-cloudmesh-bar.svg)](https://github.com/TankerHQ/python-cloudmesh-bar/blob/main/LICENSE)
 
-You can see a view only version of the REST service interactive documentation at [https://petstore.swagger.io/?url=https://raw.githubusercontent.com/cloudmesh/cloudmesh-queue/main/json_example/openapi.json](https://petstore.swagger.io/?url=https://raw.githubusercontent.com/cloudmesh/cloudmesh-queue/main/json_example/openapi.json)
+The *cloudmesh-job* provides a job queuing and scheduling framework. It 
+includes a library as well as a commandline interface. Both
+allow users to leverage all the available compute resources to 
+perform tasks which have heavy usage of compute power and high execution 
+time. A user can configure all available compute resources as 'hosts' in a 
+configuration file along with the list of jobs to be executed. Then, based 
+on the scheduler policy, user can schedule these jobs on configured hosts. 
 
-![](https://github.com/cloudmesh/cloudmesh-queue/raw/main/images/rest.png)
+# Table of Contents
 
-## Installation
+<!--TOC-->
 
-You can get the cloudmesh queue package using the `cloudmesh-installer`.
+- [Cloudmesh Job](#cloudmesh-job)
+- [Table of Contents](#table-of-contents)
+  - [Example](#example)
+  - [Prerequisites](#prerequisites)
+  - [Installation](#installation)
+  - [Configuration](#configuration)
+  - [Available methods](#available-methods)
+    - [Hosts](#hosts)
+    - [Scheduler](#scheduler)
+    - [Jobs](#jobs)
+  - [Manual Page](#manual-page)
+  - [Tests](#tests)
+  - [REST API of `cms job` command](#rest-api-of-cms-job-command)
+  - [Alternative Installation and Additional Documentation for Cloudmesh-job](#alternative-installation-and-additional-documentation-for-cloudmesh-job)
 
-```
-$ mkdir cm
-$ cd cm
-$ cloudmesh-installer get queue
-$ pip install aiofile
-```
+<!--TOC-->
+
+## Example
+
+An additional example is documented in
+
+[Example](README-example.md)
+
 
 ## Prerequisites
 
-Your cluster will need SSH access from the manager to all other nodes.
+* Cloudmesh-job uses `ssh` access to the remote compute machine. ssh clients are avalaible on all major platforms including macOS, Linux, Windows.
+* It is assumed that you use public keys to authenticate to remote machines. We assume you use ssh-add and/or keychain to avoid issuing passwords when you use the cloudmehs-job
+* We do not recommend using passwordless keys as ssh-add and keychain exist to avoid this.
+ 
 
-For example, a cluster or Raspberry Pi's can easily be created with this feature following the tutorial found at (https://cloudmesh.github.io/pi/tutorial/raspberry-burn/)[https://cloudmesh.github.io/pi/tutorial/raspberry-burn/].
+## Installation
+
+We assume you have a venv such as ~/ENV in which you have python 3.8 or python 3.9
+
+```bash
+(ENV) $ mkdir cm
+(ENV) $ cd cm
+(ENV) $ pip install cloudmesh-installer
+(ENV) $ cloudmesh-installer install job
+(ENV) $ cd cloudmesh-job
+```
+
+
+## Configuration
+
+On Windows machines, using `gitbash` to run these commands is advised if a 
+Linux like terminal is preferred by users.
+
+The current jobset filename is stored in the cloudmesh variables under the 
+variable `jobset`. It can be queried with
+
+```bash
+$ cms set jobset
+```
+
+It can be set with
+
+```bash
+$ cms set jobset=VALUE
+```
+
+An example is
+
+```bash
+$ cms set jobset
+set jobset
+jobset='~/.cloudmesh/job/spec.yaml'
+```
+
+The content of the jobset can be created using
+
+```bash
+cms job template
+```
+
+This template configuration will then have the following content:
+
+```yaml
+cloudmesh:
+  default:
+    user: username
+  jobset:
+    hosts:
+      localhost:
+        name: localhost
+        ip: localhost
+        cpus: '2'
+        status: free
+        job_counter: '2'
+        max_jobs_allowed: '1'
+      juliet:
+        name: juliet
+        ip: juliet.futuresystems.org
+        cpus: '12'
+        status: free
+        job_counter: '0'
+        max_jobs_allowed: '4'
+    scheduler:
+      policy: smart
+    jobs:
+      ls_j:
+        name: ls_j
+        directory: .
+        ip: juliet.futuresystems.org
+        input: ./data
+        output: ./output/ls_j
+        status: ready
+        gpu: ' '
+        user: username
+        arguments: ' '
+        executable: 'python test.py'
+        shell: bash
+        submitted_to_ip: juliet.futuresystems.org
+```  
+
+## Available methods
+ 
+### Hosts
+
+To configure available compute resources as 'hosts' in the configuration
+file you can use the following command, that will add this new host in the
+jobset configuration file.  
+To list the hosts we have a convenient list command.
+
+```bash
+cms job hosts add --hostname=name --ip=ip --cpus=n --max_jobs_allowed=x
+    Adds a host in jobset yaml file.
+
+cms job list hosts
+    Enlists all the hosts configured in jobset
+```
+
+### Scheduler
+
+One can configure and inquire scheduler a policy
+that is used by the `cms job run` command to schedule and 
+execute jobs. The following scheduler policies are available:
+
+* sequential - Use first available host
+* random     - Use random available host
+* smart      - Use a host with highest availability
+* frugal     - Use a host with least availability
+
+To confugure or inquire a scheduler, use the following commands:
+
+```bash
+cms job scheduler --policy=random
+    Assigns policy name to the scheduler policy
+
+cms job scheduler info
+    Shows currently configured scheduler policy
+```
+
+### Jobs
+
+To schedule, modify and inquire the jobs, please use the following commands:
+
+```bash
+cms job info
+    Prints location of job queue file.
+
+cms job set '~/.cloudmesh/job/spec.yaml'
+    Sets jobset as the FILE provided. Further process refers jobset.
+
+cms job template a.yaml --name="b[0-1]"; less a.yaml
+    Creates the jobs b0 and b1 as templates in the jobset.
+
+cms job add --name=z[0-1] --ip=123,345 --executable='ls'
+            --input='../data' --output='a,b'
+    Creates entries in jobset for jobs z0 and z1 with provided
+    arguments.
+
+cms job add '~/.cloudmesh/another.yaml'
+    Adds jobs from FILE to jobset
+
+cms job list
+    Enlist all jobs
+
+cms job list --name='perform'
+    Enlist all jobs with the phrase 'perform' in job name
+
+cms job list --status='ready'
+    Enlist all jobs in status 'ready'
+
+cms job status
+    Enlists all jobs ordered by their status
+
+cms job reset --name=NAME
+    Resets the status of the job to 'ready'.
+
+cms job run --name=ls_j
+    Submits job(s) to host decided by the scheduler policy
+
+cms job kill --name=ls_j
+    Kills the job
+
+cms job delete --name=ls_j
+    Deletes a job from the jobset. If job is in 'submitted'
+    status then it is killed first and then deleted from jobset.
+``` 
+
+## Manual Page
+
+The abbreviated manual page of the command is
+
+<!--MANUAL-->
+```
+  job set FILE
+  job template [--name=NAME]
+  job add FILE
+  job add --name=NAME
+          [--ip=<IP>]
+          [--executable=<EXECUTABLE>]
+          [--directory=<DIRECTORY>]
+          [--input=<INPUT>]
+          [--output=<OUTPUT>]
+          [--status=<STATUS>]
+          [--gpu=GPU]
+          [--user=USER]
+          [--arguments=<ARGUMENTS>]
+          [--shell=<SHELL>]
+  job status
+  job list --status=STATUS
+  job list --name=NAME
+  job list
+  job kill [--name=NAME]
+  job reset [--name=NAME]
+  job delete [--name=NAME]
+  job help
+  job run [--name=NAME]
+  job info
+  job hosts add --hostname=hostname --ip=IP  --cpus=N
+               [--status=STATUS] [--job_counter=COUNTER]
+               [--max_jobs_allowed=<JOBS>]
+  job list hosts
+  job scheduler --policy=POLICYNAME
+  job scheduler info
+
+This command is a job queuing and scheduling framework. It allows
+users to leverage all the available compute resources to perform
+tasks which have heavy usage of compute power and execution time.
+
+Arguments:
+    FILE   a file name
+
+Default value of options is indicated in square brackets.
+Options:
+  --name=NAME               Job name(s)       Example: 'job[0-5]'
+  --ip=<IP>                 Host IP           [default: 127.0.0.1]
+  --executable=<EXECUTABLE> Job name          [default: uname]
+  --arguments=<ARGUMENTS>   Args for the job  [default:  -a]
+  --directory=<DIRECTORY>   Path to run job   [default: .]
+  --input=<INPUT>           Input data path   [default: ./data]
+  --output=<OUTPUT>         Output path       [default: ./output]
+  --status=<STATUS>         Job status        [default: ready]
+  --user=USER               Remote host user  Example. $USER
+  --shell=<SHELL>           Shell to run job  [default: bash]
+  --hostname=hostname       Host name         Example. 'juliet'
+  --gpu=GPU                 GPU to use        Example. 7
+  --cpus=N             Host CPU count    Example. '12'
+  --job_counter=COUNTER     Job count         Example. '2'
+  --policy=<POLICYNAME>     Scheduler policy  [default: sequential]
+  --max_jobs_allowed=<JOBS> Max jobs allowed  [default: 1]
+
+Description:
+
+    job info
+      prints the information for the queued jobs
+
+    job set FILE
+      sets the jobset to the file name. All other commands will be
+      applied to a jobset
+
+    job add FILE
+      adds the jobs in the file to the jobset
+
+    job template
+      creates a job template  in the jobset
+
+    job list
+      lists all jobs
+
+    job list --status=open
+      lists all jobs with a specific status
+
+    job list --name=NAME
+      lists teh job with the given name pattern
+
+    job status
+      shows the status of all jobs
+
+    job kill --name=NAME
+      kills the given jobs base on a name pattern such as
+      name[01-04] which would kill all jobs with the given names
+
+    job reset [--name=NAME]
+      resets the job to be rerun
+
+    job delete --name=NAME
+      deletes the given jobs base on a name pattern such as
+      name[01-04] which would kill all jobs with the given names
+
+    job run [--name=NAME]
+      Run all jobs from jobset. If --name argument is provided then
+      run a specific job
+
+    job hosts add --hostname=name --ip=ip --cpus=n
+                 .--max_jobs_allowed=x
+      Adds a host in jobset yaml file.
+
+    job list hosts
+      Enlists all the hosts configured in jobset
+
+    job scheduler --policy=random
+      Assigns policy name to the scheduler policy
+
+    job scheduler info
+      Shows currently configured scheduler policy
+
+    job help
+      prints the manual page
+
+Job States:
+
+   done   - job completed
+   ready  - ready for scheduling
+   failed - job failed
+   timeout - timeout
+   submitted - job submitted to remote machine for execution
+
+Scheduler policies:
+
+   sequential - Use first available host
+   random     - Use random available host
+   smart      - Use a host with highest availability
+   frugal     - Use a host with least availability
+
+Job specification:
+
+   The jobs are specified in 'spec.yaml' file
+
+   name:
+     ip: ip of the host
+     input: where the input comes form (locally to ip)
+     output: where to store the outout (locally to ip)
+     status: the status
+     gpu: the GPU specification # string such as "0,2" as defined by
+          the GPU framework e.g. NVIDIA
+     user: the userneme on ip to execute the job
+     directory: the working directory
+     arguments: the arguments passed along # lis of key values
+     executable: the executable
+     shell: bash # executes the job in the provided shell
+            $(SHELL) will use the default user shell
+
+    The current jobset filename is stored in the cloudmesh variables
+    under the variable "jobset". It can be queried with cms set
+    jobset. It can be set with
+
+      cms set jobset=VALUE
+
+    We may not even do cms job set VALUE due to this simpler existing
+    way of interfacing we can query the variables with
+
+        variables = Variables()
+
+    and also set them that way
+
+      variables["jobset"] = VALUE.
+
+Usage examples:
+  cms job info
+      Prints location of job queue file.
+
+  cms job set '~/.cloudmesh/job/spec.yaml'
+      Sets jobset as the FILE provided. Further process refers jobset.
+
+  cms job template --name="b[0-1]"; less a.yaml
+      Creates the jobs b0 and b1 as templates in the jobset.
+
+  cms job add --name=z[0-1] --ip=123,345 --executable='ls'
+             .--input='..\data' --output='a,b'
+      Creates entries in jobset for jobs z0 and z1 with provided
+      arguments.
+
+  cms job add '~/.cloudmesh/another.yaml'
+      Adds jobs from FILE to jobset
+
+  cms job list
+      Enlist all jobs
+
+  cms job list --name='perform'
+      Enlist all jobs with the phrase 'perform' in job name
+
+  cms job list --status='ready'
+      Enlist all jobs in status 'ready'
+
+  cms job status
+      Enlists all jobs ordered by their status
+
+  cms job reset --name=NAME
+      Resets the status of the job to 'ready'.
+
+  cms job hosts add --hostname=name --ip=ip --cpus=n
+                   .--max_jobs_allowed=x
+      Adds a host in jobset yaml file.
+
+  cms job list hosts
+      Enlists all the hosts configured in jobset
+
+  cms job scheduler --policy=random
+      Assigns policy name to the scheduler policy
+
+  cms job scheduler info
+      Shows currently configured scheduler policy
+
+  cms job run --name=ls_j
+      Submits job(s) to host decided by the scheduler policy
+
+  cms job kill --name=ls_j
+      Kills the job
+
+  cms job delete --name=ls_j
+      Deletes a job from the jobset. If job is in 'submitted'
+      status then it is killed first and then deleted from jobset.
+
+```
+<!--MANUAL-->
+
+
+## Tests
+
+We provide two simple pytets that you can customize by setting the host and the
+user. The first test checks the usage of the commandline, the second, the
+usage of the API.
+
+```bash
+$ cms set host='juliet.futuresystems.org'
+$ cms set user=$USER
+
+$ pytest -v --capture=no tests/test_01_job_cli.py
+$ pytest -v --capture=no tests/test_02_job_api.py
+```
+- Supporting links 
+  - [Pytests](https://github.com/cloudmesh/cloudmesh-job/tree/main/tests)
+  - [Pytest results](https://github.com/cloudmesh/cloudmesh-job/tree/main/tests/output)
+
+## REST API of `cms job` command
+A REST API is created using FastAPI. This REST API allows users to interact with the 
+cloudmesh-job module via a user-friendly interface.
+
+Use following command to start the FastAPI server on localhost:
+```bash
+(ENV3) $ cms job --service start
+```
+
+To launch the REST API from command line, use following command:
+```bash
+(ENV3) $ cms job --service info
+```
+This launches the cloudmesh-job API in a browser. The UI is based on OpenAPI:
+![cloudmesh-job API](https://github.com/cloudmesh/cloudmesh-job/blob/main/tests/sample_scripts/sample_outputs/API_doc.png)
+
+Documentation of the API is available as below:
+![cloudmesh-job API documentation](https://github.com/cloudmesh/cloudmesh-job/blob/main/tests/sample_scripts/sample_outputs/API_redoc.png)
+
+
+
+## Alternative Installation and Additional Documentation for Cloudmesh-job
+
+You can safely ignore this section if you installed cloudmehs-job with the previous method.
+
+Please note that several other methods are available which are pointed to in the
+installation documentation.
+
+|                           | Links                                                                                  |
+| ------------------------- | -------------------------------------------------------------------------------------- |
+| Documentation             | <https://github.com/cloudmesh/cloudmesh-job/blob/master/README.md>                     |
+| Code                      | <https://github.com/cloudmesh/cloudmesh-job/tree/master/cloudmesh>                     |
+| Installation Instructions | <https://github.com/cloudmesh/cloudmesh-job/blob/master/README.md#installation>        |
+| Configuration             | <https://github.com/cloudmesh/cloudmesh-job/blob/master/README.md#configuration>       |
+| Available methods         | <https://github.com/cloudmesh/cloudmesh-job/blob/master/README.md#available-methods>   |
+| Command API               | <https://github.com/cloudmesh/cloudmesh-job/blob/master/README.md#api-of-the-command>  |
+| Command description       | <https://github.com/cloudmesh/cloudmesh-job/blob/master/README.md#command-description> |
+| Command examples          | <https://github.com/cloudmesh/cloudmesh-job/blob/main/README-example.md>               |
+
+## Start of New Documentation
 
 ## Cluster
-
-A cluster provides a yaml representation of a set of hosts
 
 We have the following cluster commands implemented.
 
 ```
-cluster create [--cluster=CLUSTER]  [--experiment=EXPERIMENT]
-cluster list [--cluster=CLUSTER]  [--experiment=EXPERIMENT]
-cluster add [--cluster=CLUSTER]  [--experiment=EXPERIMENT] --id=ID --name=NAME --user=USER
-            [--ip=IP]
-            [--status=STATUS]
-            [--gpu=GPU]
-            [--pyenv=PYENV]
-cluster delete [--cluster=CLUSTER]  [--experiment=EXPERIMENT] --id=ID
-cluster activate [--cluster=CLUSTER]  [--experiment=EXPERIMENT] --id=ID
-cluster deactivate [--cluster=CLUSTER]  [--experiment=EXPERIMENT] --id=ID
-cluster set [--cluster=CLUSTER]  [--experiment=EXPERIMENT] --id=ID --key=KEY --value=VALUE
+            cluster create CLUSTER [--experiment=EXPERIMENT]
+            cluster list CLUSTER [--experiment=EXPERIMENT]
+            cluster add CLUSTER [--experiment=EXPERIMENT] --id=ID --name=NAME --user=USER
+                                [--ip=IP]
+                                [--status=STATUS]
+                                [--gpu=GPU]
+                                [--pyenv=PYENV]
+            cluster delete CLUSTER [--experiment=EXPERIMENT] --id=ID
+            cluster activate CLUSTER [--experiment=EXPERIMENT] --id=ID
+            cluster deactivate CLUSTER [--experiment=EXPERIMENT] --id=ID
+            cluster set CLUSTER [--experiment=EXPERIMENT] --id=ID --key=KEY --value=VALUE
 ```
 
 ## Create a Cluster
@@ -51,11 +529,10 @@ cluster set [--cluster=CLUSTER]  [--experiment=EXPERIMENT] --id=ID --key=KEY --v
 To create an empty cluster run:
 
 ```
-cluster create [--cluster=CLUSTER]  [--experiment=EXPERIMENT]
+cluster create CLUSTER [--experiment=EXPERIMENT]
 ```
 
 Here `CLUSTER` is the name of your cluster and `experiment` is the path of the directory that it should be stored in. If you do not include the string `-cluster.yaml` in your `CLUSTER` argument, it wil be automatically added for you. If you do not include an `experiment` argument, the directory `./experiment` will be assumed.
-The default name is `default`.
 
 Example:
 
@@ -65,12 +542,10 @@ cluster create a
 
 ## Add Hosts to a Cluster
 
-Hosts are a means of execution given a host `name` and `user`. Each host represents one allowed maximum job. To allow multiple jobs to run on the same machine, define multiple hosts for that machine. 
-
 Add hosts to a cluster with:
 
 ```
-cluster add [--cluster=CLUSTER]  [--experiment=EXPERIMENT] --id=ID --name=NAME --user=USER
+cluster add CLUSTER [--experiment=EXPERIMENT] --id=ID --name=NAME --user=USER
                                 [--ip=IP]
                                 [--status=STATUS]
                                 [--gpu=GPU]
@@ -106,7 +581,7 @@ INFO: Adding host host4 to cluster a
 Lists Hosts in a cluster with 
 
 ```
-cluster list [--cluster=CLUSTER]  [--experiment=EXPERIMENT]
+cluster list CLUSTER [--experiment=EXPERIMENT]
 ```
 
 Example:
@@ -129,7 +604,7 @@ cms cluster list a
 Delete Hosts in a Cluster with
 
 ```
-cluster delete [--cluster=CLUSTER]  [--experiment=EXPERIMENT] --id=ID
+cluster delete CLUSTER [--experiment=EXPERIMENT] --id=ID
 ```
 
 Example:
@@ -144,8 +619,8 @@ INFO: Deleting hosts: ['host3', 'host4']
 Activate or deactivate hsots in a cluster with
 
 ```
-cluster activate [--cluster=CLUSTER]  [--experiment=EXPERIMENT] --id=ID
-cluster deactivate [--cluster=CLUSTER]  [--experiment=EXPERIMENT] --id=ID
+cluster activate CLUSTER [--experiment=EXPERIMENT] --id=ID
+cluster deactivate CLUSTER [--experiment=EXPERIMENT] --id=ID
 ```
 
 Some schedulers will only consider hosts in an `active` status. Other statuses will not be scheduled.
@@ -155,7 +630,7 @@ Some schedulers will only consider hosts in an `active` status. Other statuses w
 To set any host attribute in a cluster use.
 
 ```
-cluster set [--cluster=CLUSTER]  [--experiment=EXPERIMENT] --id=ID --key=KEY --value=VALUE
+cluster set CLUSTER [--experiment=EXPERIMENT] --id=ID --key=KEY --value=VALUE
 ```
 
 Example:
@@ -169,10 +644,10 @@ INFO: Setting host: host1 key: name value: red02 in cluster a
 We have the following queue commands implemented.
 
 ```
-            queue create [queue=QUEUE] [--experiment=EXPERIMENT]
-            queue list [queue=QUEUE] [--experiment=EXPERIMENT]
-            queue refresh [queue=QUEUE] [--experiment=EXPERIMENT]
-            queue add [queue=QUEUE] [--experiment=EXPERIMENT] --name=NAME --command=COMMAND
+            queue create QUEUE [--experiment=EXPERIMENT]
+            queue list QUEUE [--experiment=EXPERIMENT]
+            queue refresh QUEUE [--experiment=EXPERIMENT]
+            queue add QUEUE [--experiment=EXPERIMENT] --name=NAME --command=COMMAND
                     [--input=INPUT]
                     [--output=OUTPUT]
                     [--status=STATUS]
@@ -182,10 +657,10 @@ We have the following queue commands implemented.
                     [--shell=SHELL]
                     [--log=LOG]
                     [--pyenv=PYENV]
-            queue delete [queue=QUEUE] [--experiment=EXPERIMENT] --name=NAME
-            queue run fifo [queue=QUEUE] [--experiment=EXPERIMENT] --max_parallel=MAX_PARALLEL [--timeout=TIMEOUT]
-            queue run fifo_multi [queue=QUEUE] [--experiment=EXPERIMENT] --hosts=HOSTS [--timeout=TIMEOUT]
-            queue reset [queue=QUEUE] [--experiment=EXPERIMENT] [--name=NAME] [--status=STATUS]
+            queue delete QUEUE [--experiment=EXPERIMENT] --name=NAME
+            queue run fifo QUEUE [--experiment=EXPERIMENT] --max_parallel=MAX_PARALLEL
+            queue run fifo_multi QUEUE [--experiment=EXPERIMENT] --hosts=HOSTS
+            queue reset QUEUE [--experiment=EXPERIMENT] [--name=NAME] [--status=STATUS]
 ```
 
 ## Create a Queue
@@ -193,7 +668,7 @@ We have the following queue commands implemented.
 To create an empty queue run:
 
 ```
-queue create [queue=QUEUE] [--experiment=EXPERIMENT]
+queue create QUEUE [--experiment=EXPERIMENT]
 ```
 
 Here `QUEUE` is the name of your queue and `experiment` is the path of the directory that its jobs should be stored in. If you do not include the string `-queue.yaml` in your `QUEUE` argument, it wil be automatically added for you. If you do not include an `experiment` argument, the directory `./experiment` will be assumed.
@@ -208,7 +683,7 @@ queue create a
 Add jobs to a queue with:
 
 ```
-queue add [queue=QUEUE] [--experiment=EXPERIMENT] --name=NAME --command=COMMAND
+queue add QUEUE [--experiment=EXPERIMENT] --name=NAME --command=COMMAND
                     [--input=INPUT]
                     [--output=OUTPUT]
                     [--status=STATUS]
@@ -261,7 +736,7 @@ INFO: Adding job job10 to queue a
 To see a summary of the jobs in a queue user hte list command.
 
 ```
-queue list [queue=QUEUE] [--experiment=EXPERIMENT]
+queue list QUEUE [--experiment=EXPERIMENT]
 ```
 
 Example:
@@ -290,7 +765,7 @@ queue list a
 Delete a job using delete.
 
 ```
-queue delete [queue=QUEUE] [--experiment=EXPERIMENT] --name=NAME
+queue delete QUEUE [--experiment=EXPERIMENT] --name=NAME
 ```
 
 The `name` argument is a single job or an expandable list of names. The job will be killed if still running on a host (if the host is accessible), and deleted from a queue.
@@ -348,8 +823,6 @@ This is a simple scheduler that is designed to work on a single host. It execute
 **Input:** A queue yaml file, `max_parallel=#`.
 
 `max_parallel` is the maximum number of parallel jobs that will be executed by the host.
-
-`timeout` is the time that will consider a host as dead and mark the job as crashed. The default is 10 minutes.
 
 **Prerequisite:** All jobs intended to be run must be assigned a `user` and a `host`. Those jobs not assigned a `user` and `host` will be skipped. 
 
@@ -427,8 +900,6 @@ This queue is designed to assign a queue of jobs to a list of available hosts in
 
 **Input:** A queue yaml file, a `hosts` list of Host() objects.
 
-`timeout` is the time that will consider a host as dead and mark the job as crashed. The default is 10 minutes.
-
 **Example:**
 
 ```
@@ -500,7 +971,7 @@ If you want to rerun jobs in a queue or recover from a crash you will need to re
 >WARNING: if you simply replace a job using `queue add` or rerun a job without a `reset` you will not get the result you expect, as the files from the last run will still be present.
 
 ```
-queue reset [queue=QUEUE] [--experiment=EXPERIMENT] [--name=NAME] [--status=STATUS]
+queue reset QUEUE [--experiment=EXPERIMENT] [--name=NAME] [--status=STATUS]
 ```
 
 If you do not specify a `name` or `status`  argument. Then all jobs with a state other than `end` will be reset.
@@ -529,7 +1000,7 @@ job8 	 old_status:end 	 new_state:ready
 If your manager crashed during the execution of a queue, you can get the latest status from the workers using a refresh.
 
 ```
-queue refresh [queue=QUEUE] [--experiment=EXPERIMENT]
+queue refresh QUEUE [--experiment=EXPERIMENT]
 ```
 
 Example:
@@ -658,64 +1129,3 @@ INFO: Running Jobs: ['job5', 'job6', 'job7', 'job8', 'job9', 'job10']
 INFO: Ran Jobs: ['job0', 'job1', 'job2', 'job3', 'job4', 'job5', 'job6', 'job7', 'job8', 'job9', 'job10']
 INFO: Completed Jobs: ['job0', 'job1', 'job2', 'job3', 'job4', 'job5', 'job6', 'job7', 'job8', 'job9', 'job10']
 ```
-
-## Service
-
-Cloudmesh Queue provides a REST service implementation of the `Queue` and `Cluster`.  The provided commands allow you to run a REST server and interact with them via interactive documentation and HTTP.
-It provides a Basic HTTP authentication scheme to authorize users.
-
-### Commands
-
-The service commands are:
-
-```
-queue --service start [--port=PORT]
-queue --service info [--port=PORT]
-```
-
-### Service Start
-
-Start the REST service wit the below command.
-
-```
-queue --service start [--port=PORT]
-```
-
-`port` Allows you to manually set the port. The default value is 8000.
-
-**Example:**
-
-```
-cms queue --service start --port=8000
-```
-
-Successful completion of the command start the rest server on the local host at 127.0.0.1:8000.
-
-### Service Info
-
-The service info command automatically launches the interactive documentation of the REST service in your web browser.
-You will be prompted to enter a username and password that will be used for HTTP basic authentication for all rest calls.
-
-```
-queue --service info [--port=PORT]
-```
-
-**Example:**
-
-```
-cms queue --service info [--port=8000]
-```
-
-`port` Allows you to manually set the port if the default was not used.
-
-At this point the interactive web documents will be opened in your web browser at the address [127.0.0.1:8000/docs](127.0.0.1:8000/docs).
-
-Below is an example image of the interactive documentation.
-
-![](https://github.com/cloudmesh/cloudmesh-queue/raw/main/images/rest.png)
-
-### Differences from CMD Line Implementation
-
-When running a Queue via the REST service the rest call will start the queue as a subprocess in the background and return immediately,
-this is different from the cmd line implementation which will wait until the queue has finished executing to return. To see the latest status 
-of the queue use the `queue refresh` command.
