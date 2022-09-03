@@ -719,3 +719,9 @@ Below is an example image of the interactive documentation.
 When running a Queue via the REST service the rest call will start the queue as a subprocess in the background and return immediately,
 this is different from the cmd line implementation which will wait until the queue has finished executing to return. To see the latest status 
 of the queue use the `queue refresh` command.
+
+## Acknowledgements
+
+Continued work was in part funded by the NSF
+CyberTraining: CIC: CyberTraining for Students and Technologies
+from Generation Z with the awadrd numbers 1829704 and 2200409.
